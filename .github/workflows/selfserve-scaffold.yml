@@ -1,0 +1,67 @@
+name: APIM Self-Serve Scaffold (Dynamic TemplatesRoot)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment overlay (dev, tst, pre, prod)"
+        required: true
+        default: "dev"
+      templatesRoot:
+        description: "Path to TemplatesRoot (internal or external)"
+        required: true
+        default: "./templates"
+      backup:
+        description: "Create backup under TemplatesRoot/.bak/<timestamp>"
+        required: false
+        default: "false"
+      diagnostics:
+        description: "Enable diagnostics logs and sample snippets"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write  # Required to push changes back to repo
+
+jobs:
+  scaffold:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Optional: Install Pandoc if you want DOCX/PDF report exports
+      # - name: Install pandoc
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y pandoc
+
+      - name: Run in-place scaffold script
+        shell: pwsh
+        run: >
+          ./scripts/Scaffold/ApimApiScaffold.ps1
+          -InputJson input.json
+          -Schema    ./scripts/Scaffold/api-onboarding.schema.json
+          -Mapping   ./scripts/Scaffold/mapping.json
+          -TemplatesRoot "${{ github.event.inputs.templatesRoot }}"
+          -Environment "${{ github.event.inputs.environment }}"
+          -MaterializeTemplateFolders
+
+      - name: Commit & push changes
+        shell: bash
+        run: |
+          set -e
+          git status
+          git diff --name-only
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          ENV="${{ github.event.inputs.environment }}"
+          git commit -m "APIM Self-Serve: materialize & in-place token mapping (env=${ENV}) [CI]"
+          git push origin HEAD:${{ github.ref_name }}
+
+          

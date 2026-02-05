@@ -1,0 +1,280 @@
+name: Validate APIM Structure & Carbon Metrics
+
+on:
+  pull_request:
+    branches: [ master, develop ]
+
+jobs:
+  validate-apim-structure:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository (full history)
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # ---------------------------
+      # 1) APIM Structure Validator
+      # ---------------------------
+      - name: Run APIM Structure validation (capture output)
+        id: validate_structure
+        shell: pwsh
+        run: |
+          # Run and capture all streams as objects (array)
+          $cmd = {
+            pwsh -File "${{ github.workspace }}/scripts/Validate-APIMStructure.ps1" `
+              -Journey both `
+              -Environment base `
+              -FailOnError `
+              -EnforceUpperSnakeCaseDisplayName
+          }
+          $structOutObjs = & $cmd *>&1
+          $structExit    = $LASTEXITCODE
+          $structRes     = if ($structExit -eq 0) { 'Passed' } else { 'Failed' }
+
+          # Convert to single string and normalize newlines to LF
+          $structOutText = ($structOutObjs | Out-String)
+          $structOutText = $structOutText -replace "`r`n", "`n"
+          $structOutText = $structOutText -replace "`r",   "`n"
+
+          # Emit step outputs
+          echo "result=$structRes"      >> $env:GITHUB_OUTPUT
+          echo "exit_code=$structExit"  >> $env:GITHUB_OUTPUT
+
+          # Multiline console text (delimiter block)
+          echo "console<<STRUCT_EOF" >> $env:GITHUB_OUTPUT
+          echo "$structOutText"      >> $env:GITHUB_OUTPUT
+          echo "STRUCT_EOF"          >> $env:GITHUB_OUTPUT
+
+      # -------------------------------------
+      # 2) APIM Policy Rules Validator (NEW)
+      # -------------------------------------
+      - name: Run APIM Policy Rules validation (capture output)
+        id: validate_policies
+        shell: pwsh
+        run: |
+          $cmd = {
+            pwsh -File "${{ github.workspace }}/scripts/Validate-APIMPolicyRules.ps1" `
+              -RootPath . `
+              -Journey both `
+              -Environments base,dev,pre,tst `
+              -ApiName * `
+              -FailOnError `
+              -SuppressQuoteLint
+          }
+          $policyOutObjs = & $cmd *>&1
+          $policyExit    = $LASTEXITCODE
+          $policyRes     = if ($policyExit -eq 0) { 'Passed' } else { 'Failed' }
+
+          # Convert to single string and normalize newlines to LF
+          $policyOutText = ($policyOutObjs | Out-String)
+          $policyOutText = $policyOutText -replace "`r`n", "`n"
+          $policyOutText = $policyOutText -replace "`r",   "`n"
+
+          echo "result=$policyRes"      >> $env:GITHUB_OUTPUT
+          echo "exit_code=$policyExit"  >> $env:GITHUB_OUTPUT
+
+          echo "console<<POLICY_EOF" >> $env:GITHUB_OUTPUT
+          echo "$policyOutText"      >> $env:GITHUB_OUTPUT
+          echo "POLICY_EOF"          >> $env:GITHUB_OUTPUT
+
+      # ---------------------------------------------------
+      # 3) Aggregate + Write Detailed Summary (Actions UI)
+      # ---------------------------------------------------
+      - name: Aggregate validation results and write Job Summary
+        id: aggregate
+        shell: pwsh
+        run: |
+          $structCode  = [int]"${{ steps.validate_structure.outputs.exit_code }}"
+          $policyCode  = [int]"${{ steps.validate_policies.outputs.exit_code }}"
+          $structRes   = "${{ steps.validate_structure.outputs.result }}"
+          $policyRes   = "${{ steps.validate_policies.outputs.result }}"
+
+          # Pull normalized console outputs (multiline)
+          $structLog = @'
+          ${{ steps.validate_structure.outputs.console }}
+          '@
+                    $policyLog = @'
+          ${{ steps.validate_policies.outputs.console }}
+          '@
+
+                    # Optional: strip ANSI color codes if present
+                    $ansi = [regex]'\x1B\[[0-9;]*[A-Za-z]'
+                    $structLog = $ansi.Replace($structLog, '')
+                    $policyLog = $ansi.Replace($policyLog, '')
+
+                    $finalExit = if (($structCode -ne 0) -or ($policyCode -ne 0)) { 1 } else { 0 }
+
+                    # Build Actions Summary (NO code fences so Markdown tables render)
+                    $summaryMd = @'
+          # Validation Results
+
+          * Structure: {STRUCT_RES} (exit={STRUCT_CODE})
+          * Policies:  {POLICY_RES} (exit={POLICY_CODE})
+
+          <details>
+          <summary><strong>Structure validation – detailed output</strong></summary>
+
+          {STRUCT_LOG}
+          </details>
+
+          <details>
+          <summary><strong>Policy rules validation – detailed output</strong></summary>
+
+          {POLICY_LOG}
+          </details>
+          '@
+
+          $summaryMd = $summaryMd.Replace('{STRUCT_RES}',  $structRes)
+          $summaryMd = $summaryMd.Replace('{STRUCT_CODE}', $structCode.ToString())
+          $summaryMd = $summaryMd.Replace('{STRUCT_LOG}',  $structLog)
+          $summaryMd = $summaryMd.Replace('{POLICY_RES}',  $policyRes)
+          $summaryMd = $summaryMd.Replace('{POLICY_CODE}', $policyCode.ToString())
+          $summaryMd = $summaryMd.Replace('{POLICY_LOG}',  $policyLog)
+
+          $summaryMd | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+
+          # Outputs for downstream consumers (optional)
+          $compact = "Structure: $structRes (exit=$structCode) | Policies: $policyRes (exit=$policyCode)"
+          echo "compact=$compact"      >> $env:GITHUB_OUTPUT
+          echo "final_exit=$finalExit" >> $env:GITHUB_OUTPUT
+
+      # -----------------------------
+      # 4) Carbon Intensity (as-is)
+      # -----------------------------
+      - name: Fetch GB Grid Carbon Intensity (now)
+        id: ci
+        shell: pwsh
+        run: |
+          try {
+            $now = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ")
+            $url = "https://api.carbonintensity.org.uk/intensity/$now"
+            $resp = Invoke-RestMethod -Uri $url -Method GET -ErrorAction Stop
+
+            # Prefer 'actual', fallback to 'forecast'
+            $ci = $resp.data[0].intensity.actual
+            if (-not $ci) { $ci = $resp.data[0].intensity.forecast }
+            $index = $resp.data[0].intensity.index
+            if (-not $index) { $index = 'unknown' }
+
+            echo "ci_now=$ci"                                       >> $env:GITHUB_OUTPUT
+            echo "ci_index=$index"                                  >> $env:GITHUB_OUTPUT
+            echo "ci_source=https://api.carbonintensity.org.uk/intensity/$now" >> $env:GITHUB_OUTPUT
+          }
+          catch {
+            # Graceful fallback
+            echo "ci_now=475"                                       >> $env:GITHUB_OUTPUT
+            echo "ci_index=fallback"                                >> $env:GITHUB_OUTPUT
+            echo "ci_source=(fallback default 475 gCO2/kWh)"        >> $env:GITHUB_OUTPUT
+            Write-Host "::warning::Carbon Intensity API unavailable; using default 475 gCO2/kWh."
+          }
+
+      - name: Calculate Carbon Metrics (SCI Formula)
+        id: carbon
+        shell: pwsh
+        run: |
+          # Measurements / proxies
+          $CPUTimeSec = (Get-Process | Measure-Object CPU -Sum).Sum
+          $RAMMB      = (Get-CimInstance Win32_OperatingSystem).TotalVisibleMemorySize / 1024
+          $EnergyKWh  = [math]::Round(($CPUTimeSec * 0.0000003) + ($RAMMB * 0.0000001), 6)
+
+          # Carbon intensity from GB grid
+          $CarbonIntensity = [double]"${{ steps.ci.outputs.ci_now }}"
+          $CIIndex         = "${{ steps.ci.outputs.ci_index }}"
+          $CISource        = "${{ steps.ci.outputs.ci_source }}"
+
+          # SCI operational term: O = E × I
+          $Emissions    = [math]::Round($EnergyKWh * $CarbonIntensity, 2)   # g CO2 per run
+          $AnnualImpact = [math]::Round(($Emissions * 10000 * 365) / 1000, 2)   # kg CO2
+          $CostEstimate = [math]::Round($EnergyKWh * 0.15, 4)                   # £
+
+          # Remediation guidance
+          $remediation = ""
+          if ($Emissions -ge 100) {
+            $remediation += "- Profile & optimize hotspots (tests/build steps); reduce CPU time.`n"
+            $remediation += "- Cache dependencies and artifacts more aggressively.`n"
+            $remediation += "- Consider running non-urgent jobs in lower-CI windows (carbon-aware scheduling).`n"
+          } elseif ($Emissions -ge 50) {
+            $remediation += "- Tweak parallelism & memory limits; avoid over-provisioning.`n"
+            $remediation += "- Carbon-aware rerun may reduce O without code changes.`n"
+          } else {
+            $remediation += "- No remediation needed.`n"
+          }
+
+          # Build Carbon report ONLY (no executive validation summary here)
+          $report = @'
+          ## Carbon Metrics Report (SCI operational)
+          * Energy (E): {ENERGY} kWh
+          * Carbon Intensity (I): {CI} gCO2/kWh (GB grid; index: {CI_INDEX})
+          * Emissions (O = E × I): {EMISSIONS} g/run
+          * Source: {CI_SOURCE}
+
+          ### Business Impact
+          * Projected Annual Impact: ~{ANNUAL} kg CO2 (10k runs/day)
+          * Cost Estimate: £{COST}/year
+          * Target: <10 g/run  |  Warn ≥ 50 g  |  Fail ≥ 100 g
+
+          ### Remediation Suggestions
+          {REMEDIATION}
+          '@
+
+          $report = $report.Replace('{ENERGY}',     $EnergyKWh.ToString())
+          $report = $report.Replace('{CI}',         $CarbonIntensity.ToString())
+          $report = $report.Replace('{CI_INDEX}',   $CIIndex)
+          $report = $report.Replace('{EMISSIONS}',  $Emissions.ToString())
+          $report = $report.Replace('{CI_SOURCE}',  $CISource)
+          $report = $report.Replace('{ANNUAL}',     $AnnualImpact.ToString())
+          $report = $report.Replace('{COST}',       $CostEstimate.ToString())
+          $report = $report.Replace('{REMEDIATION}',$remediation)
+
+          echo "report<<EOF" >> $env:GITHUB_OUTPUT
+          echo "$report"     >> $env:GITHUB_OUTPUT
+          echo "EOF"         >> $env:GITHUB_OUTPUT
+
+          echo "emissions=$Emissions"  >> $env:GITHUB_OUTPUT
+          echo "energy_kwh=$EnergyKWh" >> $env:GITHUB_OUTPUT
+
+      # --------------------------------------------
+      # 5) Post report to PR (executive + details)
+      # --------------------------------------------
+      - name: Post Report to PR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            # 🔎 Validation Results (executive)
+            * **Structure**:  ${{ steps.validate_structure.outputs.result }} (exit=${{ steps.validate_structure.outputs.exit_code }})
+            * **Policies**:   ${{ steps.validate_policies.outputs.result }} (exit=${{ steps.validate_policies.outputs.exit_code }})
+
+            <details>
+            <summary><strong>📁 Structure validation – details</strong></summary>
+
+            ${{ steps.validate_structure.outputs.console }}
+            </details>
+
+            <details>
+            <summary><strong>🛡️ Policy rules validation – details</strong></summary>
+
+            ${{ steps.validate_policies.outputs.console }}
+            </details>
+
+            ---
+            ${{ steps.carbon.outputs.report }}
+
+      - name: Add sustainability-warning label
+        if: ${{ steps.carbon.outputs.emissions > 50 && github.event_name == 'pull_request' }}
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: sustainability-warning
+
+      # Final gate: fail the job if any validation failed (after writing summaries)
+      - name: Fail if any validation failed
+        if: ${{ steps.aggregate.outputs.final_exit != '0' }}
+        shell: pwsh
+        run: |
+          Write-Host "One or more validations failed. final_exit=${{ steps.aggregate.outputs.final_exit }}"
+          exit 1

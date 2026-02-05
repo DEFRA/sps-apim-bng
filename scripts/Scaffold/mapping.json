@@ -1,0 +1,185 @@
+{
+  "version": "2.6",
+  "description": "APIM Self-Serve mapping with API-specific templates, per-environment overlays, and token replacement for all templates (JSON/YAML/XML), including Named Values.",
+  "templates": {
+    "apiInformation.json": "apis/API_NAME/apiInformation.json",
+    "policy.xml": "apis/API_NAME/policy.xml",
+    "specification.yaml": "apis/API_NAME/specification.yaml",
+    "productInformation.json": "products/API_NAME_product/productInformation.json",
+    "versionSetInformation.json": "version sets/API_NAME/versionSetInformation.json",
+    "namedValueBackendInformation.json": "namedValues/API_NAME-backend-scopeid/namedValueInformation.json",
+    "namedValueFrontendInformation.json": "namedValues/consuming-frontend-clientid/namedValueInformation.json"
+  },
+  "_note": "Folders are descriptive; the script enforces folder materialization and in-place updates.",
+  "folders": {
+    "apis": "apis/{API_NAME}",
+    "products": "products/{API_NAME}_product",
+    "versionSets": "version sets/{API_NAME}",
+    "namedValuesBackend": "namedValues/{API_NAME}-backend-scopeid",
+    "namedValuesFrontend": "namedValues/consuming-frontend-clientid",
+    "productApisFolder": "products/{API_NAME}_product/apis/{API_NAME}"
+  },
+  "fields": [
+    {
+      "inputKey": "API_NAME",
+      "type": "string",
+      "mandatory": true,
+      "usage": [
+        {
+          "target": "folder",
+          "path": "apis/{API_NAME}"
+        },
+        {
+          "target": "folder",
+          "path": "products/{API_NAME}_product"
+        },
+        {
+          "target": "folder",
+          "path": "version sets/{API_NAME}"
+        },
+        {
+          "target": "file",
+          "file": "apiInformation.json",
+          "jsonPath": "$.properties.path"
+        }
+      ]
+    },
+    {
+      "inputKey": "API_DISPLAY_NAME",
+      "type": "string",
+      "mandatory": true,
+      "usage": [
+        {
+          "target": "file",
+          "file": "apiInformation.json",
+          "jsonPath": "$.properties.displayName"
+        },
+        {
+          "target": "file",
+          "file": "productInformation.json",
+          "jsonPath": "$.properties.displayName"
+        }
+      ]
+    },
+    {
+      "inputKey": "API_DESCRIPTION",
+      "type": "string",
+      "mandatory": false,
+      "usage": [
+        {
+          "target": "file",
+          "file": "apiInformation.json",
+          "jsonPath": "$.properties.description"
+        },
+        {
+          "target": "file",
+          "file": "productInformation.json",
+          "jsonPath": "$.properties.description"
+        }
+      ]
+    },
+    {
+      "inputKey": "API_VERSION",
+      "type": "string",
+      "mandatory": false,
+      "usage": [
+        {
+          "target": "file",
+          "file": "apiInformation.json",
+          "jsonPath": "$.properties.apiVersion"
+        }
+      ]
+    },
+    {
+      "inputKey": "API_BACKEND_URL",
+      "type": "string",
+      "mandatory": true,
+      "usage": [
+        {
+          "target": "file",
+          "file": "apiInformation.json",
+          "jsonPath": "$.properties.serviceUrl"
+        }
+      ]
+    },
+    {
+      "inputKey": "TENANT_ID",
+      "type": "string",
+      "mandatory": true,
+      "usage": [
+        {
+          "target": "file",
+          "file": "policy.xml"
+        }
+      ]
+    },
+    {
+      "inputKey": "API_BACKEND_SCOPEID_VALUE",
+      "type": "string",
+      "mandatory": true,
+      "usage": [
+        {
+          "target": "file",
+          "file": "policy.xml"
+        }
+      ]
+    },
+    {
+      "inputKey": "CONSUMING_FRONTEND_CLIENTID_VALUE",
+      "type": "string",
+      "mandatory": true,
+      "usage": [
+        {
+          "target": "file",
+          "file": "policy.xml"
+        }
+      ]
+    },
+    {
+      "inputKey": "RATE_LIMIT_CALLS",
+      "type": "integer",
+      "mandatory": false,
+      "usage": [
+        {
+          "target": "file",
+          "file": "policy.xml"
+        }
+      ]
+    },
+    {
+      "inputKey": "RATE_LIMIT_PERIOD",
+      "type": "integer",
+      "mandatory": false,
+      "usage": [
+        {
+          "target": "file",
+          "file": "policy.xml"
+        }
+      ]
+    }
+  ],
+  "aliases": {
+    "api_name": "API_NAME",
+    "api_version": "API_VERSION",
+    "api_display_name": "API_DISPLAY_NAME",
+    "api_description": "API_DESCRIPTION",
+    "api_backend_url": "API_BACKEND_URL",
+    "tenant_id": "TENANT_ID",
+    "backend_scopeid": "API_BACKEND_SCOPEID_VALUE",
+    "frontend_clientid": "CONSUMING_FRONTEND_CLIENTID_VALUE",
+    "rate_limit_calls": "RATE_LIMIT_CALLS",
+    "rate_limit_period": "RATE_LIMIT_PERIOD"
+  },
+  "angleAliases": {
+    "API_NAME": "API_NAME",
+    "API_VERSION": "API_VERSION",
+    "API_DISPLAY_NAME": "API_DISPLAY_NAME",
+    "API_DESCRIPTION": "API_DESCRIPTION",
+    "API_BACKEND_URL": "API_BACKEND_URL",
+    "TENANT_ID": "TENANT_ID",
+    "BACKEND_SCOPEID": "API_BACKEND_SCOPEID_VALUE",
+    "FRONTEND_ID": "CONSUMING_FRONTEND_CLIENTID_VALUE",
+    "RATE_LIMIT_CALLS": "RATE_LIMIT_CALLS",
+    "RATE_LIMIT_PERIOD": "RATE_LIMIT_PERIOD"
+  }
+}

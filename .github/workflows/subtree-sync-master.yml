@@ -1,0 +1,160 @@
+
+name: Sync subtree → Central (master)
+
+on:
+  push:
+    branches: [ master ]
+
+concurrency:
+  group: subtree-pr-master
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CENTRAL_REPO: DEFRA/sps-apim-gateway
+  BASE_BRANCH: master
+
+  TEAM_REMOTE_NAME: sps-apim-bng
+  TEAM_REPO_URL: DEFRA/sps-apim-bng
+  TEAM_BRANCH: master
+
+  TEAM_WINS_ON_CONFLICT: "true"
+
+  # Top-level mapping (source → target)
+  FOLDER_MAP: |
+    internal/base/apis/bng-api-v2=internal/base/apis/bng-api-v2
+    internal/base/apis/bng=external/base/apis/bng
+
+jobs:
+  prepare-branch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (team repo)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Start SSH agent & load central deploy key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.CENTRAL_SYNC_SSH_KEY }}
+
+      - name: Prime known_hosts
+        run: ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+      - name: Clone central and prepare PR branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          echo "=== Clone central repo ==="
+          git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
+          cd central-repo
+
+          echo "=== Checkout base branch ==="
+          git fetch origin "${BASE_BRANCH}" --depth=50
+          git checkout "${BASE_BRANCH}"
+
+          echo "=== Add team remote and fetch ==="
+          git remote add "${TEAM_REMOTE_NAME}" \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git" \
+            || git remote set-url "${TEAM_REMOTE_NAME}" \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
+          git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
+
+          git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
+
+          CHANGES=false
+
+          # Loop through mapping
+          for mapping in ${FOLDER_MAP}; do
+            SRC="${mapping%%=*}"
+            TARGET_PREFIX="${mapping#*=}"
+
+            if [ -z "${SRC}" ] || [ -z "${TARGET_PREFIX}" ]; then
+              continue
+            fi
+
+            echo "Processing subtree: SRC=${SRC}, TARGET=${TARGET_PREFIX}"
+
+            if git ls-tree -r --name-only HEAD | grep -q "^${SRC}/"; then
+              SPLIT_SHA=$(git subtree split -P "${SRC}")
+              git checkout "${BASE_BRANCH}"
+
+              if [ -z "${SPLIT_SHA}" ]; then
+                echo "ERROR: subtree split produced no commit for ${SRC}. Skipping..."
+                continue
+              fi
+
+              CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TIMESTAMP}"
+
+              if [ "${CHANGES}" = "false" ]; then
+                PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+                git checkout -b "${PR_BRANCH}"
+              fi
+
+              EXTRA=$([ "${TEAM_WINS_ON_CONFLICT}" = "true" ] && echo "-X theirs" || echo "")
+              set +e
+              git merge -s subtree -Xsubtree="${TARGET_PREFIX}" ${EXTRA} "${SPLIT_SHA}" \
+                --allow-unrelated-histories -m "${CUSTOM_MESSAGE}"
+              MERGE_RC=$?
+              set -e
+
+              if [ $MERGE_RC -ne 0 ]; then
+                echo "Merge failed. Bootstrapping subtree..."
+                git merge --abort || git reset --merge || git reset --hard
+                git merge -s ours --no-commit --allow-unrelated-histories "${SPLIT_SHA}"
+                git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
+                git commit -m "${CUSTOM_MESSAGE}"
+              fi
+
+              CHANGES=true
+            else
+              echo "Source folder '${SRC}' not found. Skipping..."
+            fi
+          done
+
+          if [ "${CHANGES}" = "false" ]; then
+            echo "No mapped folders found. Exiting."
+            exit 0
+          fi
+
+          echo "=== Push PR branch ==="
+          git push origin "${PR_BRANCH}" || {
+            echo "Branch name collision, retrying..."
+            PR_BRANCH="${PR_BRANCH}-$(date +%s)"
+            git branch -m "${PR_BRANCH}"
+            git push origin "${PR_BRANCH}"
+          }
+
+      - name: Generate GitHub Action Summary
+        run: |
+          {
+            echo "## Subtree Merge Summary"
+            echo ""
+            echo "**Central Repo:** ${CENTRAL_REPO}"
+            echo "**Base Branch:** ${BASE_BRANCH}"
+            echo "**Team Repo:** ${TEAM_REPO_URL}"
+            echo "**Team Branch:** ${TEAM_BRANCH}"
+            echo "**PR Branch:** ${PR_BRANCH:-Not created}"
+            echo ""
+            echo "### Folder Mapping"
+            echo '```'
+            echo "${FOLDER_MAP}"
+            echo '```'
+            echo ""
+            echo "**Timestamp:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+            echo "**Commit SHA:** ${GITHUB_SHA}"
+            echo ""
+            echo "✅ Merge completed. Check PR branch for details."
+          } >> $GITHUB_STEP_SUMMARY

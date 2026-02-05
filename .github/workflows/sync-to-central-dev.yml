@@ -1,0 +1,140 @@
+
+name: Sync subtree → Central (develop)
+
+on:
+  push:
+    branches: [ develop ]
+
+concurrency:
+  group: subtree-sync-develop
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CENTRAL_REPO: DEFRA/sps-apim-gateway
+  CENTRAL_BRANCH: develop
+  TEAM_REMOTE_NAME: address-lookup-v10
+  TEAM_REPO_URL: DEFRA/sps-apim-bng
+  TEAM_BRANCH: develop
+  REQUIRE_LINEAR_HISTORY: "false"
+
+  # Mapping (source → target)
+  FOLDER_MAP: |
+    internal/base/apis/bng-api-v2=internal/base/apis/bng-api-v2
+    internal/base/apis/bng=external/base/apis/bng
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (team repo)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Start SSH agent & load central deploy key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.CENTRAL_SYNC_SSH_KEY }}
+
+      - name: Prime known_hosts
+        run: ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+
+      - name: Clone central repo and sync multiple folders
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          set -x
+
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          echo "=== Clone central repo ==="
+          git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
+          cd central-repo
+
+          echo "=== Checkout central branch ==="
+          git fetch --no-tags origin "${CENTRAL_BRANCH}" --depth=50
+          git checkout -B "${CENTRAL_BRANCH}" FETCH_HEAD
+
+          echo "=== Add team remote and fetch ==="
+          git remote add "${TEAM_REMOTE_NAME}" \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git" \
+            || git remote set-url "${TEAM_REMOTE_NAME}" \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
+          git fetch --no-tags "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
+
+          echo "=== Sync multiple internal/external folders ==="
+          git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
+
+          # Read mapping from env and loop
+          echo "${FOLDER_MAP}" | while IFS='=' read -r SRC TARGET_PREFIX; do
+            echo "Processing subtree: SRC=${SRC}, TARGET=${TARGET_PREFIX}"
+
+            if git ls-tree -r --name-only HEAD | grep -q "^${SRC}/"; then
+              SPLIT_SHA=$(git subtree split -P "${SRC}")
+              git checkout "${CENTRAL_BRANCH}"
+
+              if [ -z "${SPLIT_SHA}" ]; then
+                echo "ERROR: subtree split produced no commit for ${SRC}. Skipping..."
+                continue
+              fi
+
+              CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TIMESTAMP}"
+
+              echo "=== Attempt subtree merge ==="
+              set +e
+              git merge --no-commit -s recursive -Xsubtree="${TARGET_PREFIX}" "${SPLIT_SHA}" \
+                -m "${CUSTOM_MESSAGE}"
+              MERGE_RC=$?
+              set -e
+
+              if [ $MERGE_RC -ne 0 ]; then
+                echo "Merge failed. Bootstrapping subtree..."
+                git merge --abort 2>/dev/null || git reset --merge
+                git reset --hard
+                git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
+                git clean -fdx -- "${TARGET_PREFIX}" || true
+                git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
+                git add -A "${TARGET_PREFIX}"
+                TREE=$(git write-tree)
+                NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
+                git reset --hard "$NEWCOMMIT"
+              else
+                if git diff --quiet --cached -- "${TARGET_PREFIX}"; then
+                  echo "No staged changes for ${TARGET_PREFIX}. Skipping commit."
+                  git merge --abort 2>/dev/null || git reset --merge
+                else
+                  git commit -m "${CUSTOM_MESSAGE}"
+                fi
+              fi
+            else
+              echo "Source folder '${SRC}' not found. Skipping..."
+            fi
+          done
+
+          echo "=== Push changes to central repo ==="
+          if [ "${REQUIRE_LINEAR_HISTORY}" = "true" ]; then
+            git fetch origin "${CENTRAL_BRANCH}"
+            git rebase "origin/${CENTRAL_BRANCH}"
+            git push origin "${CENTRAL_BRANCH}"
+          else
+            tries=0
+            until git push origin "${CENTRAL_BRANCH}"; do
+              tries=$((tries+1))
+              if [ $tries -ge 3 ]; then
+                echo "Push failed after ${tries} attempts."
+                exit 1
+              fi
+              echo "Push rejected. Fetching & merging remote then retrying..."
+              git fetch origin "${CENTRAL_BRANCH}"
+              git merge --no-edit "origin/${CENTRAL_BRANCH}"
+            done
+          fi

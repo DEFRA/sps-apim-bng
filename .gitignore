@@ -1,0 +1,22 @@
+# Ignore secrets and environment files
+.env
+.env.*
+**/*.secrets.json
+**/*.secret.json
+**/*.secrets.yaml
+
+# Ignore certificates and private keys
+**/*.pfx
+**/*.p12
+**/*.pem
+**/*.cer
+**/*.key
+
+# Ignore local overrides
+environments/**/parameters.local*.json
+environments/**/overrides.local*.json
+
+# Ignore build artifacts
+*.zip
+*.tar.gz
+*.log

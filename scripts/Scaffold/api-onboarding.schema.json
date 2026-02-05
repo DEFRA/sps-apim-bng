@@ -1,0 +1,64 @@
+
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "APIM Self-Serve API Definition (v2 with environments)",
+  "type": "object",
+
+  "required": [
+    "API_NAME",
+    "API_DISPLAY_NAME",
+    "API_BACKEND_URL",
+    "API_BACKEND_SCOPEID_VALUE",
+    "CONSUMING_FRONTEND_CLIENTID_VALUE",
+    "TENANT_ID"
+  ],
+
+  "properties": {
+    "API_NAME": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "API_DISPLAY_NAME": {
+      "type": "string",
+      "minLength": 3
+    },
+    "API_DESCRIPTION": { "type": "string" },
+    "API_VERSION": {
+      "type": "string",
+      "pattern": "^v\\d+(\\.\\d+)?$",
+      "default": "v1.0"
+    },
+    "API_BACKEND_URL": { "type": "string", "format": "uri" },
+    "API_BACKEND_SCOPEID_VALUE": { "type": "string" },
+    "CONSUMING_FRONTEND_CLIENTID_VALUE": { "type": "string" },
+    "TENANT_ID": { "type": "string" },
+
+    "environments": {
+      "type": "object",
+      "properties": {
+        "dev":    { "$ref": "#/$defs/envOverrides" },
+        "tst":    { "$ref": "#/$defs/envOverrides" },
+        "pre":    { "$ref": "#/$defs/envOverrides" },
+        "prod":   { "$ref": "#/$defs/envOverrides" }
+      },
+      "additionalProperties": false
+    }
+  },
+
+  "$defs": {
+    "envOverrides": {
+      "type": "object",
+      "properties": {
+        "API_BACKEND_URL": { "type": "string", "format": "uri" },
+        "API_BACKEND_SCOPEID_VALUE": { "type": "string" },
+        "CONSUMING_FRONTEND_CLIENTID_VALUE": { "type": "string" },
+        "TENANT_ID": { "type": "string" },
+        "API_VERSION": {
+          "type": "string",
+          "pattern": "^v\\d+(\\.\\d+)?$"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
