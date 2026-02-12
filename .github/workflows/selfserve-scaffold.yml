@@ -63,5 +63,3 @@ jobs:
           ENV="${{ github.event.inputs.environment }}"
           git commit -m "APIM Self-Serve: materialize & in-place token mapping (env=${ENV}) [CI]"
           git push origin HEAD:${{ github.ref_name }}
-
-          
