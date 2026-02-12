@@ -328,3 +328,21 @@ $full = $header + $EOL + $body + $EOL + $EOL + $status + $EOL + $footer + $EOL
 Write-Host "`n--- Summary ---`n$full"
 
 if ($FailOnError -and $exit -ne 0) { exit $exit }
+
+# ... your existing code above ...
+
+$full = $header + $EOL + $body + $EOL + $EOL + $status + $EOL + $footer + $EOL
+Write-Host "`n--- Summary ---`n$full"
+
+# ✅ Always write to the job summary (renders on the run page)
+if ($env:GITHUB_STEP_SUMMARY) {
+    $full | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+}
+
+# ✅ Optional: surface key failures as Annotations in the UI sidebar
+foreach ($err in $Errors) {
+    # You can add file/line if you parse them: ::error file=...,line=...::message
+    Write-Host "::error::${err}"
+}
+
+if ($FailOnError -and $exit -ne 0) { exit $exit }
