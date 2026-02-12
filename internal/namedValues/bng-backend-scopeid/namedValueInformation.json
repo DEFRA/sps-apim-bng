@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "bng_BACKEND_SCOPEID",
+    "secret": true,
+    "tags": [],
+    "value": "api://e5abac84-f35b-483e-a33b-20e69c3584dc/.default"
+  }
+}

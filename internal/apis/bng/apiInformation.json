@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "path": "bng",
+    "apiRevision": "1",
+    "apiVersion": "v2.0",
+    "apiVersionSetId": "/subscriptions/6804fdd9-db41-4769-bb83-2ec7bbeaa79a/resourceGroups/DEVAPIINFRG2402/providers/Microsoft.ApiManagement/service/DEVAPIINFAM2402/apiVersionSets/bng",
+    "authenticationSettings": {},
+    "description": "test",
+    "isCurrent": true,
+    "displayName": "BNG V2.0",
+    "protocols": [
+      "https"
+    ],
+    "serviceUrl": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation",
+    "subscriptionKeyParameterNames": {
+      "header": "Ocp-Apim-Subscription-Key",
+      "query": "subscription-key"
+    },
+    "subscriptionRequired": false
+  }
+}
