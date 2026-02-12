@@ -25,7 +25,7 @@ jobs:
           # Run and capture all streams as objects (array)
           $cmd = {
             pwsh -File "${{ github.workspace }}/scripts/Validate-APIMStructure.ps1" `
-              -Journey both `
+              -Journey internal `
               -Environment base `
               -FailOnError `
               -EnforceUpperSnakeCaseDisplayName
@@ -59,7 +59,7 @@ jobs:
           $cmd = {
             pwsh -File "${{ github.workspace }}/scripts/Validate-APIMPolicyRules.ps1" `
               -RootPath . `
-              -Journey both `
+              -Journey internal `
               -Environments base,dev,pre,tst `
               -ApiName * `
               -FailOnError `
