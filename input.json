@@ -1,7 +1,7 @@
 {
   "API_NAME": "bng",
   "API_DISPLAY_NAME": "BNG V2.0",
-  "API_DESCRIPTION": "",
+  "API_DESCRIPTION": "test",
   "API_VERSION": "v2.0",
   "API_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation",
   "API_BACKEND_SCOPEID_VALUE": "api://e5abac84-f35b-483e-a33b-20e69c3584dc/.default",
