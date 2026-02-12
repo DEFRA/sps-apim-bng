@@ -1,26 +1,26 @@
 {
-  "API_NAME": "vehicle-licensing",
-  "API_DISPLAY_NAME": "Vehicle Licensing API",
-  "API_DESCRIPTION": "Provides licensing endpoints.",
-  "API_VERSION": "v1.0",
-  "API_BACKEND_URL": "https://vehicle-licensing.api.base.internal",
-  "API_BACKEND_SCOPEID_VALUE": "11111111-1111-1111-1111-111111111111",
-  "CONSUMING_FRONTEND_CLIENTID_VALUE": "22222222-2222-2222-2222-222222222222",
-  "TENANT_ID": "33333333-3333-3333-3333-333333333333",
+  "API_NAME": "bng",
+  "API_DISPLAY_NAME": "BNG V2.0",
+  "API_DESCRIPTION": "",
+  "API_VERSION": "v2.0",
+  "API_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation",
+  "API_BACKEND_SCOPEID_VALUE": "api://e5abac84-f35b-483e-a33b-20e69c3584dc/.default",
+  "CONSUMING_FRONTEND_CLIENTID_VALUE": "fcae87f0-58d4-47e7-9b48-358508813320",
+  "TENANT_ID": "6f504113-6b64-43f2-ade9-242e05780007",
 
   "RATE_LIMIT_CALLS": 100,
   "RATE_LIMIT_PERIOD": 60,
 
   "environments": {
     "dev": {
-      "API_BACKEND_URL": "https://vehicle-licensing.api.dev.internal",
-      "TENANT_ID": "66666666-6666-6666-6666-666666666666",
+      "API_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation",
+      "TENANT_ID": "6f504113-6b64-43f2-ade9-242e05780007",
       "RATE_LIMIT_CALLS": 50,
       "RATE_LIMIT_PERIOD": 60
     },
     "tst": {
-      "API_BACKEND_URL": "https://vehicle-licensing.api.tst.internal",
-      "TENANT_ID": "99999999-9999-9999-9999-999999999999",
+      "API_BACKEND_URL": "https://tst_tstbngwebfa1402.azurewebsites.net/api/v1/allocation",
+      "TENANT_ID": "1236f504113-6b64-43f2-ade9-242e05780007",
       "RATE_LIMIT_CALLS": 75,
       "RATE_LIMIT_PERIOD": 60
     }
