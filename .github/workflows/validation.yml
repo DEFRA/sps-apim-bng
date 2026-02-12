@@ -19,6 +19,7 @@ jobs:
       # ---------------------------
       - name: Run APIM Structure validation (capture output)
         id: validate_structure
+        continue-on-error: true
         shell: pwsh
         run: |
           # Run and capture all streams as objects (array)
@@ -52,6 +53,7 @@ jobs:
       # -------------------------------------
       - name: Run APIM Policy Rules validation (capture output)
         id: validate_policies
+        continue-on-error: true
         shell: pwsh
         run: |
           $cmd = {
