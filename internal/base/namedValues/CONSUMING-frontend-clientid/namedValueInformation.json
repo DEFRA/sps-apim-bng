@@ -1,8 +1,8 @@
 {
   "properties": {
-    "displayName": "<<API_NAME>>_FRONTEND_CLIENTID",
+    "displayName": "bngicc_FRONTEND_CLIENTID",
     "secret": true,
     "tags": [],
-    "value": "<<CONSUMING_FRONTEND_CLIENTID_VALUE>>"
+    "value": "22222222-2222-2222-2222-222222222222"
   }
 }
