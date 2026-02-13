@@ -5,7 +5,7 @@
     "apiInformation.json": "apis/API_NAME/apiInformation.json",
     "policy.xml": "apis/API_NAME/policy.xml",
     "specification.yaml": "apis/API_NAME/specification.yaml",
-    "productInformation.json": "products/API_NAME_product/productInformation.json",
+    "productInformation.json": "products/API_NAME-product/productInformation.json",
     "versionSetInformation.json": "version sets/API_NAME/versionSetInformation.json",
     "namedValueBackendInformation.json": "namedValues/API_NAME-backend-scopeid/namedValueInformation.json",
     "namedValueFrontendInformation.json": "namedValues/consuming-frontend-clientid/namedValueInformation.json"
