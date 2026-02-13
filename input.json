@@ -1,5 +1,5 @@
 {
-  "API_NAME": "bng",
+  "API_NAME": "bngicc",
   "API_DISPLAY_NAME": "bng icc",
   "API_DESCRIPTION": "Provides bng icc endpoints.",
   "API_VERSION": "v1.0",
