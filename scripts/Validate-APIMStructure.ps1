@@ -3,10 +3,10 @@ param(
     [string]$RootPath = ".",
     [ValidateSet('external', 'internal', 'both')] [string]$Journey = 'both',
     [ValidateSet('base', 'dev', 'pre', 'tst', 'all')] [string]$Environment = 'all',
-    [string]$ApiName = 'bng',
-    [string]$ProductName = 'bng-product',
-    [string]$VersionSetName = 'bng',
-    [string[]]$NamedValueName = @('bng-backend-scopeid', 'bng-backend-apikey', 'bng-frontend-clientid'),
+    [string]$ApiName = 'bngicc',
+    [string]$ProductName = 'bngicc-product',
+    [string]$VersionSetName = 'bngicc',
+    [string[]]$NamedValueName = @('bngicc-backend-scopeid', 'bngicc-backend-apikey', 'bngicc-frontend-clientid'),
     [switch]$FailOnError,
     [switch]$EnforceUpperSnakeCaseDisplayName
 )

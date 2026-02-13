@@ -22,7 +22,11 @@ env:
 
   # Mapping (source → target)
   FOLDER_MAP: |
-    internal/base/apis/bng=internal/base/apis/bngicc
+    internal/base/apis/bngicc=internal/base/apis/bngicc
+    internal/base/namedValues/bngicc=internal/base/namedValues/bngicc
+    internal/base/products/bngicc=internal/base/products/bngicc
+    internal/base/version sets/bngicc=internal/base/version sets/bngicc
+
 jobs:
   sync:
     runs-on: ubuntu-latest
