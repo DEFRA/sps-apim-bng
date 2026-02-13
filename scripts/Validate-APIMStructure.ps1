@@ -3,9 +3,9 @@ param(
     [string]$RootPath = ".",
     [ValidateSet('external', 'internal', 'both')] [string]$Journey = 'both',
     [ValidateSet('base', 'dev', 'pre', 'tst', 'all')] [string]$Environment = 'all',
-    [string]$ApiName = 'bng-api-v2',
-    [string]$ProductName = 'bng',
-    [string]$VersionSetName = 'bngVersionSet',
+    [string]$ApiName = 'bng',
+    [string]$ProductName = 'bng-product',
+    [string]$VersionSetName = 'bng',
     [string[]]$NamedValueName = @('bng-backend-scopeid', 'bng-backend-apikey', 'bng-frontend-clientid'),
     [switch]$FailOnError,
     [switch]$EnforceUpperSnakeCaseDisplayName
