@@ -8,7 +8,7 @@
     "productInformation.json": "products/API_NAME-product/productInformation.json",
     "versionSetInformation.json": "version sets/API_NAME/versionSetInformation.json",
     "namedValueBackendInformation.json": "namedValues/API_NAME-backend-scopeid/namedValueInformation.json",
-    "namedValueFrontendInformation.json": "namedValues/consuming-frontend-clientid/namedValueInformation.json"
+    "namedValueFrontendInformation.json": "namedValues/API_NAME-frontend-clientid/namedValueInformation.json"
   },
   "_note": "Folders are descriptive; the script enforces folder materialization and in-place updates.",
   "folders": {
@@ -16,7 +16,7 @@
     "products": "products/{API_NAME}_product",
     "versionSets": "version sets/{API_NAME}",
     "namedValuesBackend": "namedValues/{API_NAME}-backend-scopeid",
-    "namedValuesFrontend": "namedValues/consuming-frontend-clientid",
+    "namedValuesFrontend": "namedValues/{API_NAME}-frontend-clientid",
     "productApisFolder": "products/{API_NAME}_product/apis/{API_NAME}"
   },
   "fields": [
