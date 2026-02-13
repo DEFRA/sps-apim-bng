@@ -1,7 +1,7 @@
 {
-  "API_NAME": "vehicle-licensing",
-  "API_DISPLAY_NAME": "Vehicle Licensing API",
-  "API_DESCRIPTION": "Provides licensing endpoints.",
+  "API_NAME": "bng",
+  "API_DISPLAY_NAME": "bng icc",
+  "API_DESCRIPTION": "Provides bng icc endpoints.",
   "API_VERSION": "v1.0",
   "API_BACKEND_URL": "https://vehicle-licensing.api.base.internal",
   "API_BACKEND_SCOPEID_VALUE": "11111111-1111-1111-1111-111111111111",
