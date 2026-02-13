@@ -1,6 +1,6 @@
 {
   "properties": {
-    "displayName": "<<API_NAME>>_FRONTEND_CLIENTID",
+    "displayName": "vehicle-licensing_FRONTEND_CLIENTID",
     "secret": true,
     "tags": [],
     "value": "<<CONSUMING_FRONTEND_CLIENTID_VALUE>"
