@@ -24,8 +24,8 @@ env:
 
   # Top-level mapping (source → target)
   FOLDER_MAP: |
-    internal/base/apis/bng-api-v2=internal/base/apis/bng-api-v2
-    internal/base/apis/bng=external/base/apis/bng
+    internal/base/apis/bng=internal/base/apis/bngicc
+
 
 jobs:
   prepare-branch:

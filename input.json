@@ -15,11 +15,13 @@
     "dev": {
       "API_BACKEND_URL": "https://vehicle-licensing.api.dev.internal",
       "TENANT_ID": "66666666-6666-6666-6666-666666666666",
+      "CONSUMING_FRONTEND_CLIENTID_VALUE": "22222222-2222-2222-2222-222222222222",
       "RATE_LIMIT_CALLS": 50,
       "RATE_LIMIT_PERIOD": 60
     },
     "tst": {
       "API_BACKEND_URL": "https://vehicle-licensing.api.tst.internal",
+      "CONSUMING_FRONTEND_CLIENTID_VALUE": "22222222-2222-2222-2222-222222222222",
       "TENANT_ID": "99999999-9999-9999-9999-999999999999",
       "RATE_LIMIT_CALLS": 75,
       "RATE_LIMIT_PERIOD": 60
