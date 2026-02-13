@@ -6,7 +6,7 @@ param(
     [string]$ApiName = 'bngicc',
     [string]$ProductName = 'bngicc-product',
     [string]$VersionSetName = 'bngicc',
-    [string[]]$NamedValueName = @('bngicc-backend-scopeid', 'bngicc-frontend-clientid'),
+    [string[]]$NamedValueName = @('bngicc-backend-scopeid', 'CONSUMING-frontend-clientid'),
     [switch]$FailOnError,
     [switch]$EnforceUpperSnakeCaseDisplayName
 )
