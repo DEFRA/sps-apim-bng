@@ -33,3 +33,4 @@ components:
 security:
   - apiKeyHeader: [ ]
   - apiKeyQuery: [ ]
+
