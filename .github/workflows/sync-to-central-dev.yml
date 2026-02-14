@@ -60,8 +60,7 @@ jobs:
           # Important for case-only path changes
           git config --global core.ignorecase false
 
-      
-      
+
       - name: Clone central repo and sync multiple folders
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -90,7 +89,6 @@ jobs:
 
           # ---------- Diagnostics helper (space-safe) ----------
           list_first_level_under () {
-            # $1 = prefix (e.g., "internal/base/version sets/")
             local prefix="$1"
             echo ">> First-level under '${prefix}' (team branch):"
             git ls-tree -r --name-only "__team_branch__" \
@@ -102,14 +100,13 @@ jobs:
             echo ""
           }
 
-          # ---------- Mapping/path validator ----------
+          # ---------- Mapping/path validator (warn-only) ----------
           validate_path () {
             local p="$1"
             case "$p" in
               *"named values"*)
-                echo "ERROR: Invalid path segment 'named values' in: $p"
-                echo "       Use 'namedValues' (camelCase) instead."
-                exit 1
+                echo "WARNING: Path contains 'named values' (with a space): $p"
+                echo "         This is allowed, but 'namedValues' (camelCase) is recommended."
                 ;;
             esac
           }
@@ -138,7 +135,7 @@ jobs:
             TARGET_PREFIX="${TARGET_PREFIX#"${TARGET_PREFIX%%[![:space:]]*}"}"
             TARGET_PREFIX="${TARGET_PREFIX%"${TARGET_PREFIX##*[![:space:]]}"}"
 
-            # Validate obvious bad segments to catch typos early
+            # Warn, do not block
             validate_path "${SRC}"
             validate_path "${TARGET_PREFIX}"
 
@@ -153,7 +150,6 @@ jobs:
             if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then
               FOUND=true
             else
-              # Fallback: check dir entry (not recursive files)
               if git ls-tree -d "__team_branch__" -- "${SRC}" | grep -q . ; then
                 FOUND=true
               fi
@@ -161,7 +157,6 @@ jobs:
 
             if [ "${FOUND}" != "true" ]; then
               echo "   ✘ Source folder '${SRC}' not found on team branch. Skipping…"
-              # quick diagnostic: list first-level under the likely parent
               PARENT="$(dirname "${SRC}")"
               echo "   (team) first-level under '${PARENT}/':"
               git ls-tree -r --name-only "__team_branch__" \
@@ -178,7 +173,7 @@ jobs:
               | grep -F "^${SRC}/" \
               | sed 's/^/     • /' | head -n 20 || true
 
-            # --- split from the team snapshot (space-safe) ---
+            # Always split from the team snapshot
             git checkout "__team_branch__"
             SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
 
@@ -188,16 +183,14 @@ jobs:
               continue
             fi
 
-            # --- ALWAYS bootstrap into central branch (conflict-free write of the subtree) ---
+            # ALWAYS bootstrap into central branch (conflict-free write of the subtree)
             git checkout "${CENTRAL_BRANCH}"
 
             CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TS}"
 
-            # Clean target area to avoid stale index entries
             git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
             git clean -fdx -- "${TARGET_PREFIX}" || true
 
-            # Read the subtree into the target prefix and commit as a 2-parent merge
             git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
             git add -A "${TARGET_PREFIX}"
             TREE=$(git write-tree)

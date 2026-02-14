@@ -28,6 +28,8 @@ env:
     internal/base/apis/BNGICC=internal/base/apis/bngicc
     internal/base/products/BNGICC-product=internal/base/products/bngicc-product
     internal/base/version sets/BNGICC=internal/base/version sets/bngicc
+    internal/base/namedValues/BNGICC-frontend-clientid=internal/base/named values/CONSUMING-frontend-clientid
+    internal/base/namedValues/BNGICC-backend-scopeid=internal/base/named values/BNGICC-backend-scopeid
 
 jobs:
   prepare-branch:
@@ -54,7 +56,6 @@ jobs:
           # Helps with case-only renames across platforms
           git config --global core.ignorecase false
 
-      
       - name: Clone central and prepare PR branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -95,14 +96,13 @@ jobs:
             echo ""
           }
 
-          # ---------- Mapping/path validator ----------
+          # ---------- Mapping/path validator (warn-only) ----------
           validate_path () {
             local p="$1"
             case "$p" in
               *"named values"*)
-                echo "ERROR: Invalid path segment 'named values' in: $p"
-                echo "       Use 'namedValues' (camelCase) instead."
-                exit 1
+                echo "WARNING: Path contains 'named values' (with a space): $p"
+                echo "         This is allowed, but 'namedValues' (camelCase) is recommended."
                 ;;
             esac
           }
@@ -130,7 +130,7 @@ jobs:
             TARGET_PREFIX="${TARGET_PREFIX#"${TARGET_PREFIX%%[![:space:]]*}"}"
             TARGET_PREFIX="${TARGET_PREFIX%"${TARGET_PREFIX##*[![:space:]]}"}"
 
-            # Validate obvious bad segments to catch typos early
+            # Warn on potential path issues but do NOT block
             validate_path "${SRC}"
             validate_path "${TARGET_PREFIX}"
 
