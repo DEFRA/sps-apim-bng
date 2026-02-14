@@ -1,9 +1,8 @@
-
 name: Sync subtree → Central (master)
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 
 concurrency:
   group: subtree-pr-master
@@ -25,7 +24,6 @@ env:
   # Top-level mapping (source → target)
   FOLDER_MAP: |
     internal/base/apis/bng=internal/base/apis/bngicc
-
 
 jobs:
   prepare-branch:
@@ -72,38 +70,52 @@ jobs:
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
+          # Create a local branch that tracks the team branch snapshot
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
+          PR_BRANCH=""
 
-          # Loop through mapping
-          for mapping in ${FOLDER_MAP}; do
-            SRC="${mapping%%=*}"
-            TARGET_PREFIX="${mapping#*=}"
+          # Iterate mappings line-by-line (preserve spaces)
+          while IFS= read -r mapping; do
+            # skip blank lines
+            [ -n "${mapping}" ] || continue
 
-            if [ -z "${SRC}" ] || [ -z "${TARGET_PREFIX}" ]; then
-              continue
-            fi
+            # Split "SRC=TARGET" and trim outer whitespace defensively
+            SRC="${mapping%%=*}"; TARGET_PREFIX="${mapping#*=}"
+            SRC="${SRC#"${SRC%%[![:space:]]*}"}"; SRC="${SRC%"${SRC##*[![:space:]]}"}"
+            TARGET_PREFIX="${TARGET_PREFIX#"${TARGET_PREFIX%%[![:space:]]*}"}"
+            TARGET_PREFIX="${TARGET_PREFIX%"${TARGET_PREFIX##*[![:space:]]}"}"
 
-            echo "Processing subtree: SRC=${SRC}, TARGET=${TARGET_PREFIX}"
+            [ -n "${SRC}" ] && [ -n "${TARGET_PREFIX}" ] || continue
 
-            if git ls-tree -r --name-only HEAD | grep -q "^${SRC}/"; then
-              SPLIT_SHA=$(git subtree split -P "${SRC}")
-              git checkout "${BASE_BRANCH}"
+            echo "→ Processing subtree: SRC='${SRC}'  TARGET='${TARGET_PREFIX}'"
+
+            # Does SRC exist on the team branch?
+            if git ls-tree -r --name-only "__team_branch__" | grep -F -q -- "${SRC}/"; then
+              echo "   Found '${SRC}/' in team branch. Splitting…"
+              # Split explicitly from the team branch ref (HEAD-independent)
+              SPLIT_SHA="$(git subtree split -P "${SRC}" "__team_branch__")"
 
               if [ -z "${SPLIT_SHA}" ]; then
-                echo "ERROR: subtree split produced no commit for ${SRC}. Skipping..."
+                echo "   ERROR: subtree split produced no commit for ${SRC}. Skipping…"
                 continue
               fi
 
+              # Ensure we are on base before merging
+              git checkout "${BASE_BRANCH}"
+
               CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TIMESTAMP}"
 
+              # Create PR branch on the first actual change
               if [ "${CHANGES}" = "false" ]; then
                 PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
                 git checkout -b "${PR_BRANCH}"
               fi
 
+              # Prefer 'theirs' if requested (team wins)
               EXTRA=$([ "${TEAM_WINS_ON_CONFLICT}" = "true" ] && echo "-X theirs" || echo "")
+
               set +e
               git merge -s subtree -Xsubtree="${TARGET_PREFIX}" ${EXTRA} "${SPLIT_SHA}" \
                 --allow-unrelated-histories -m "${CUSTOM_MESSAGE}"
@@ -111,7 +123,7 @@ jobs:
               set -e
 
               if [ $MERGE_RC -ne 0 ]; then
-                echo "Merge failed. Bootstrapping subtree..."
+                echo "   Merge failed. Bootstrapping subtree contents into ${TARGET_PREFIX}/ …"
                 git merge --abort || git reset --merge || git reset --hard
                 git merge -s ours --no-commit --allow-unrelated-histories "${SPLIT_SHA}"
                 git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
@@ -120,22 +132,25 @@ jobs:
 
               CHANGES=true
             else
-              echo "Source folder '${SRC}' not found. Skipping..."
+              echo "   Source folder '${SRC}' not found on team branch. Skipping…"
             fi
-          done
+          done <<< "${FOLDER_MAP}"
 
           if [ "${CHANGES}" = "false" ]; then
-            echo "No mapped folders found. Exiting."
+            echo "No mapped folders produced changes. Exiting."
             exit 0
           fi
 
           echo "=== Push PR branch ==="
           git push origin "${PR_BRANCH}" || {
-            echo "Branch name collision, retrying..."
+            echo "Branch name collision, retrying…"
             PR_BRANCH="${PR_BRANCH}-$(date +%s)"
             git branch -m "${PR_BRANCH}"
             git push origin "${PR_BRANCH}"
           }
+
+          # Export PR_BRANCH for the summary step
+          echo "PR_BRANCH=${PR_BRANCH}" >> $GITHUB_ENV
 
       - name: Generate GitHub Action Summary
         run: |
