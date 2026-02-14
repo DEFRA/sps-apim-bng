@@ -184,7 +184,7 @@ sequenceDiagram
 ## Contacts
 - **Maintainer:** Prathap Mathiyalagan  
 - **Manager:** David Wickett
-- **Development team:** GIO Shared platform - Integration team (ICC)
+- **Development team:** GIO Shared platform Integration team (ICC)
 
 ## License
 This repository uses the [Open Governmentnalarchives.gov.uk/doc/open-government-licence/version/3](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
