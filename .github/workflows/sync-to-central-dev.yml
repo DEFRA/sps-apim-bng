@@ -23,15 +23,15 @@ env:
   # If true, rebase before push; if false, merge remote then push (up to 3 tries)
   REQUIRE_LINEAR_HISTORY: "false"
 
-  # Prefer team side on conflicts when merging subtrees into central (optional)
+  # Prefer team side on conflicts when merging subtrees (not used by bootstrap, but kept for parity)
   TEAM_WINS_ON_CONFLICT: "true"
 
-  # === All-CAPS mapping (source → target) ===
-  # If central still uses lowercase targets, change the RIGHT side accordingly.
+  # Mapping (source → target). Lines are read one-by-one (spaces preserved).
+  # NOTE: Fixed a typo you had: '.../version sets/bngic' → '.../version sets/bngicc'
   FOLDER_MAP: |
     internal/base/apis/BNGICC=internal/base/apis/bngicc
     internal/base/products/BNGICC-product=internal/base/products/bngicc-product
-    internal/base/version sets/BNGICC=internal/base/version sets/bngic
+    internal/base/version sets/BNGICC=internal/base/version sets/bngicc
     internal/base/namedValues/BNGICC-frontend-clientid=internal/base/named values/CONSUMING-frontend-clientid
     internal/base/namedValues/BNGICC-backend-scopeid=internal/base/named values/BNGICC-backend-scopeid
 
@@ -57,9 +57,8 @@ jobs:
         run: |
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          # Important for case-only path changes
+          # Important for case-only path changes across platforms
           git config --global core.ignorecase false
-
 
       - name: Clone central repo and sync multiple folders
         env:
@@ -89,6 +88,7 @@ jobs:
 
           # ---------- Diagnostics helper (space-safe) ----------
           list_first_level_under () {
+            # $1 = prefix (e.g., "internal/base/version sets/")
             local prefix="$1"
             echo ">> First-level under '${prefix}' (team branch):"
             git ls-tree -r --name-only "__team_branch__" \
@@ -119,8 +119,9 @@ jobs:
           echo "========================================================"
 
           CHANGES=false
+          PR_BRANCH=""
 
-          echo "=== Process mappings (space-safe, conflict-free bootstrap) ==="
+          echo "=== Process mappings (space-safe, PR-branch bootstrap) ==="
           # Iterate mappings line-by-line (preserve spaces)
           while IFS= read -r mapping; do
             # sanitize CRLF and skip blanks/comments
@@ -179,18 +180,29 @@ jobs:
 
             if [ -z "${SPLIT_SHA}" ]; then
               echo "   WARNING: subtree split produced no commit for ${SRC}. Skipping…"
+              # stay aligned for next iteration
               git checkout "${CENTRAL_BRANCH}"
               continue
             fi
 
-            # ALWAYS bootstrap into central branch (conflict-free write of the subtree)
-            git checkout "${CENTRAL_BRANCH}"
+            # --- ALWAYS bootstrap into a dedicated PR branch (not CENTRAL directly) ---
+            if [ "${CHANGES}" = "false" ]; then
+              PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+              git checkout "${CENTRAL_BRANCH}"
+              git checkout -b "${PR_BRANCH}"
+            else
+              git checkout "${PR_BRANCH}"
+            fi
+
+            echo "   Writing mapping to branch: $(git rev-parse --abbrev-ref HEAD)"
 
             CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TS}"
 
+            # Clean target area to avoid stale index entries
             git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
             git clean -fdx -- "${TARGET_PREFIX}" || true
 
+            # Read the subtree into the target prefix and commit as a 2-parent merge
             git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
             git add -A "${TARGET_PREFIX}"
             TREE=$(git write-tree)
@@ -200,26 +212,41 @@ jobs:
             CHANGES=true
           done <<< "${FOLDER_MAP}"
 
-          echo "=== Push changes to central repo ==="
+          echo "=== Push PR branch ==="
           if [ "${CHANGES}" = "false" ]; then
             echo "No mapped folders produced changes. Exiting."
             exit 0
           fi
 
-          if [ "${REQUIRE_LINEAR_HISTORY}" = "true" ]; then
-            git fetch origin "${CENTRAL_BRANCH}"
-            git rebase "origin/${CENTRAL_BRANCH}"
-            git push origin "${CENTRAL_BRANCH}"
-          else
-            tries=0
-            until git push origin "${CENTRAL_BRANCH}"; do
-              tries=$((tries+1))
-              if [ $tries -ge 3 ]; then
-                echo "Push failed after ${tries} attempts."
-                exit 1
-              fi
-              echo "Push rejected. Fetching & merging remote then retrying…"
-              git fetch origin "${CENTRAL_BRANCH}"
-              git merge --no-edit "origin/${CENTRAL_BRANCH}"
-            done
-          fi
+          # Push the PR branch (consistent with master; your Auto-open workflow will create the PR)
+          git push origin "${PR_BRANCH}" || {
+            echo "Branch name collision, retrying…"
+            PR_BRANCH="${PR_BRANCH}-$(date +%s)"
+            git branch -m "${PR_BRANCH}"
+            git push origin "${PR_BRANCH}"
+          }
+
+          # Export PR_BRANCH so you can link it in a following step if desired
+          echo "PR_BRANCH=${PR_BRANCH}" >> $GITHUB_ENV
+
+      - name: Generate GitHub Action Summary
+        run: |
+          {
+            echo "## Subtree Sync (develop) Summary"
+            echo ""
+            echo "**Central Repo:** ${CENTRAL_REPO}"
+            echo "**Central Base:** ${CENTRAL_BRANCH}"
+            echo "**Team Repo:** ${TEAM_REPO_URL}"
+            echo "**Team Branch:** ${TEAM_BRANCH}"
+            echo "**PR Branch:** ${PR_BRANCH:-Not created}"
+            echo ""
+            echo "### Folder Mapping"
+            echo '```'
+            echo "${FOLDER_MAP}"
+            echo '```'
+            echo ""
+            echo "**Timestamp:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+            echo "**Commit SHA:** ${GITHUB_SHA}"
+            echo ""
+            echo "✅ Sync completed. Check the PR branch in central."
+          } >> $GITHUB_STEP_SUMMARY

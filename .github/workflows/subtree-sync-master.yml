@@ -180,16 +180,21 @@ jobs:
               continue
             fi
 
-            # --- ALWAYS bootstrap into central base (conflict-free write of the subtree) ---
-            git checkout "${BASE_BRANCH}"
-
-            CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TIMESTAMP}"
-
-            # Create PR branch on first change
+            # --- ALWAYS bootstrap into the PR branch (not base) ---
+            # Create PR branch on the first actual change, based on the base branch tip
             if [ "${CHANGES}" = "false" ]; then
               PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+              # Ensure we are on BASE then create PR branch from it
+              git checkout "${BASE_BRANCH}"
               git checkout -b "${PR_BRANCH}"
+            else
+              # On subsequent mappings, always operate on the PR branch
+              git checkout "${PR_BRANCH}"
             fi
+
+            echo "   Writing mapping to branch: $(git rev-parse --abbrev-ref HEAD)"
+
+            CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TIMESTAMP}"
 
             # Clean target area to avoid stale index entries
             git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
