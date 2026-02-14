@@ -82,10 +82,9 @@ jobs:
 
           # Iterate mappings line-by-line (preserve spaces)
           while IFS= read -r mapping; do
-            # skip blank lines
             [ -n "${mapping}" ] || continue
 
-            # Split "SRC=TARGET" and trim outer whitespace defensively
+            # Split "SRC=TARGET" and trim whitespace
             SRC="${mapping%%=*}"; TARGET_PREFIX="${mapping#*=}"
             SRC="${SRC#"${SRC%%[![:space:]]*}"}"; SRC="${SRC%"${SRC##*[![:space:]]}"}"
             TARGET_PREFIX="${TARGET_PREFIX#"${TARGET_PREFIX%%[![:space:]]*}"}"
@@ -95,10 +94,10 @@ jobs:
 
             echo "→ Processing subtree: SRC='${SRC}'  TARGET='${TARGET_PREFIX}'"
 
-            # Does SRC exist on the team branch?
+            # Check path on the TEAM branch snapshot, not on HEAD
             if git ls-tree -r --name-only "__team_branch__" | grep -F -q -- "${SRC}/"; then
               echo "   Found '${SRC}/' in team branch. Splitting…"
-              # Split explicitly from the team branch ref (HEAD-independent)
+              # Split explicitly from team branch ref
               SPLIT_SHA="$(git subtree split -P "${SRC}" "__team_branch__")"
 
               if [ -z "${SPLIT_SHA}" ]; then
@@ -106,20 +105,17 @@ jobs:
                 continue
               fi
 
-              # Ensure we are on base before merging
+              # Ensure we’re on the central base branch before merging
               git checkout "${BASE_BRANCH}"
 
               CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TIMESTAMP}"
 
-              # Create PR branch on the first actual change
               if [ "${CHANGES}" = "false" ]; then
                 PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
                 git checkout -b "${PR_BRANCH}"
               fi
 
-              # Prefer 'theirs' if requested (team wins)
               EXTRA=$([ "${TEAM_WINS_ON_CONFLICT}" = "true" ] && echo "-X theirs" || echo "")
-
               set +e
               git merge -s subtree -Xsubtree="${TARGET_PREFIX}" ${EXTRA} "${SPLIT_SHA}" \
                 --allow-unrelated-histories -m "${CUSTOM_MESSAGE}"
@@ -127,7 +123,7 @@ jobs:
               set -e
 
               if [ $MERGE_RC -ne 0 ]; then
-                echo "   Merge failed. Bootstrapping subtree contents into ${TARGET_PREFIX}/ …"
+                echo "   Merge failed. Bootstrapping subtree…"
                 git merge --abort || git reset --merge || git reset --hard
                 git merge -s ours --no-commit --allow-unrelated-histories "${SPLIT_SHA}"
                 git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
