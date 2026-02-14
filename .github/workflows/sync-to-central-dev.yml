@@ -1,9 +1,8 @@
-
 name: Sync subtree → Central (develop)
 
 on:
   push:
-    branches: [ develop ]
+    branches: [develop]
 
 concurrency:
   group: subtree-sync-develop
@@ -75,21 +74,40 @@ jobs:
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
           git fetch --no-tags "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
-          echo "=== Sync multiple internal/external folders ==="
+          echo "=== Prepare local snapshot of team branch ==="
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
-          # Read mapping from env and loop
-          echo "${FOLDER_MAP}" | while IFS='=' read -r SRC TARGET_PREFIX; do
-            echo "Processing subtree: SRC=${SRC}, TARGET=${TARGET_PREFIX}"
+          echo "=== Process mappings ==="
+          # Iterate mappings line-by-line (preserve spaces). Use here-string to avoid subshell surprises.
+          while IFS= read -r mapping; do
+            # skip blank lines
+            [ -n "${mapping}" ] || continue
 
-            if git ls-tree -r --name-only HEAD | grep -q "^${SRC}/"; then
-              SPLIT_SHA=$(git subtree split -P "${SRC}")
-              git checkout "${CENTRAL_BRANCH}"
+            # Split "SRC=TARGET" and trim whitespace defensively
+            SRC="${mapping%%=*}"; TARGET_PREFIX="${mapping#*=}"
+
+            # trim leading/trailing whitespace
+            SRC="${SRC#"${SRC%%[![:space:]]*}"}"; SRC="${SRC%"${SRC##*[![:space:]]}"}"
+            TARGET_PREFIX="${TARGET_PREFIX#"${TARGET_PREFIX%%[![:space:]]*}"}"
+            TARGET_PREFIX="${TARGET_PREFIX%"${TARGET_PREFIX##*[![:space:]]}"}"
+
+            [ -n "${SRC}" ] && [ -n "${TARGET_PREFIX}" ] || continue
+
+            echo "→ Processing subtree: SRC='${SRC}'  TARGET='${TARGET_PREFIX}'"
+
+            # Check for SRC in the TEAM branch tree (not HEAD!)
+            if git ls-tree -r --name-only "__team_branch__" | grep -F -q -- "${SRC}/"; then
+              echo "   Found '${SRC}/' in team branch. Splitting…"
+              # Split explicitly from the team branch ref; do NOT rely on HEAD
+              SPLIT_SHA="$(git subtree split -P "${SRC}" "__team_branch__")"
 
               if [ -z "${SPLIT_SHA}" ]; then
-                echo "ERROR: subtree split produced no commit for ${SRC}. Skipping..."
+                echo "   ERROR: subtree split produced no commit for ${SRC}. Skipping…"
                 continue
               fi
+
+              # Make sure we are on the central branch before merging
+              git checkout "${CENTRAL_BRANCH}"
 
               CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TIMESTAMP}"
 
@@ -101,8 +119,8 @@ jobs:
               set -e
 
               if [ $MERGE_RC -ne 0 ]; then
-                echo "Merge failed. Bootstrapping subtree..."
-                git merge --abort 2>/dev/null || git reset --merge
+                echo "   Merge failed. Bootstrapping subtree into '${TARGET_PREFIX}/'…"
+                git merge --abort 2>/dev/null || git reset --merge || true
                 git reset --hard
                 git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
                 git clean -fdx -- "${TARGET_PREFIX}" || true
@@ -113,16 +131,16 @@ jobs:
                 git reset --hard "$NEWCOMMIT"
               else
                 if git diff --quiet --cached -- "${TARGET_PREFIX}"; then
-                  echo "No staged changes for ${TARGET_PREFIX}. Skipping commit."
-                  git merge --abort 2>/dev/null || git reset --merge
+                  echo "   No staged changes for ${TARGET_PREFIX}. Skipping commit."
+                  git merge --abort 2>/dev/null || git reset --merge || true
                 else
                   git commit -m "${CUSTOM_MESSAGE}"
                 fi
               fi
             else
-              echo "Source folder '${SRC}' not found. Skipping..."
+              echo "   Source folder '${SRC}' not found on team branch. Skipping…"
             fi
-          done
+          done <<< "${FOLDER_MAP}"
 
           echo "=== Push changes to central repo ==="
           if [ "${REQUIRE_LINEAR_HISTORY}" = "true" ]; then
@@ -137,7 +155,7 @@ jobs:
                 echo "Push failed after ${tries} attempts."
                 exit 1
               fi
-              echo "Push rejected. Fetching & merging remote then retrying..."
+              echo "Push rejected. Fetching & merging remote then retrying…"
               git fetch origin "${CENTRAL_BRANCH}"
               git merge --no-edit "origin/${CENTRAL_BRANCH}"
             done
