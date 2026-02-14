@@ -1,3 +1,4 @@
+
 name: Sync subtree → Central (master)
 
 on:
@@ -57,6 +58,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
           echo "=== Clone central repo ==="
@@ -74,7 +76,7 @@ jobs:
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
-          # Create a local branch that tracks the team branch snapshot
+          # Local snapshot of the team branch
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
@@ -82,6 +84,7 @@ jobs:
 
           # Iterate mappings line-by-line (preserve spaces)
           while IFS= read -r mapping; do
+            # skip blank lines
             [ -n "${mapping}" ] || continue
 
             # Split "SRC=TARGET" and trim whitespace
@@ -94,28 +97,37 @@ jobs:
 
             echo "→ Processing subtree: SRC='${SRC}'  TARGET='${TARGET_PREFIX}'"
 
-            # Check path on the TEAM branch snapshot, not on HEAD
+            # Check for SRC on the TEAM branch (not HEAD)
             if git ls-tree -r --name-only "__team_branch__" | grep -F -q -- "${SRC}/"; then
               echo "   Found '${SRC}/' in team branch. Splitting…"
-              # Split explicitly from team branch ref
-              SPLIT_SHA="$(git subtree split -P "${SRC}" "__team_branch__")"
+
+              # IMPORTANT: Explicitly check out the team branch before split
+              git checkout "__team_branch__"
+
+              # Use long option for best compatibility across git-subtree versions
+              SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
 
               if [ -z "${SPLIT_SHA}" ]; then
                 echo "   ERROR: subtree split produced no commit for ${SRC}. Skipping…"
+                # Go back to base to keep subsequent merges sane
+                git checkout "${BASE_BRANCH}"
                 continue
               fi
 
-              # Ensure we’re on the central base branch before merging
+              # Back to central base branch to merge
               git checkout "${BASE_BRANCH}"
 
               CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TIMESTAMP}"
 
+              # Create PR branch on first change
               if [ "${CHANGES}" = "false" ]; then
                 PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
                 git checkout -b "${PR_BRANCH}"
               fi
 
+              # Team wins on conflicts (optional)
               EXTRA=$([ "${TEAM_WINS_ON_CONFLICT}" = "true" ] && echo "-X theirs" || echo "")
+
               set +e
               git merge -s subtree -Xsubtree="${TARGET_PREFIX}" ${EXTRA} "${SPLIT_SHA}" \
                 --allow-unrelated-histories -m "${CUSTOM_MESSAGE}"
@@ -123,7 +135,7 @@ jobs:
               set -e
 
               if [ $MERGE_RC -ne 0 ]; then
-                echo "   Merge failed. Bootstrapping subtree…"
+                echo "   Merge failed. Bootstrapping subtree contents into ${TARGET_PREFIX}/ …"
                 git merge --abort || git reset --merge || git reset --hard
                 git merge -s ours --no-commit --allow-unrelated-histories "${SPLIT_SHA}"
                 git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
