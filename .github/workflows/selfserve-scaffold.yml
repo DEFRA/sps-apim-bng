@@ -10,7 +10,7 @@ on:
       templatesRoot:
         description: "Path to TemplatesRoot (internal or external)"
         required: true
-        default: "./templates"
+        default: "internal/base"
       backup:
         description: "Create backup under TemplatesRoot/.bak/<timestamp>"
         required: false
