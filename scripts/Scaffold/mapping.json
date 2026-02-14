@@ -13,11 +13,11 @@
   "_note": "Folders are descriptive; the script enforces folder materialization and in-place updates.",
   "folders": {
     "apis": "apis/{API_NAME}",
-    "products": "products/{API_NAME}_product",
+    "products": "products/{API_NAME}-product",
     "versionSets": "version sets/{API_NAME}",
     "namedValuesBackend": "namedValues/{API_NAME}-backend-scopeid",
     "namedValuesFrontend": "namedValues/{API_NAME}-frontend-clientid",
-    "productApisFolder": "products/{API_NAME}_product/apis/{API_NAME}"
+    "productApisFolder": "products/{API_NAME}-product/apis/{API_NAME}"
   },
   "fields": [
     {
@@ -31,7 +31,7 @@
         },
         {
           "target": "folder",
-          "path": "products/{API_NAME}_product"
+          "path": "products/{API_NAME}-product"
         },
         {
           "target": "folder",
@@ -121,6 +121,11 @@
         {
           "target": "file",
           "file": "policy.xml"
+        },
+        {
+          "target": "file",
+          "file": "namedValueBackendInformation.json",
+          "jsonPath": "$.properties.value"
         }
       ]
     },
@@ -132,6 +137,11 @@
         {
           "target": "file",
           "file": "policy.xml"
+        },
+        {
+          "target": "file",
+          "file": "namedValueFrontendInformation.json",
+          "jsonPath": "$.properties.value"
         }
       ]
     },
@@ -168,7 +178,7 @@
     "backend_scopeid": "API_BACKEND_SCOPEID_VALUE",
     "frontend_clientid": "CONSUMING_FRONTEND_CLIENTID_VALUE",
     "rate_limit_calls": "RATE_LIMIT_CALLS",
-    "rate_limit_period": "RATE_LIMIT_PERIOD",    
+    "rate_limit_period": "RATE_LIMIT_PERIOD",
     "bngBackEndAppIdInt": "API_BACKEND_SCOPEID_VALUE",
     "bngClientAppIdInt": "CONSUMING_FRONTEND_CLIENTID_VALUE"
   },
