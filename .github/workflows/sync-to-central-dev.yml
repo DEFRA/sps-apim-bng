@@ -174,7 +174,7 @@ jobs:
 
             # Write into a dedicated PR branch (not CENTRAL directly)
             if [ "${CHANGES}" = "false" ]; then
-              PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+              PR_BRANCH="pr-subtree/develop/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
               git checkout "${CENTRAL_BRANCH}"
               git checkout -b "${PR_BRANCH}"
             else
