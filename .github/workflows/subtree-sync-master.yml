@@ -23,6 +23,7 @@ env:
   TEAM_WINS_ON_CONFLICT: "true"
 
   # Top-level mapping (source → target)
+  # NOTE: Lines are read one-by-one (spaces preserved).
   FOLDER_MAP: |
     internal/base/apis/BNGICC=internal/base/apis/bngicc
     internal/base/namedValues/BNGICC-frontend-clientid=internal/base/namedValues/bngicc-frontend-clientid
@@ -52,6 +53,8 @@ jobs:
         run: |
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          # Helps with case-only renames across platforms
+          git config --global core.ignorecase false
 
       - name: Clone central and prepare PR branch
         env:
@@ -59,7 +62,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          TS="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
           echo "=== Clone central repo ==="
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
@@ -76,40 +79,46 @@ jobs:
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
-          # Local snapshot of the team branch
+          # Local snapshot of the team branch (DON'T rely on HEAD later)
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
           PR_BRANCH=""
 
-          # Iterate mappings line-by-line (preserve spaces)
+          # Iterate mappings line-by-line (spaces preserved)
           while IFS= read -r mapping; do
-            # skip blank lines
+            # skip blank lines or comment lines
             [ -n "${mapping}" ] || continue
+            case "${mapping}" in \#*) continue;; esac
 
-            # Split "SRC=TARGET" and trim whitespace
-            SRC="${mapping%%=*}"; TARGET_PREFIX="${mapping#*=}"
+            # Split "SRC=TARGET" and trim whitespace around both sides
+            SRC="${mapping%%=*}"
+            TARGET_PREFIX="${mapping#*=}"
+            # Trim l/r spaces:
             SRC="${SRC#"${SRC%%[![:space:]]*}"}"; SRC="${SRC%"${SRC##*[![:space:]]}"}"
             TARGET_PREFIX="${TARGET_PREFIX#"${TARGET_PREFIX%%[![:space:]]*}"}"
             TARGET_PREFIX="${TARGET_PREFIX%"${TARGET_PREFIX##*[![:space:]]}"}"
 
             [ -n "${SRC}" ] && [ -n "${TARGET_PREFIX}" ] || continue
 
-            echo "→ Processing subtree: SRC='${SRC}'  TARGET='${TARGET_PREFIX}'"
+            echo "→ Processing subtree:"
+            echo "   SRC   = '${SRC}'"
+            echo "   TARGET= '${TARGET_PREFIX}'"
 
-            # Check for SRC on the TEAM branch (not HEAD)
+            # Check for SRC on the TEAM branch snapshot (NOT on current HEAD).
+            # Use fixed-string grep (-F) to be safe with spaces and special chars.
             if git ls-tree -r --name-only "__team_branch__" | grep -F -q -- "${SRC}/"; then
               echo "   Found '${SRC}/' in team branch. Splitting…"
 
-              # IMPORTANT: Explicitly check out the team branch before split
+              # IMPORTANT: Explicitly check out team branch before split
               git checkout "__team_branch__"
 
-              # Use long option for best compatibility across git-subtree versions
+              # Long option for best portability; quotes preserve spaces
               SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
 
               if [ -z "${SPLIT_SHA}" ]; then
                 echo "   ERROR: subtree split produced no commit for ${SRC}. Skipping…"
-                # Go back to base to keep subsequent merges sane
+                # Return to base to keep subsequent merges sane
                 git checkout "${BASE_BRANCH}"
                 continue
               fi
@@ -117,7 +126,7 @@ jobs:
               # Back to central base branch to merge
               git checkout "${BASE_BRANCH}"
 
-              CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TIMESTAMP}"
+              CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TS}"
 
               # Create PR branch on first change
               if [ "${CHANGES}" = "false" ]; then
@@ -135,7 +144,7 @@ jobs:
               set -e
 
               if [ $MERGE_RC -ne 0 ]; then
-                echo "   Merge failed. Bootstrapping subtree contents into ${TARGET_PREFIX}/ …"
+                echo "   Merge failed. Bootstrapping subtree contents into '${TARGET_PREFIX}/' …"
                 git merge --abort || git reset --merge || git reset --hard
                 git merge -s ours --no-commit --allow-unrelated-histories "${SPLIT_SHA}"
                 git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
