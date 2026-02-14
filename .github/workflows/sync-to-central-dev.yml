@@ -20,10 +20,8 @@ env:
   TEAM_REPO_URL: DEFRA/sps-apim-bng
   TEAM_BRANCH: develop
 
-  # Prefer team side on conflicts when combining histories (kept for parity)
-  TEAM_WINS_ON_CONFLICT: "true"
-
   # Mapping (source → target). Lines are read one-by-one (spaces preserved).
+  # NOTE: ensure RHS path names match central exactly; typo 'bngic' fixed to 'bngicc'.
   FOLDER_MAP: |
     internal/base/apis/BNGICC=internal/base/apis/bngicc
     internal/base/products/BNGICC-product=internal/base/products/bngicc-product
@@ -53,12 +51,12 @@ jobs:
         run: |
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          # Important for case-only path changes across platforms
           git config --global core.ignorecase false
 
       - name: Clone central repo and sync multiple folders
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
           set -euo pipefail
 
@@ -68,31 +66,27 @@ jobs:
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
           cd central-repo
 
-          echo "=== Checkout central branch (resilient) ==="
-          # Refresh remote heads; do not assume 'develop' exists
+          echo "=== Checkout central branch (resilient v2) ==="
           git fetch --no-tags origin --depth=50
 
-          # Does origin/develop exist?
-          if git ls-remote --exit-code --heads origin "${CENTRAL_BRANCH}" >/dev/null 2>&1; then
-            echo "Found remote branch origin/${CENTRAL_BRANCH}. Checking out..."
+          RESOLVED_SHA="$(git ls-remote --heads origin "${CENTRAL_BRANCH}" | awk '{print $1}' | head -n1 || true)"
+          if [ -n "${RESOLVED_SHA}" ] && [ "${RESOLVED_SHA}" != "0000000000000000000000000000000000000000" ]; then
+            echo "Found remote branch origin/${CENTRAL_BRANCH} @ ${RESOLVED_SHA}. Checking out..."
             git checkout -B "${CENTRAL_BRANCH}" "origin/${CENTRAL_BRANCH}"
           else
-            echo "Remote branch origin/${CENTRAL_BRANCH} not found."
-            # Prefer origin/master if it exists
-            if git ls-remote --exit-code --heads origin master >/dev/null 2>&1; then
-              echo "Basing ${CENTRAL_BRANCH} on origin/master..."
+            echo "Remote branch origin/${CENTRAL_BRANCH} not found or not a valid commit."
+            MASTER_SHA="$(git ls-remote --heads origin master | awk '{print $1}' | head -n1 || true)"
+            if [ -n "${MASTER_SHA}" ] && [ "${MASTER_SHA}" != "0000000000000000000000000000000000000000" ]; then
+              echo "Basing ${CENTRAL_BRANCH} on origin/master @ ${MASTER_SHA}..."
               git checkout -B "${CENTRAL_BRANCH}" "origin/master"
             else
-              # Try to base on the remote default branch (origin/HEAD -> origin/<default>)
               DEFAULT_REF="$(git symbolic-ref -q --short refs/remotes/origin/HEAD || true)"
               if [ -n "${DEFAULT_REF}" ] && git show-ref -q "${DEFAULT_REF}"; then
                 echo "Basing ${CENTRAL_BRANCH} on ${DEFAULT_REF}..."
                 git checkout -B "${CENTRAL_BRANCH}" "${DEFAULT_REF}"
               else
-                # Last resort: create an orphan branch
                 echo "No suitable remote base found. Creating orphan branch ${CENTRAL_BRANCH}..."
                 git checkout --orphan "${CENTRAL_BRANCH}"
-                # Ensure working tree starts clean (no files staged by default)
                 git reset --hard
               fi
             fi
@@ -112,7 +106,6 @@ jobs:
 
           # ---------- Diagnostics helper (space-safe) ----------
           list_first_level_under () {
-            # $1 = prefix (e.g., "internal/base/version sets/")
             local prefix="$1"
             echo ">> First-level under '${prefix}' (team branch):"
             git ls-tree -r --name-only "__team_branch__" \
@@ -122,17 +115,6 @@ jobs:
               | sed 's/^/   - /' \
               || true
             echo ""
-          }
-
-          # ---------- Mapping/path validator (warn-only) ----------
-          validate_path () {
-            local p="$1"
-            case "$p" in
-              *"named values"*)
-                echo "WARNING: Path contains 'named values' (with a space): $p"
-                echo "         This is allowed, but 'namedValues' (camelCase) is recommended."
-                ;;
-            esac
           }
 
           echo "=== Team branch folder inventory (first-level roots) ==="
@@ -146,59 +128,46 @@ jobs:
           PR_BRANCH=""
 
           echo "=== Process mappings (space-safe, PR-branch bootstrap) ==="
-          # Iterate mappings line-by-line (preserve spaces)
           while IFS= read -r mapping; do
-            # sanitize CRLF and skip blanks/comments
             mapping="$(printf '%s' "$mapping" | tr -d '\r')"
             [ -n "${mapping}" ] || continue
             case "${mapping}" in \#*) continue;; esac
 
-            # Split "SRC=TARGET" and trim whitespace defensively
             SRC="${mapping%%=*}"
             TARGET_PREFIX="${mapping#*=}"
             SRC="${SRC#"${SRC%%[![:space:]]*}"}"; SRC="${SRC%"${SRC##*[![:space:]]}"}"
             TARGET_PREFIX="${TARGET_PREFIX#"${TARGET_PREFIX%%[![:space:]]*}"}"
             TARGET_PREFIX="${TARGET_PREFIX%"${TARGET_PREFIX##*[![:space:]]}"}"
 
-            # Warn, do not block
-            validate_path "${SRC}"
-            validate_path "${TARGET_PREFIX}"
-
-            [ -n "${SRC}" ] && [ -n "${TARGET_PREFIX}" ] || continue
-
             echo "→ Processing subtree:"
             echo "   SRC   = '${SRC}'"
             echo "   TARGET= '${TARGET_PREFIX}'"
 
-            # --- robust directory existence check on team branch ---
-            FOUND=false
+            # dir existence check on team snapshot
             if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then
-              FOUND=true
+              :
             else
               if git ls-tree -d "__team_branch__" -- "${SRC}" | grep -q . ; then
-                FOUND=true
+                :
+              else
+                echo "   ✘ Source folder '${SRC}' not found on team branch. Skipping…"
+                PARENT="$(dirname "${SRC}")"
+                echo "   (team) first-level under '${PARENT}/':"
+                git ls-tree -r --name-only "__team_branch__" \
+                  | grep -F "^${PARENT}/" \
+                  | sed "s#^\(${PARENT}/[^/]\+\).*#\1#" \
+                  | LC_ALL=C sort -u | sed 's/^/     • /' | head -n 50 || true
+                continue
               fi
-            fi
-
-            if [ "${FOUND}" != "true" ]; then
-              echo "   ✘ Source folder '${SRC}' not found on team branch. Skipping…"
-              PARENT="$(dirname "${SRC}")"
-              echo "   (team) first-level under '${PARENT}/':"
-              git ls-tree -r --name-only "__team_branch__" \
-                | grep -F "^${PARENT}/" \
-                | sed "s#^\(${PARENT}/[^/]\+\).*#\1#" \
-                | LC_ALL=C sort -u | sed 's/^/     • /' | head -n 50 || true
-              continue
             fi
             echo "   ✔ Found '${SRC}/' on team branch"
 
-            # Show a few files under SRC (diagnostic)
             echo "   Sample files under SRC on team branch:"
             git ls-tree -r --name-only "__team_branch__" \
               | grep -F "^${SRC}/" \
               | sed 's/^/     • /' | head -n 20 || true
 
-            # Always split from the team snapshot
+            # split from team snapshot
             git checkout "__team_branch__"
             SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
             if [ -z "${SPLIT_SHA}" ]; then
@@ -207,7 +176,7 @@ jobs:
               continue
             fi
 
-            # --- Write into a dedicated PR branch (not CENTRAL directly) ---
+            # write into PR branch (not Central directly)
             if [ "${CHANGES}" = "false" ]; then
               PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
               git checkout "${CENTRAL_BRANCH}"
@@ -215,12 +184,11 @@ jobs:
             else
               git checkout "${PR_BRANCH}"
             fi
-
             echo "   Writing to branch: $(git rev-parse --abbrev-ref HEAD)"
 
             CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TS}"
 
-            # Conflict-free bootstrap of the subtree content into the target prefix
+            # conflict-free bootstrap
             git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
             git clean -fdx -- "${TARGET_PREFIX}" || true
             git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
@@ -248,6 +216,7 @@ jobs:
           echo "PR_BRANCH=${PR_BRANCH}" >> $GITHUB_ENV
 
       - name: Generate GitHub Action Summary
+        shell: bash
         run: |
           {
             echo "## Subtree Sync (develop) Summary"
