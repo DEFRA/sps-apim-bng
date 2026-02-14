@@ -23,7 +23,11 @@ env:
 
   # Top-level mapping (source → target)
   FOLDER_MAP: |
-    internal/base/apis/bng=internal/base/apis/bngicc
+    internal/base/apis/BNGICC=internal/base/apis/bngicc
+    internal/base/namedValues/BNGICC-frontend-clientid=internal/base/namedValues/bngicc-frontend-clientid
+    internal/base/namedValues/CONSUMING-frontend-clientid=internal/base/namedValues/CONSUMING-frontend-clientid
+    internal/base/products/BNGICC-product=internal/base/products/bngicc-product
+    internal/base/version sets/BNGICC=internal/base/version sets/bngicc
 
 jobs:
   prepare-branch:

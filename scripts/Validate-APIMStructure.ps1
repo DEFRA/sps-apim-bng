@@ -3,10 +3,10 @@ param(
     [string]$RootPath = ".",
     [ValidateSet('external', 'internal', 'both')] [string]$Journey = 'both',
     [ValidateSet('base', 'dev', 'pre', 'tst', 'all')] [string]$Environment = 'all',
-    [string]$ApiName = 'bngicc',
-    [string]$ProductName = 'bngicc-product',
-    [string]$VersionSetName = 'bngicc',
-    [string[]]$NamedValueName = @('bngicc-backend-scopeid', 'CONSUMING-frontend-clientid'),
+    [string]$ApiName = 'BNGICC',
+    [string]$ProductName = 'BNGICC-product',
+    [string]$VersionSetName = 'BNGICC',
+    [string[]]$NamedValueName = @('BNGICC-backend-scopeid', 'BNGICC-frontend-clientid'),
     [switch]$FailOnError,
     [switch]$EnforceUpperSnakeCaseDisplayName
 )
@@ -220,8 +220,8 @@ policy.xml' = {
        Validators = @{ 'versionSetInformation.json' = { param($p) Test-VersionSetInformationFields $p } }
     },
 
-    @{ Name = "named values/*"
-       RelDir = { param($j,$e,$n) Join-Path (Join-Path (Join-Path $j $e) "named values") $n }
+    @{ Name = "namedValues/*"
+       RelDir = { param($j,$e,$n) Join-Path (Join-Path (Join-Path $j $e) "namedValues") $n }
        Required = @( @('namedValueInformation.json') )
        Validators = @{ 'namedValueInformation.json' = { param($p) Test-NamedValueFields $p } }
     }
@@ -258,7 +258,7 @@ foreach ($journey in $JourneyList) {
             elseif ($exp.Name -like 'version sets/*') {
                 @($VersionSetName)
             }
-            elseif ($exp.Name -like 'named values/*') {
+            elseif ($exp.Name -like 'namedValues/*') {
                 $NamedValueName
             }
             else {
