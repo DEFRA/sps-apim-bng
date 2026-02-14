@@ -168,7 +168,9 @@
     "backend_scopeid": "API_BACKEND_SCOPEID_VALUE",
     "frontend_clientid": "CONSUMING_FRONTEND_CLIENTID_VALUE",
     "rate_limit_calls": "RATE_LIMIT_CALLS",
-    "rate_limit_period": "RATE_LIMIT_PERIOD"
+    "rate_limit_period": "RATE_LIMIT_PERIOD",    
+    "bngBackEndAppIdInt": "API_BACKEND_SCOPEID_VALUE",
+    "bngClientAppIdInt": "CONSUMING_FRONTEND_CLIENTID_VALUE"
   },
   "angleAliases": {
     "API_NAME": "API_NAME",
