@@ -7,7 +7,7 @@
     "authenticationSettings": {},
     "description": "Provides bng icc endpoints.",
     "isCurrent": true,
-    "displayName": "BNG ICC test",
+    "displayName": "BNG ICC",
     "protocols": [
       "https"
     ],
