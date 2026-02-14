@@ -21,7 +21,6 @@ env:
   TEAM_BRANCH: develop
 
   # Mapping (source → target). Lines are read one-by-one (spaces preserved).
-  # NOTE: ensure RHS path names match central exactly; typo 'bngic' fixed to 'bngicc'.
   FOLDER_MAP: |
     internal/base/apis/BNGICC=internal/base/apis/bngicc
     internal/base/products/BNGICC-product=internal/base/products/bngicc-product
@@ -66,26 +65,28 @@ jobs:
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
           cd central-repo
 
-          echo "=== Checkout central branch (resilient v2) ==="
+          echo "=== Checkout central branch (resilient v3) ==="
           git fetch --no-tags origin --depth=50
 
           RESOLVED_SHA="$(git ls-remote --heads origin "${CENTRAL_BRANCH}" | awk '{print $1}' | head -n1 || true)"
           if [ -n "${RESOLVED_SHA}" ] && [ "${RESOLVED_SHA}" != "0000000000000000000000000000000000000000" ]; then
-            echo "Found remote branch origin/${CENTRAL_BRANCH} @ ${RESOLVED_SHA}. Checking out..."
-            git checkout -B "${CENTRAL_BRANCH}" "origin/${CENTRAL_BRANCH}"
+            echo "Found remote branch origin/${CENTRAL_BRANCH} @ ${RESOLVED_SHA}. Fetching its refspec…"
+            git fetch --no-tags origin "+refs/heads/${CENTRAL_BRANCH}:refs/remotes/origin/${CENTRAL_BRANCH}"
+            git checkout -B "${CENTRAL_BRANCH}" "refs/remotes/origin/${CENTRAL_BRANCH}"
           else
             echo "Remote branch origin/${CENTRAL_BRANCH} not found or not a valid commit."
             MASTER_SHA="$(git ls-remote --heads origin master | awk '{print $1}' | head -n1 || true)"
             if [ -n "${MASTER_SHA}" ] && [ "${MASTER_SHA}" != "0000000000000000000000000000000000000000" ]; then
-              echo "Basing ${CENTRAL_BRANCH} on origin/master @ ${MASTER_SHA}..."
-              git checkout -B "${CENTRAL_BRANCH}" "origin/master"
+              echo "Basing ${CENTRAL_BRANCH} on origin/master @ ${MASTER_SHA}…"
+              git fetch --no-tags origin "+refs/heads/master:refs/remotes/origin/master"
+              git checkout -B "${CENTRAL_BRANCH}" "refs/remotes/origin/master"
             else
               DEFAULT_REF="$(git symbolic-ref -q --short refs/remotes/origin/HEAD || true)"
               if [ -n "${DEFAULT_REF}" ] && git show-ref -q "${DEFAULT_REF}"; then
-                echo "Basing ${CENTRAL_BRANCH} on ${DEFAULT_REF}..."
+                echo "Basing ${CENTRAL_BRANCH} on ${DEFAULT_REF}…"
                 git checkout -B "${CENTRAL_BRANCH}" "${DEFAULT_REF}"
               else
-                echo "No suitable remote base found. Creating orphan branch ${CENTRAL_BRANCH}..."
+                echo "No suitable remote base found. Creating orphan branch ${CENTRAL_BRANCH}…"
                 git checkout --orphan "${CENTRAL_BRANCH}"
                 git reset --hard
               fi
@@ -104,7 +105,7 @@ jobs:
           echo "=== Prepare local snapshot of team branch ==="
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
-          # ---------- Diagnostics helper (space-safe) ----------
+          # Diagnostics helper (space-safe)
           list_first_level_under () {
             local prefix="$1"
             echo ">> First-level under '${prefix}' (team branch):"
@@ -112,8 +113,7 @@ jobs:
               | grep -F "^${prefix}" \
               | sed "s#^\(${prefix}[^/]\+\).*#\1#" \
               | LC_ALL=C sort -u \
-              | sed 's/^/   - /' \
-              || true
+              | sed 's/^/   - /' || true
             echo ""
           }
 
@@ -143,31 +143,27 @@ jobs:
             echo "   SRC   = '${SRC}'"
             echo "   TARGET= '${TARGET_PREFIX}'"
 
-            # dir existence check on team snapshot
-            if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then
-              :
+            # Check source dir exists on team snapshot
+            if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null || \
+               git ls-tree -d "__team_branch__" -- "${SRC}" | grep -q . ; then
+              echo "   ✔ Found '${SRC}/' on team branch"
             else
-              if git ls-tree -d "__team_branch__" -- "${SRC}" | grep -q . ; then
-                :
-              else
-                echo "   ✘ Source folder '${SRC}' not found on team branch. Skipping…"
-                PARENT="$(dirname "${SRC}")"
-                echo "   (team) first-level under '${PARENT}/':"
-                git ls-tree -r --name-only "__team_branch__" \
-                  | grep -F "^${PARENT}/" \
-                  | sed "s#^\(${PARENT}/[^/]\+\).*#\1#" \
-                  | LC_ALL=C sort -u | sed 's/^/     • /' | head -n 50 || true
-                continue
-              fi
+              echo "   ✘ Source folder '${SRC}' not found on team branch. Skipping…"
+              PARENT="$(dirname "${SRC}")"
+              echo "   (team) first-level under '${PARENT}/':"
+              git ls-tree -r --name-only "__team_branch__" \
+                | grep -F "^${PARENT}/" \
+                | sed "s#^\(${PARENT}/[^/]\+\).*#\1#" \
+                | LC_ALL=C sort -u | sed 's/^/     • /' | head -n 50 || true
+              continue
             fi
-            echo "   ✔ Found '${SRC}/' on team branch"
 
             echo "   Sample files under SRC on team branch:"
             git ls-tree -r --name-only "__team_branch__" \
               | grep -F "^${SRC}/" \
               | sed 's/^/     • /' | head -n 20 || true
 
-            # split from team snapshot
+            # Split from team snapshot
             git checkout "__team_branch__"
             SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
             if [ -z "${SPLIT_SHA}" ]; then
@@ -176,7 +172,7 @@ jobs:
               continue
             fi
 
-            # write into PR branch (not Central directly)
+            # Write into a dedicated PR branch (not CENTRAL directly)
             if [ "${CHANGES}" = "false" ]; then
               PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
               git checkout "${CENTRAL_BRANCH}"
@@ -188,7 +184,7 @@ jobs:
 
             CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TS}"
 
-            # conflict-free bootstrap
+            # Conflict-free bootstrap
             git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
             git clean -fdx -- "${TARGET_PREFIX}" || true
             git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
