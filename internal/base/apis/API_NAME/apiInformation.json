@@ -3,7 +3,7 @@
     "path": "api/<<API_NAME>>",
     "apiRevision": "1",
     "apiVersion": "<<API_VERSION>>",
-    "apiVersionSetId": "/subscriptions/6804fdd9-db41-4769-bb83-2ec7bbeaa79a/resourceGroups/DEVAPIINFRG2402/providers/Microsoft.ApiManagement/service/DEVAPIINFAM2402/apiVersionSets/<<API_NAME>>",
+    "apiVersionSetId": "/subscriptions/6804fdd9-db41-4769-bb83-2ec7bbeaa79a/resourceGroups/DEVAPIINFRG2403/providers/Microsoft.ApiManagement/service/DEVAPIINFAM2403/apiVersionSets/<<API_NAME>>",
     "authenticationSettings": {},
     "description": "<<API_DESCRIPTION>>",
     "isCurrent": true,

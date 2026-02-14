@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "path": "api/<<API_NAME>>",
+    "apiRevision": "1",
+    "apiVersion": "<<API_VERSION>>",
+    "apiVersionSetId": "/subscriptions/6804fdd9-db41-4769-bb83-2ec7bbeaa79a/resourceGroups/DEVAPIINFRG2403/providers/Microsoft.ApiManagement/service/DEVAPIINFAM2403/apiVersionSets/<<API_NAME>>",
+    "authenticationSettings": {},
+    "description": "<<API_DESCRIPTION>>",
+    "isCurrent": true,
+    "displayName": "<<API_DISPLAY_NAME>>",
+    "protocols": [
+      "https"
+    ],
+    "serviceUrl": "<<API_BACKEND_URL>>",
+    "subscriptionKeyParameterNames": {
+      "header": "Ocp-Apim-Subscription-Key",
+      "query": "subscription-key"
+    },
+    "subscriptionRequired": false
+  }
+}
