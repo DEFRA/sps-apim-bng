@@ -1,4 +1,4 @@
-# SPS-APIM-G
+# SPS-APIM-BNG
 
 > ⚠️ **This repository contains under-development code and is used for APIM self-service development purposes.**
 
