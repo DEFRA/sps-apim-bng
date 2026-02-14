@@ -1,6 +1,6 @@
 openapi: 3.0.1
 info:
-  title: BNG
+  title: BNGICC
   description: BNG
   version: '1.0'
 servers:
