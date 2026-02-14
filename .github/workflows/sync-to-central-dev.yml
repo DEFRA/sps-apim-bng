@@ -29,12 +29,11 @@ env:
   # === All-CAPS mapping (source → target) ===
   # If central still uses lowercase targets, change the RIGHT side accordingly.
   FOLDER_MAP: |
-    internal/base/apis/BNGICC=internal/base/apis/BNGICC
-    internal/base/products/BNGICC-product=internal/base/products/BNGICC-product
-    internal/base/version sets/BNGICC=internal/base/version sets/BNGICC
-    # Enable if/when you want namedValues too:
-    # internal/base/namedValues/BNGICC-frontend-clientid=internal/base/namedValues/BNGICC-frontend-clientid
-    # internal/base/namedValues/BNGICC-backend-scopeid=internal/base/namedValues/BNGICC-backend-scopeid
+    internal/base/apis/BNGICC=internal/base/apis/bngicc
+    internal/base/products/BNGICC-product=internal/base/products/bngicc-product
+    internal/base/version sets/BNGICC=internal/base/version sets/bngic
+    internal/base/namedValues/BNGICC-frontend-clientid=internal/base/namedValues/CONSUMING-frontend-clientid
+    internal/base/namedValues/BNGICC-backend-scopeid=internal/base/namedValues/BNGICC-backend-scopeid
 
 jobs:
   sync:
