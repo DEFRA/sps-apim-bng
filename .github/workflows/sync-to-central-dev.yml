@@ -20,10 +20,7 @@ env:
   TEAM_REPO_URL: DEFRA/sps-apim-bng
   TEAM_BRANCH: develop
 
-  # If true, rebase before push; if false, merge remote then push (up to 3 tries)
-  REQUIRE_LINEAR_HISTORY: "false"
-
-  # Prefer team side on conflicts when merging subtrees into central (optional)
+  # Prefer team side on conflicts when combining histories (kept for parity)
   TEAM_WINS_ON_CONFLICT: "true"
 
   # Mapping (source → target). Lines are read one-by-one (spaces preserved).
@@ -56,7 +53,7 @@ jobs:
         run: |
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          # Important for case-only path changes
+          # Important for case-only path changes across platforms
           git config --global core.ignorecase false
 
       - name: Clone central repo and sync multiple folders
@@ -71,9 +68,37 @@ jobs:
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
           cd central-repo
 
-          echo "=== Checkout central branch ==="
-          git fetch --no-tags origin "${CENTRAL_BRANCH}" --depth=50
-          git checkout -B "${CENTRAL_BRANCH}" "origin/${CENTRAL_BRANCH}" || git checkout "${CENTRAL_BRANCH}"
+          echo "=== Checkout central branch (resilient) ==="
+          # Refresh remote heads; do not assume 'develop' exists
+          git fetch --no-tags origin --depth=50
+
+          # Does origin/develop exist?
+          if git ls-remote --exit-code --heads origin "${CENTRAL_BRANCH}" >/dev/null 2>&1; then
+            echo "Found remote branch origin/${CENTRAL_BRANCH}. Checking out..."
+            git checkout -B "${CENTRAL_BRANCH}" "origin/${CENTRAL_BRANCH}"
+          else
+            echo "Remote branch origin/${CENTRAL_BRANCH} not found."
+            # Prefer origin/master if it exists
+            if git ls-remote --exit-code --heads origin master >/dev/null 2>&1; then
+              echo "Basing ${CENTRAL_BRANCH} on origin/master..."
+              git checkout -B "${CENTRAL_BRANCH}" "origin/master"
+            else
+              # Try to base on the remote default branch (origin/HEAD -> origin/<default>)
+              DEFAULT_REF="$(git symbolic-ref -q --short refs/remotes/origin/HEAD || true)"
+              if [ -n "${DEFAULT_REF}" ] && git show-ref -q "${DEFAULT_REF}"; then
+                echo "Basing ${CENTRAL_BRANCH} on ${DEFAULT_REF}..."
+                git checkout -B "${CENTRAL_BRANCH}" "${DEFAULT_REF}"
+              else
+                # Last resort: create an orphan branch
+                echo "No suitable remote base found. Creating orphan branch ${CENTRAL_BRANCH}..."
+                git checkout --orphan "${CENTRAL_BRANCH}"
+                # Ensure working tree starts clean (no files staged by default)
+                git reset --hard
+              fi
+            fi
+          fi
+
+          echo "On central branch: $(git rev-parse --abbrev-ref HEAD)"
 
           echo "=== Add team remote and fetch ==="
           git remote add "${TEAM_REMOTE_NAME}" \
@@ -87,6 +112,7 @@ jobs:
 
           # ---------- Diagnostics helper (space-safe) ----------
           list_first_level_under () {
+            # $1 = prefix (e.g., "internal/base/version sets/")
             local prefix="$1"
             echo ">> First-level under '${prefix}' (team branch):"
             git ls-tree -r --name-only "__team_branch__" \
@@ -98,6 +124,17 @@ jobs:
             echo ""
           }
 
+          # ---------- Mapping/path validator (warn-only) ----------
+          validate_path () {
+            local p="$1"
+            case "$p" in
+              *"named values"*)
+                echo "WARNING: Path contains 'named values' (with a space): $p"
+                echo "         This is allowed, but 'namedValues' (camelCase) is recommended."
+                ;;
+            esac
+          }
+
           echo "=== Team branch folder inventory (first-level roots) ==="
           list_first_level_under "internal/base/apis/"
           list_first_level_under "internal/base/products/"
@@ -106,8 +143,9 @@ jobs:
           echo "========================================================"
 
           CHANGES=false
+          PR_BRANCH=""
 
-          echo "=== Process mappings ==="
+          echo "=== Process mappings (space-safe, PR-branch bootstrap) ==="
           # Iterate mappings line-by-line (preserve spaces)
           while IFS= read -r mapping; do
             # sanitize CRLF and skip blanks/comments
@@ -122,23 +160,28 @@ jobs:
             TARGET_PREFIX="${TARGET_PREFIX#"${TARGET_PREFIX%%[![:space:]]*}"}"
             TARGET_PREFIX="${TARGET_PREFIX%"${TARGET_PREFIX##*[![:space:]]}"}"
 
+            # Warn, do not block
+            validate_path "${SRC}"
+            validate_path "${TARGET_PREFIX}"
+
             [ -n "${SRC}" ] && [ -n "${TARGET_PREFIX}" ] || continue
 
-            echo "→ Processing subtree: SRC='${SRC}'  TARGET='${TARGET_PREFIX}'"
+            echo "→ Processing subtree:"
+            echo "   SRC   = '${SRC}'"
+            echo "   TARGET= '${TARGET_PREFIX}'"
 
             # --- robust directory existence check on team branch ---
             FOUND=false
             if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then
               FOUND=true
             else
-              # Fallback: list dir entry exactly (not recursive files)
               if git ls-tree -d "__team_branch__" -- "${SRC}" | grep -q . ; then
                 FOUND=true
               fi
             fi
 
             if [ "${FOUND}" != "true" ]; then
-              echo "   ✘ Source folder '${SRC}' not found on team branch. Skipping..."
+              echo "   ✘ Source folder '${SRC}' not found on team branch. Skipping…"
               PARENT="$(dirname "${SRC}")"
               echo "   (team) first-level under '${PARENT}/':"
               git ls-tree -r --name-only "__team_branch__" \
@@ -147,74 +190,62 @@ jobs:
                 | LC_ALL=C sort -u | sed 's/^/     • /' | head -n 50 || true
               continue
             fi
-            echo "   ✔ Found '${SRC}/' in team branch. Splitting…"
+            echo "   ✔ Found '${SRC}/' on team branch"
 
-            # === Option A fix starts: split on team ref ===
+            # Show a few files under SRC (diagnostic)
+            echo "   Sample files under SRC on team branch:"
+            git ls-tree -r --name-only "__team_branch__" \
+              | grep -F "^${SRC}/" \
+              | sed 's/^/     • /' | head -n 20 || true
+
+            # Always split from the team snapshot
             git checkout "__team_branch__"
             SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
             if [ -z "${SPLIT_SHA}" ]; then
-              echo "   WARNING: subtree split produced no commit for ${SRC}. Skipping…"
+              echo "   No split produced for ${SRC}. Skipping."
               git checkout "${CENTRAL_BRANCH}"
               continue
             fi
-            # Switch back to central branch before writing/merging
-            git checkout "${CENTRAL_BRANCH}"
-            # === Option A fix ends ===
+
+            # --- Write into a dedicated PR branch (not CENTRAL directly) ---
+            if [ "${CHANGES}" = "false" ]; then
+              PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+              git checkout "${CENTRAL_BRANCH}"
+              git checkout -b "${PR_BRANCH}"
+            else
+              git checkout "${PR_BRANCH}"
+            fi
+
+            echo "   Writing to branch: $(git rev-parse --abbrev-ref HEAD)"
 
             CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TS}"
 
-            echo "=== Attempt subtree merge ==="
-            set +e
-            git merge --no-commit -s recursive -Xsubtree="${TARGET_PREFIX}" "${SPLIT_SHA}" -m "${CUSTOM_MESSAGE}"
-            MERGE_RC=$?
-            set -e
-
-            if [ $MERGE_RC -ne 0 ]; then
-              echo "   Merge failed. Bootstrapping subtree into '${TARGET_PREFIX}/'…"
-              git merge --abort 2>/dev/null || git reset --merge || true
-              git reset --hard
-              git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
-              git clean -fdx -- "${TARGET_PREFIX}" || true
-              git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
-              git add -A "${TARGET_PREFIX}"
-              TREE=$(git write-tree)
-              NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
-              git reset --hard "$NEWCOMMIT"
-            else
-              if git diff --quiet --cached -- "${TARGET_PREFIX}"; then
-                echo "   No staged changes for '${TARGET_PREFIX}'. Skipping commit."
-                git merge --abort 2>/dev/null || git reset --merge || true
-              else
-                git commit -m "${CUSTOM_MESSAGE}"
-              fi
-            fi
+            # Conflict-free bootstrap of the subtree content into the target prefix
+            git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
+            git clean -fdx -- "${TARGET_PREFIX}" || true
+            git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
+            git add -A "${TARGET_PREFIX}"
+            TREE=$(git write-tree)
+            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
+            git reset --hard "$NEWCOMMIT"
 
             CHANGES=true
           done <<< "${FOLDER_MAP}"
 
-          echo "=== Push changes to central repo ==="
+          echo "=== Push PR branch ==="
           if [ "${CHANGES}" = "false" ]; then
             echo "No mapped folders produced changes. Exiting."
             exit 0
           fi
 
-          if [ "${REQUIRE_LINEAR_HISTORY}" = "true" ]; then
-            git fetch origin "${CENTRAL_BRANCH}"
-            git rebase "origin/${CENTRAL_BRANCH}"
-            git push origin "${CENTRAL_BRANCH}"
-          else
-            tries=0
-            until git push origin "${CENTRAL_BRANCH}"; do
-              tries=$((tries+1))
-              if [ $tries -ge 3 ]; then
-                echo "Push failed after ${tries} attempts."
-                exit 1
-              fi
-              echo "Push rejected. Fetching & merging remote then retrying…"
-              git fetch origin "${CENTRAL_BRANCH}"
-              git merge --no-edit "origin/${CENTRAL_BRANCH}"
-            done
-          fi
+          git push origin "${PR_BRANCH}" || {
+            echo "Branch name collision, retrying…"
+            PR_BRANCH="${PR_BRANCH}-$(date +%s)"
+            git branch -m "${PR_BRANCH}"
+            git push origin "${PR_BRANCH}"
+          }
+
+          echo "PR_BRANCH=${PR_BRANCH}" >> $GITHUB_ENV
 
       - name: Generate GitHub Action Summary
         run: |
@@ -222,9 +253,10 @@ jobs:
             echo "## Subtree Sync (develop) Summary"
             echo ""
             echo "**Central Repo:** ${CENTRAL_REPO}"
-            echo "**Central Branch:** ${CENTRAL_BRANCH}"
+            echo "**Central Base:** ${CENTRAL_BRANCH}"
             echo "**Team Repo:** ${TEAM_REPO_URL}"
             echo "**Team Branch:** ${TEAM_BRANCH}"
+            echo "**PR Branch:** ${PR_BRANCH:-Not created}"
             echo ""
             echo "### Folder Mapping"
             echo '```'
@@ -234,5 +266,5 @@ jobs:
             echo "**Timestamp:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
             echo "**Commit SHA:** ${GITHUB_SHA}"
             echo ""
-            echo "✅ Sync completed."
+            echo "✅ Sync completed. Check the PR branch in central."
           } >> $GITHUB_STEP_SUMMARY
