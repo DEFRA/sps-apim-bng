@@ -56,6 +56,7 @@ jobs:
           # Helps with case-only renames across platforms
           git config --global core.ignorecase false
 
+      
       - name: Clone central and prepare PR branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -96,6 +97,18 @@ jobs:
             echo ""
           }
 
+          # ---------- Mapping/path validator ----------
+          validate_path () {
+            local p="$1"
+            case "$p" in
+              *"named values"*)
+                echo "ERROR: Invalid path segment 'named values' in: $p"
+                echo "       Use 'namedValues' (camelCase) instead."
+                exit 1
+                ;;
+            esac
+          }
+
           echo "=== Team branch folder inventory (first-level roots) ==="
           list_first_level_under "internal/base/apis/"
           list_first_level_under "internal/base/products/"
@@ -118,6 +131,10 @@ jobs:
             SRC="${SRC#"${SRC%%[![:space:]]*}"}"; SRC="${SRC%"${SRC##*[![:space:]]}"}"
             TARGET_PREFIX="${TARGET_PREFIX#"${TARGET_PREFIX%%[![:space:]]*}"}"
             TARGET_PREFIX="${TARGET_PREFIX%"${TARGET_PREFIX##*[![:space:]]}"}"
+
+            # Validate obvious bad segments to catch typos early
+            validate_path "${SRC}"
+            validate_path "${TARGET_PREFIX}"
 
             [ -n "${SRC}" ] && [ -n "${TARGET_PREFIX}" ] || continue
 
@@ -165,7 +182,7 @@ jobs:
               continue
             fi
 
-            # --- merge into central base branch ---
+            # --- ALWAYS bootstrap into central base (conflict-free write of the subtree) ---
             git checkout "${BASE_BRANCH}"
 
             CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TIMESTAMP}"
@@ -176,22 +193,16 @@ jobs:
               git checkout -b "${PR_BRANCH}"
             fi
 
-            # Team wins on conflicts (optional)
-            EXTRA=$([ "${TEAM_WINS_ON_CONFLICT}" = "true" ] && echo "-X theirs" || echo "")
+            # Clean target area to avoid stale index entries
+            git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
+            git clean -fdx -- "${TARGET_PREFIX}" || true
 
-            set +e
-            git merge -s subtree -Xsubtree="${TARGET_PREFIX}" ${EXTRA} "${SPLIT_SHA}" \
-              --allow-unrelated-histories -m "${CUSTOM_MESSAGE}"
-            MERGE_RC=$?
-            set -e
-
-            if [ $MERGE_RC -ne 0 ]; then
-              echo "   Merge failed. Bootstrapping subtree contents into '${TARGET_PREFIX}/' …"
-              git merge --abort || git reset --merge || git reset --hard
-              git merge -s ours --no-commit --allow-unrelated-histories "${SPLIT_SHA}"
-              git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
-              git commit -m "${CUSTOM_MESSAGE}"
-            fi
+            # Read the subtree into the target prefix and commit as a 2-parent merge
+            git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
+            git add -A "${TARGET_PREFIX}"
+            TREE=$(git write-tree)
+            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
+            git reset --hard "$NEWCOMMIT"
 
             CHANGES=true
           done <<< "${FOLDER_MAP}"

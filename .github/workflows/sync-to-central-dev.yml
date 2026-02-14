@@ -61,6 +61,7 @@ jobs:
           git config --global core.ignorecase false
 
       
+      
       - name: Clone central repo and sync multiple folders
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -101,6 +102,18 @@ jobs:
             echo ""
           }
 
+          # ---------- Mapping/path validator ----------
+          validate_path () {
+            local p="$1"
+            case "$p" in
+              *"named values"*)
+                echo "ERROR: Invalid path segment 'named values' in: $p"
+                echo "       Use 'namedValues' (camelCase) instead."
+                exit 1
+                ;;
+            esac
+          }
+
           echo "=== Team branch folder inventory (first-level roots) ==="
           list_first_level_under "internal/base/apis/"
           list_first_level_under "internal/base/products/"
@@ -110,7 +123,7 @@ jobs:
 
           CHANGES=false
 
-          echo "=== Process mappings (space-safe) ==="
+          echo "=== Process mappings (space-safe, conflict-free bootstrap) ==="
           # Iterate mappings line-by-line (preserve spaces)
           while IFS= read -r mapping; do
             # sanitize CRLF and skip blanks/comments
@@ -125,6 +138,10 @@ jobs:
             TARGET_PREFIX="${TARGET_PREFIX#"${TARGET_PREFIX%%[![:space:]]*}"}"
             TARGET_PREFIX="${TARGET_PREFIX%"${TARGET_PREFIX##*[![:space:]]}"}"
 
+            # Validate obvious bad segments to catch typos early
+            validate_path "${SRC}"
+            validate_path "${TARGET_PREFIX}"
+
             [ -n "${SRC}" ] && [ -n "${TARGET_PREFIX}" ] || continue
 
             echo "→ Processing subtree:"
@@ -136,7 +153,7 @@ jobs:
             if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then
               FOUND=true
             else
-              # Fallback: list dir entry exactly (not recursive files)
+              # Fallback: check dir entry (not recursive files)
               if git ls-tree -d "__team_branch__" -- "${SRC}" | grep -q . ; then
                 FOUND=true
               fi
@@ -161,51 +178,31 @@ jobs:
               | grep -F "^${SRC}/" \
               | sed 's/^/     • /' | head -n 20 || true
 
-            # Always split from the team snapshot to avoid HEAD confusion
+            # --- split from the team snapshot (space-safe) ---
             git checkout "__team_branch__"
             SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
 
             if [ -z "${SPLIT_SHA}" ]; then
               echo "   WARNING: subtree split produced no commit for ${SRC}. Skipping…"
-              # Return to central branch so the next iteration can merge if needed
               git checkout "${CENTRAL_BRANCH}"
               continue
             fi
 
-            # Merge into central branch
+            # --- ALWAYS bootstrap into central branch (conflict-free write of the subtree) ---
             git checkout "${CENTRAL_BRANCH}"
 
             CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TS}"
 
-            # Prefer team side on conflicts if requested
-            EXTRA=$([ "${TEAM_WINS_ON_CONFLICT}" = "true" ] && echo "-X theirs" || echo "")
+            # Clean target area to avoid stale index entries
+            git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
+            git clean -fdx -- "${TARGET_PREFIX}" || true
 
-            set +e
-            git merge --no-commit -s recursive -Xsubtree="${TARGET_PREFIX}" ${EXTRA} "${SPLIT_SHA}" -m "${CUSTOM_MESSAGE}"
-            MERGE_RC=$?
-            set -e
-
-            if [ $MERGE_RC -ne 0 ]; then
-              echo "   Merge failed. Bootstrapping subtree into '${TARGET_PREFIX}/'…"
-              git merge --abort 2>/dev/null || git reset --merge || true
-              git reset --hard
-              # Clean target area to avoid stale index entries
-              git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
-              git clean -fdx -- "${TARGET_PREFIX}" || true
-              # Read the subtree into the target prefix and commit
-              git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
-              git add -A "${TARGET_PREFIX}"
-              TREE=$(git write-tree)
-              NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
-              git reset --hard "$NEWCOMMIT"
-            else
-              if git diff --quiet --cached -- "${TARGET_PREFIX}"; then
-                echo "   No staged changes for '${TARGET_PREFIX}'. Skipping commit."
-                git merge --abort 2>/dev/null || git reset --merge || true
-              else
-                git commit -m "${CUSTOM_MESSAGE}"
-              fi
-            fi
+            # Read the subtree into the target prefix and commit as a 2-parent merge
+            git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
+            git add -A "${TARGET_PREFIX}"
+            TREE=$(git write-tree)
+            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
+            git reset --hard "$NEWCOMMIT"
 
             CHANGES=true
           done <<< "${FOLDER_MAP}"
