@@ -4,7 +4,7 @@
   "API_DESCRIPTION": "Provides bng icc endpoints.",
   "API_VERSION": "v1.0",
   "API_BACKEND_URL": "https://vehicle-licensing.api.base.internal",
-  "API_BACKEND_SCOPEID_VALUE": "#{{ bngBackEndAppIdInt }}",
+  "API_BACKEND_SCOPEID_VALUE": "#{{ bngClientAppIdInt }}",
   "CONSUMING_FRONTEND_CLIENTID_VALUE": "#{{ bngClientAppIdInt }}",
   "TENANT_ID": "33333333-3333-3333-3333-333333333333",
 
