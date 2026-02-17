@@ -3,7 +3,7 @@
     "path": "BNGICC",
     "apiRevision": "1",
     "apiVersion": "v1.0",
-    "apiVersionSetId": "/subscriptions/6804fdd9-db41-4769-bb83-2ec7bbeaa79a/resourceGroups/DEVAPIINFRG2403/providers/Microsoft.ApiManagement/service/DEVAPIINFAM2403/apiVersionSets/BNGICC",
+    "apiVersionSetId": "/subscriptions/6804fdd9-db41-4769-bb83-2ec7bbeaa79a/resourceGroups/DEVAPIINFRG2402/providers/Microsoft.ApiManagement/service/DEVAPIINFAM2402/apiVersionSets/BNGICC",
     "authenticationSettings": {},
     "description": "Provides bng icc endpoints.",
     "isCurrent": true,
@@ -11,7 +11,7 @@
     "protocols": [
       "https"
     ],
-    "serviceUrl": "https://bngbackend",
+    "serviceUrl": "https://vehicle-licensing.api.dev.internal",
     "subscriptionKeyParameterNames": {
       "header": "Ocp-Apim-Subscription-Key",
       "query": "subscription-key"
