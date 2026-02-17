@@ -13,14 +13,15 @@
 
   "environments": {
     "dev": {
-      "API_BACKEND_URL": "https://vehicle-licensing.api.dev.internal",
+      "API_BACKEND_URL": "https://bngbackend",
+      "API_BACKEND_SCOPEID_VALUE": "#\\u007B\\u007B bngClientAppIdInt \\u007D\\u007D",      
       "TENANT_ID": "66666666-6666-6666-6666-666666666666",
       "CONSUMING_FRONTEND_CLIENTID_VALUE": "#\\u007B\\u007B bngBackEndAppIdInt \\u007D\\u007D",
       "RATE_LIMIT_CALLS": 50,
       "RATE_LIMIT_PERIOD": 60
     },
     "tst": {
-      "API_BACKEND_URL": "https://vehicle-licensing.api.tst.internal",
+      "API_BACKEND_URL": "https://bngbackend",
       "CONSUMING_FRONTEND_CLIENTID_VALUE": "#\\u007B\\u007B bngBackEndAppIdInt \\u007D\\u007D",
       "TENANT_ID": "99999999-9999-9999-9999-999999999999",
       "RATE_LIMIT_CALLS": 75,
