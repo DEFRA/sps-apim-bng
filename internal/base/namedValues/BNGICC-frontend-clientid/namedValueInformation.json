@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "BNGICC_FRONTEND_CLIENTID",
+    "secret": true,
+    "tags": [],
+    "value": "#\\u007B\\u007B bngBackEndAppIdInt \\u007D\\u007D"
+  }
+}
