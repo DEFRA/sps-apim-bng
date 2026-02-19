@@ -4,8 +4,8 @@
   "API_DESCRIPTION": "Provides bng icc endpoints.",
   "API_VERSION": "v1.0",
   "API_BACKEND_URL": "https://vehicle-licensing.api.base.internal",
-  "API_BACKEND_SCOPEID_VALUE": "bngClientAppIdInt",
-  "CONSUMING_FRONTEND_CLIENTID_VALUE": "bngBackEndAppIdInt",
+  "API_BACKEND_SCOPEID_VALUE": "#{{ bngClientAppIdInt }}",
+  "CONSUMING_FRONTEND_CLIENTID_VALUE": "#{{ bngBackEndAppIdInt }}",
   "TENANT_ID": "33333333-3333-3333-3333-333333333333",
 
   "RATE_LIMIT_CALLS": 100,
@@ -15,7 +15,7 @@
     "dev": {
       "API_BACKEND_URL": "https://vehicle-licensing.api.dev.internal",
       "TENANT_ID": "66666666-6666-6666-6666-666666666666",
-      "CONSUMING_FRONTEND_CLIENTID_VALUE": "#\\u007B\\u007B bngBackEndAppIdInt \\u007D\\u007D",
+      "CONSUMING_FRONTEND_CLIENTID_VALUE": "#{{ bngBackEndAppIdInt }}",
       "RATE_LIMIT_CALLS": 50,
       "RATE_LIMIT_PERIOD": 60
     },
