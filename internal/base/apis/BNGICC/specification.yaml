@@ -3,8 +3,10 @@ info:
   title: BNGICC
   description: BNGICC
   version: '1.0'
+
 servers:
-  - url: https://dev-api-gateway.azure.defra.cloud/api/bng/v1
+  - url: https://devapiinfam2403.azure-api.net/api/bng-icc 
+
 paths:
   '/gainsite/{GainSiteNumber}':
     get:
