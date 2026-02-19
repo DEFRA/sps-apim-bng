@@ -1,9 +1,9 @@
 {
   "API_NAME": "BNGICC",
   "API_DISPLAY_NAME": "BNG ICC",
-  "API_DESCRIPTION": "Provides bng icc endpoints.",
+  "API_DESCRIPTION": "DIVYA DESC",
   "API_VERSION": "v1.0",
-  "API_BACKEND_URL": "https://vehicle-licensing.api.base.internal",
+  "API_BACKEND_URL": "https://bngbediv19Feb",
   "API_BACKEND_SCOPEID_VALUE": "#\\u007B\\u007B bngClientAppIdInt \\u007D\\u007D",
   "CONSUMING_FRONTEND_CLIENTID_VALUE": "#\\u007B\\u007B bngBackEndAppIdInt \\u007D\\u007D",
   "TENANT_ID": "33333333-3333-3333-3333-333333333333",
@@ -13,15 +13,14 @@
 
   "environments": {
     "dev": {
-      "API_BACKEND_URL": "https://bngbackend",
-      "API_BACKEND_SCOPEID_VALUE": "#\\u007B\\u007B bngClientAppIdInt \\u007D\\u007D",      
-      "TENANT_ID": "66666666-6666-6666-6666-666666666666",
+      "API_BACKEND_URL": "https://bngbediv19FebDev",
+      "TENANT_ID": "12345-12345-123",
       "CONSUMING_FRONTEND_CLIENTID_VALUE": "#\\u007B\\u007B bngBackEndAppIdInt \\u007D\\u007D",
-      "RATE_LIMIT_CALLS": 50,
-      "RATE_LIMIT_PERIOD": 60
+      "RATE_LIMIT_CALLS": 20,
+      "RATE_LIMIT_PERIOD": 30
     },
     "tst": {
-      "API_BACKEND_URL": "https://bngbackend",
+      "API_BACKEND_URL": "https://bngbediv19FebTst",
       "CONSUMING_FRONTEND_CLIENTID_VALUE": "#\\u007B\\u007B bngBackEndAppIdInt \\u007D\\u007D",
       "TENANT_ID": "99999999-9999-9999-9999-999999999999",
       "RATE_LIMIT_CALLS": 75,
