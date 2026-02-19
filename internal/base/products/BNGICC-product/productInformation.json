@@ -1,7 +1,7 @@
 {
   "properties": {
     "displayName": "BNG ICC",
-    "description": "DIVYA DESC",
+    "description": "Provides bng icc endpoints.",
     "state": "published",
     "subscriptionRequired": false
   }
