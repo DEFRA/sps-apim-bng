@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
-  title: BNGICC
-  description: BNGICC
+  title: BNG
+  description: BNG
   version: '1.0'
 servers:
   - url: https://dev-api-gateway.azure.defra.cloud/api/bng/v1

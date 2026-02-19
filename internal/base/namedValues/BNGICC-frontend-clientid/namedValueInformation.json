@@ -3,6 +3,6 @@
     "displayName": "BNGICC_FRONTEND_CLIENTID",
     "secret": true,
     "tags": [],
-    "value": "22222222-2222-2222-2222-222222222222"
+    "value": "#{{ bngClientAppIdInt }}"
   }
 }
