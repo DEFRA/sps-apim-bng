@@ -46,6 +46,7 @@ jobs:
           -TemplatesRoot "${{ github.event.inputs.templatesRoot }}"
           -Environment "${{ github.event.inputs.environment }}"
           -MaterializeTemplateFolders
+          -AllowMissing
 
       - name: Commit & push changes
         shell: bash
