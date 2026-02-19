@@ -1,8 +1,8 @@
 {
   "properties": {
-    "displayName": "<<API_NAME>>_BACKEND_SCOPEID",
+    "displayName": "<<API_NAME>>_BACKEND_SCOPEID>>",
     "secret": true,
     "tags": [],
-    "value": "<<API_BACKEND_SCOPEID_VALUE>>"
+    "value": "#{{ <<API_BACKEND_SCOPEID_VALUE>> }}"
   }
 }
