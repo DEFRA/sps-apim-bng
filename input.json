@@ -13,7 +13,7 @@
 
   "environments": {
     "dev": {
-      "API_BACKEND_URL": "https://bng.dev.cloud",
+
       "TENANT_ID": "22226666-6666-6666-6666-666666666666",
       "CONSUMING_FRONTEND_CLIENTID_VALUE": "#\\u127B\\u007B bngBackEndAppIdInt \\u007D\\u007D",
       "RATE_LIMIT_CALLS": 35,
