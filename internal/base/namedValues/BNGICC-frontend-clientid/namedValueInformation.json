@@ -1,6 +1,6 @@
 {
   "properties": {
-    "displayName": "<<API_NAME>>_FRONTEND_CLIENTID",
+    "displayName": "BNGICC_FRONTEND_CLIENTID",
     "secret": true,
     "tags": [],
     "value": "#{{ bngBackEndAppIdInt }}"
