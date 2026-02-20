@@ -2,14 +2,14 @@
 	<inbound>
 		<!-- Policy with updated App Reg names in APIOps. This is updated on 01/05/2025 part2-->
 		<base />
-		<rate-limit calls="70" renewal-period="80" />
+		<rate-limit calls="<<RATE_LIMIT_CALLS>>" renewal-period="<<RATE_LIMIT_PERIOD>>" />
 		<validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
-			<openid-config url="https://login.microsoftonline.com/88887777/v2.0/.well-known/openid-configuration" />
+			<openid-config url="https://login.microsoftonline.com/<<TENANT_ID>>/v2.0/.well-known/openid-configuration" />
 			<audiences>
 				<audience><<BACKEND_SCOPEID>></audience>
 			</audiences>
 			<issuers>
-				<issuer>https://sts.windows.net/88887777/</issuer>
+				<issuer>https://sts.windows.net/<<TENANT_ID>>/</issuer>
 			</issuers>
 			<required-claims>
 				<claim name="appid" match="any">
