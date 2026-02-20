@@ -1,8 +1,3 @@
 {
-  "properties": {
-    "displayName": "bng Product",
-    "description": "Product created for bng",
-    "state": "notPublished",
-    "subscriptionRequired": false
-  }
+
 }
