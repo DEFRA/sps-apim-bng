@@ -3,6 +3,6 @@
     "displayName": "<<API_NAME>>_FRONTEND_CLIENTID",
     "secret": true,
     "tags": [],
-    "value": "<<API_NAME_FRONTEND_CLIENTID_VALUE>>"
+    "value": "<<CONSUMING_FRONTEND_CLIENTID_VALUE>>"
   }
 }
