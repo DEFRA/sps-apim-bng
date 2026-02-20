@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "BNGICC_FRONTEND_CLIENTID",
+    "secret": true,
+    "tags": [],
+    "value": "bngFrontendClientIdDev"
+  }
+}

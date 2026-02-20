@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "path": "BNGICC",
+    "apiRevision": "1",
+    "apiVersion": "v1.0",
+    "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
+    "authenticationSettings": {},
+    "description": "Provides bng icc endpoints.",
+    "isCurrent": true,
+    "displayName": "BNG ICC",
+    "protocols": [
+      "https"
+    ],
+    "serviceUrl": "https://bngBackenddev",
+    "subscriptionKeyParameterNames": {
+      "header": "Ocp-Apim-Subscription-Key",
+      "query": "subscription-key"
+    },
+    "subscriptionRequired": false
+  }
+}
