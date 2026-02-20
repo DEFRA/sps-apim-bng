@@ -1,8 +1,0 @@
-{
-  "properties": {
-    "displayName": "<<API_NAME>>_BACKEND_SCOPEID",
-    "secret": true,
-    "tags": [],
-    "value": "#{{ bngClientAppIdInt }}"
-  }
-}

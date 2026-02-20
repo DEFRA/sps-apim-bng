@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "BNGICC_BACKEND_SCOPEID",
+    "secret": true,
+    "tags": [],
+    "value": "3#{{ bngBackEndAppIdInt }}"
+  }
+}
