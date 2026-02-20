@@ -1,6 +1,6 @@
 {
   "properties": {
-    "displayName": "<<API_NAME>>_BACKEND_SCOPEID",
+    "displayName": "BNGICC_FRONTEND_CLIENTID",
     "secret": true,
     "tags": [],
     "value": "#{{ bngClientAppIdInt }}"

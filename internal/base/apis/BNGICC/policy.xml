@@ -6,14 +6,14 @@
 		<validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
 			<openid-config url="https://login.microsoftonline.com/88887777/v2.0/.well-known/openid-configuration" />
 			<audiences>
-				<audience><<BACKEND_SCOPEID>></audience>
+				<audience>#{{ bngBackEndAppIdInt }}</audience>
 			</audiences>
 			<issuers>
 				<issuer>https://sts.windows.net/88887777/</issuer>
 			</issuers>
 			<required-claims>
 				<claim name="appid" match="any">
-					<value><<FRONTEND_ID>></value>
+					<value>#{{ bngClientAppIdInt }}</value>
 				</claim>
 			</required-claims>
 		</validate-jwt>
@@ -28,3 +28,4 @@
 		<base />
 	</on-error>
 </policies>
+
