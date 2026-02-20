@@ -5,7 +5,7 @@
     "apiVersion": "v1.0",
     "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
     "authenticationSettings": {},
-    "description": "Provides bng icc endpoints.",
+    "description": "Provides bng icc endpoints. div",
     "isCurrent": true,
     "displayName": "BNG ICC",
     "protocols": [
