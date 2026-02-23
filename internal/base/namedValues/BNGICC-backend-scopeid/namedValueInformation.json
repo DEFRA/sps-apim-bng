@@ -3,6 +3,6 @@
     "displayName": "BNGICC_BACKEND_SCOPEID",
     "secret": true,
     "tags": [],
-    "value": "#{{ bngClientAppIdInt }}"
+    "value": "bngBackendScopeDev"
   }
 }
