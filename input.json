@@ -21,7 +21,7 @@
     },
     "tst": {
       "API_BACKEND_URL": "https://defra-test.boomi.cloud:444/ws/rest/FoNT/timeseries-data/v1.0",
-      "CONSUMING_FRONTEND_CLIENTID_VALUE": "#\\u007B\\u007B bngBackEndAppIdInt \\u007D\\u007D",
+      "CONSUMING_FRONTEND_CLIENTID_VALUE": "4a41cc4d-5097-4402-b65b-910db6ece103",
       "TENANT_ID": "770a2450-0227-4c62-90c7-4e38537f1102",
       "RATE_LIMIT_CALLS": 30,
       "RATE_LIMIT_PERIOD": 50
