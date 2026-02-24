@@ -4,8 +4,8 @@
   "API_DESCRIPTION": "testV 24 feb Provides bng icc endpoints.",
   "API_VERSION": "v1.0",
   "API_BACKEND_URL": "https://defra-dev.boomi.cloud:444/ws/rest/FoNT/timeseries-data/v1.0",
-  "API_BACKEND_SCOPEID_VALUE": "#{{ bngBackEndAppIdInt }}",
-  "CONSUMING_FRONTEND_CLIENTID_VALUE": "#{{ bngClientAppIdInt }}",
+  "API_BACKEND_SCOPEID_VALUE": "api://8ee8444d-ab8d-4a1e-adc8-57b493266a10/.default",
+  "CONSUMING_FRONTEND_CLIENTID_VALUE": "7c97e18e-1c05-4031-8054-9cf24259e9fe",
   "TENANT_ID": "6f504113-6b64-43f2-ade9-242e05780007",
 
   "RATE_LIMIT_CALLS": 20,
@@ -15,7 +15,7 @@
     "dev": {
       "API_BACKEND_URL": "https://defra-dev.boomi.cloud:444/ws/rest/FoNT/timeseries-data/v1.0",
       "TENANT_ID": "6f504113-6b64-43f2-ade9-242e05780007",
-      "CONSUMING_FRONTEND_CLIENTID_VALUE": "#{{ bngClientAppIdInt }}",
+      "CONSUMING_FRONTEND_CLIENTID_VALUE": "7c97e18e-1c05-4031-8054-9cf24259e9fe",
       "RATE_LIMIT_CALLS": 20,
       "RATE_LIMIT_PERIOD": 40
     },
