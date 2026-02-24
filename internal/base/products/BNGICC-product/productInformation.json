@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "BNG ICC",
+    "description": "testV 24 feb Provides bng icc endpoints.",
+    "state": "published",
+    "subscriptionRequired": false
+  }
+}

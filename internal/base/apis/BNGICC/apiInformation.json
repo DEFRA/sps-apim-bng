@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "path": "BNGICC",
+    "apiRevision": "1",
+    "apiVersion": "v1.0",
+    "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
+    "authenticationSettings": {},
+    "description": "testV 24 feb Provides bng icc endpoints.",
+    "isCurrent": true,
+    "displayName": "BNG ICC",
+    "protocols": [
+      "https"
+    ],
+    "serviceUrl": "https://defra-dev.boomi.cloud:444/ws/rest/FoNT/timeseries-data/v1.0",
+    "subscriptionKeyParameterNames": {
+      "header": "Ocp-Apim-Subscription-Key",
+      "query": "subscription-key"
+    },
+    "subscriptionRequired": false
+  }
+}
