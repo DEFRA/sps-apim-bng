@@ -1,27 +1,500 @@
 openapi: 3.0.1
 info:
   title: BNGICC
-  description: BNGICC
-  version: '1.0'
-
+  version: v1.0
 servers:
-  - url: https://devapiinfam2403.azure-api.net/api/bng-icc 
-
+  - url: https://tst-int-api-gateway.azure.defra.cloud/api/fonts/v1.0
 paths:
-  '/gainsite/{GainSiteNumber}':
+  /measureTypes:
     get:
-      summary: GainSites
-      description: GainSites
-      operationId: gainsites
+      tags:
+        - measureTypes
+      summary: MeasureTypes
+      description: All Measure Types
+      operationId: get-measuretypes
       parameters:
-        - name: GainSiteNumber
-          in: path
-          required: true
+        - name: x-wss-subname
+          in: header
           schema:
-            type: String
+            type: string
+        - name: x-wss-username
+          in: header
+          schema:
+            type: string
       responses:
         '200':
-          description: ''
+          description: Success
+          content:
+            application/json: { }
+        '400':
+          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_00Response-html>string</_x0034_00Response-html>
+        '401':
+          description: Unauthorized or 403 Forbidden - Authentication errors.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_01Response-html>string</_x0034_01Response-html>
+        '404':
+          description: Not Found - Invalid URL path.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_04Response-html>string</_x0034_04Response-html>
+        '413':
+          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_13Response-html>string</_x0034_13Response-html>
+        '500':
+          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_00Response-html>string</_x0035_00Response-html>
+        '503':
+          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_03Response-html>string</_x0035_03Response-html>
+        '522':
+          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_22Response-html>string</_x0035_22Response-html>
+  /measuresList:
+    get:
+      tags:
+        - measuresList
+      summary: ListOfMeasures
+      description: All Measures
+      operationId: get-measureslist
+      parameters:
+        - name: x-wss-subname
+          in: header
+          schema:
+            type: string
+        - name: x-wss-username
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json: { }
+        '400':
+          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_00Response-html>string</_x0034_00Response-html>
+        '401':
+          description: Unauthorized or 403 Forbidden - Authentication errors.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_01Response-html>string</_x0034_01Response-html>
+        '404':
+          description: Not Found - Invalid URL path.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_04Response-html>string</_x0034_04Response-html>
+        '413':
+          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_13Response-html>string</_x0034_13Response-html>
+        '500':
+          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_00Response-html>string</_x0035_00Response-html>
+        '503':
+          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_03Response-html>string</_x0035_03Response-html>
+        '522':
+          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_22Response-html>string</_x0035_22Response-html>
+  /monitoringstatus:
+    get:
+      tags:
+        - monitoringstatus
+      summary: ListOfMonitoringStatus
+      description: ListOfMonitoringStatus
+      operationId: get-monitoringstatus
+      parameters:
+        - name: x-wss-subname
+          in: header
+          schema:
+            type: string
+        - name: x-wss-username
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json: { }
+        '400':
+          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_00Response-html>string</_x0034_00Response-html>
+        '401':
+          description: Unauthorized or 403 Forbidden - Authentication errors.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_01Response-html>string</_x0034_01Response-html>
+        '404':
+          description: Not Found - Invalid URL path.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_04Response-html>string</_x0034_04Response-html>
+        '413':
+          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_13Response-html>string</_x0034_13Response-html>
+        '500':
+          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_00Response-html>string</_x0035_00Response-html>
+        '503':
+          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_03Response-html>string</_x0035_03Response-html>
+        '522':
+          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_22Response-html>string</_x0035_22Response-html>
+  /readingreasons:
+    get:
+      tags:
+        - readingreasons
+      summary: ListOfReadingReasons
+      description: ListOfReadingReasons
+      operationId: get-readingreasons
+      parameters:
+        - name: x-wss-subname
+          in: header
+          schema:
+            type: string
+        - name: x-wss-username
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json: { }
+        '400':
+          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_00Response-html>string</_x0034_00Response-html>
+        '401':
+          description: Unauthorized or 403 Forbidden - Authentication errors.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_01Response-html>string</_x0034_01Response-html>
+        '404':
+          description: Not Found - Invalid URL path.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_04Response-html>string</_x0034_04Response-html>
+        '413':
+          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_13Response-html>string</_x0034_13Response-html>
+        '500':
+          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_00Response-html>string</_x0035_00Response-html>
+        '503':
+          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_03Response-html>string</_x0035_03Response-html>
+        '522':
+          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_22Response-html>string</_x0035_22Response-html>
+  /readingsList:
+    get:
+      tags:
+        - readingsList
+      summary: Readings List (3 Params)
+      description: Readings List (3 Params)
+      operationId: get-readingslist
+      parameters:
+        - name: x-wss-subname
+          in: header
+          schema:
+            type: string
+        - name: x-wss-username
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json: { }
+        '400':
+          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_00Response-html>string</_x0034_00Response-html>
+        '401':
+          description: Unauthorized or 403 Forbidden - Authentication errors.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_01Response-html>string</_x0034_01Response-html>
+        '404':
+          description: Not Found - Invalid URL path.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_04Response-html>string</_x0034_04Response-html>
+        '413':
+          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_13Response-html>string</_x0034_13Response-html>
+        '500':
+          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_00Response-html>string</_x0035_00Response-html>
+        '503':
+          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_03Response-html>string</_x0035_03Response-html>
+        '522':
+          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_22Response-html>string</_x0035_22Response-html>
+  /readingsList/reason:
+    get:
+      tags:
+        - readingsList
+      summary: Readings List (4 Params)
+      description: Readings List (4 Params)
+      operationId: get-readingslist-reason
+      parameters:
+        - name: x-wss-subname
+          in: header
+          schema:
+            type: string
+        - name: x-wss-username
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json: { }
+        '400':
+          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_00Response-html>string</_x0034_00Response-html>
+        '401':
+          description: Unauthorized or 403 Forbidden - Authentication errors.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_01Response-html>string</_x0034_01Response-html>
+        '404':
+          description: Not Found - Invalid URL path.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_04Response-html>string</_x0034_04Response-html>
+        '413':
+          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_13Response-html>string</_x0034_13Response-html>
+        '500':
+          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_00Response-html>string</_x0035_00Response-html>
+        '503':
+          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_03Response-html>string</_x0035_03Response-html>
+        '522':
+          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_22Response-html>string</_x0035_22Response-html>
+  /stations:
+    get:
+      tags:
+        - stations
+      summary: MonitoringStations
+      description: All Stations
+      operationId: get-stations
+      parameters:
+        - name: x-wss-subname
+          in: header
+          schema:
+            type: string
+        - name: x-wss-username
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json: { }
+        '400':
+          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_00Response-html>string</_x0034_00Response-html>
+        '401':
+          description: Unauthorized or 403 Forbidden - Authentication errors.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_01Response-html>string</_x0034_01Response-html>
+        '404':
+          description: Not Found - Invalid URL path.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_04Response-html>string</_x0034_04Response-html>
+        '413':
+          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0034_13Response-html>string</_x0034_13Response-html>
+        '500':
+          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_00Response-html>string</_x0035_00Response-html>
+        '503':
+          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_03Response-html>string</_x0035_03Response-html>
+        '522':
+          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: <_x0035_22Response-html>string</_x0035_22Response-html>
 components:
   securitySchemes:
     apiKeyHeader:
@@ -35,4 +508,11 @@ components:
 security:
   - apiKeyHeader: [ ]
   - apiKeyQuery: [ ]
+tags:
+  - name: measureTypes
+  - name: measuresList
+  - name: monitoringstatus
+  - name: readingreasons
+  - name: readingsList
+  - name: stations
 

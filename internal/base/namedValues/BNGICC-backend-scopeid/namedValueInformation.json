@@ -3,6 +3,6 @@
     "displayName": "BNGICC_BACKEND_SCOPEID",
     "secret": true,
     "tags": [],
-    "value": "bngBackendScopeDev"
+    "value": "api://8ee8444d-ab8d-4a1e-adc8-57b493266a10"
   }
 }
