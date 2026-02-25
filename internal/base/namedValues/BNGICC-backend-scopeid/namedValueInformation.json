@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "BNGICC_BACKEND_SCOPEID",
+    "secret": true,
+    "tags": [],
+    "value": "api://11d75f20-690c-4e2a-90d6-d608d4aedaa8"
+  }
+}

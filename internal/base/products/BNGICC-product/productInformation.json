@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "MMO-ECC Test 25 Feb V ICC",
+    "description": "Provides MMO icc endpoints.",
+    "state": "published",
+    "subscriptionRequired": false
+  }
+}

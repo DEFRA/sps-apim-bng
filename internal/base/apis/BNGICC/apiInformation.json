@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "path": "BNGICC",
+    "apiRevision": "1",
+    "apiVersion": "v1.0",
+    "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
+    "authenticationSettings": {},
+    "description": "Provides MMO icc endpoints.",
+    "isCurrent": true,
+    "displayName": "MMO-ECC Test 25 Feb V ICC",
+    "protocols": [
+      "https"
+    ],
+    "serviceUrl": "https://defra-test.boomi.cloud:444/ws/rest/DEFRA/v1/ECC",
+    "subscriptionKeyParameterNames": {
+      "header": "Ocp-Apim-Subscription-Key",
+      "query": "subscription-key"
+    },
+    "subscriptionRequired": false
+  }
+}

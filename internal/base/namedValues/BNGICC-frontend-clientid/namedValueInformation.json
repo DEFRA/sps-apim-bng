@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "BNGICC_FRONTEND_CLIENTID",
+    "secret": true,
+    "tags": [],
+    "value": "04379be5-eee9-450b-9e62-567a418be5c1"
+  }
+}
