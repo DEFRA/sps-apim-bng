@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "path": "BNGICC",
+    "apiRevision": "1",
+    "apiVersion": "v1.0",
+    "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
+    "authenticationSettings": {},
+    "description": "Provides CAPP icc endpoints.",
+    "isCurrent": true,
+    "displayName": "CAPP ICC",
+    "protocols": [
+      "https"
+    ],
+    "serviceUrl": "https://tstcppafafa1401.azurewebsites.net/api",
+    "subscriptionKeyParameterNames": {
+      "header": "Ocp-Apim-Subscription-Key",
+      "query": "subscription-key"
+    },
+    "subscriptionRequired": false
+  }
+}
