@@ -8,8 +8,8 @@
   "CONSUMING_FRONTEND_CLIENTID_VALUE": "#{{ bngClientAppIdInt }}",
   "TENANT_ID": "6f504113-6b64-43f2-ade9-242e05780007",
 
-  "RATE_LIMIT_CALLS": 100,
-  "RATE_LIMIT_PERIOD": 60,
+  "RATE_LIMIT_CALLS": 27,
+  "RATE_LIMIT_PERIOD": 37,
 
   "environments": {
     "dev": {
@@ -21,11 +21,11 @@
       "RATE_LIMIT_PERIOD": 30
     },
     "tst": {
-      "API_BACKEND_URL": "https://vehicle-licensing.api.tst.internal",
-      "CONSUMING_FRONTEND_CLIENTID_VALUE": "#\\u007B\\u007B bngBackEndAppIdInt \\u007D\\u007D",
-      "TENANT_ID": "99999999-9999-9999-9999-999999999999",
-      "RATE_LIMIT_CALLS": 75,
-      "RATE_LIMIT_PERIOD": 60
+      "API_BACKEND_URL": "https://testcappvehicle-licensing.api.tst.internal",
+      "CONSUMING_FRONTEND_CLIENTID_VALUE": "#\\u007B\\u007B capptestBackEndAppIdInt \\u007D\\u007D",
+      "TENANT_ID": "99999999-9999-9999-9999-999999991111",
+      "RATE_LIMIT_CALLS": 47,
+      "RATE_LIMIT_PERIOD": 57
     }
   }
 }
