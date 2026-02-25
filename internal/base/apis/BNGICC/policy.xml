@@ -2,18 +2,18 @@
 	<inbound>
 		<!-- Policy with updated App Reg names in APIOps. This is updated on 25/Feb/2026 part2-->
 		<base />
-		<rate-limit calls="27" renewal-period="37" />
+		<rate-limit calls="20" renewal-period="30" />
 		<validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
 			<openid-config url="https://login.microsoftonline.com/710b7aa6-4c53-4f0e-80b0-b30a7197b236/v2.0/.well-known/openid-configuration" />
 			<audiences>
-				<audience>api://8bc2017d-abb2-4152-a2aa-65fcaa6ca8d1</audience>
+				<audience>#{{ bngBackEndAppIdInt }}</audience>
 			</audiences>
 			<issuers>
 				<issuer>https://sts.windows.net/710b7aa6-4c53-4f0e-80b0-b30a7197b236/</issuer>
 			</issuers>
 			<required-claims>
 				<claim name="appid" match="any">
-					<value>55943462-02f7-44a8-a178-b5320dc026a1</value>
+					<value>#{{ bngClientAppIdInt }}</value>
 				</claim>
 			</required-claims>
 		</validate-jwt>

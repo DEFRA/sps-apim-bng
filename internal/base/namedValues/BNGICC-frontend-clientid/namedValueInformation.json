@@ -3,6 +3,6 @@
     "displayName": "BNGICC_FRONTEND_CLIENTID",
     "secret": true,
     "tags": [],
-    "value": "55943462-02f7-44a8-a178-b5320dc026a1"
+    "value": "#{{ bngClientAppIdInt }}"
   }
 }
