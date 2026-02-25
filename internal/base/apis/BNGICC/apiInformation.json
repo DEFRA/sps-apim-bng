@@ -5,13 +5,13 @@
     "apiVersion": "v1.0",
     "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
     "authenticationSettings": {},
-    "description": "Provides CAPP icc endpoints.",
+    "description": "Description for PD demo",
     "isCurrent": true,
-    "displayName": "BNG ICC",
+    "displayName": "PD Demo",
     "protocols": [
       "https"
     ],
-    "serviceUrl": "https://tstcppafafa1401.azurewebsites.net/api",
+    "serviceUrl": "https://bngbackendurlPDDemoDev",
     "subscriptionKeyParameterNames": {
       "header": "Ocp-Apim-Subscription-Key",
       "query": "subscription-key"
