@@ -1,7 +1,7 @@
 {
   "properties": {
-    "displayName": "PD Demo",
-    "description": "Description for PD demo",
+    "displayName": "CAPP ICC",
+    "description": "Provides CAPP icc endpoints.",
     "state": "published",
     "subscriptionRequired": false
   }
