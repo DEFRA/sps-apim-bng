@@ -1,37 +1,735 @@
 openapi: 3.0.1
 info:
   title: BNGICC
-  description: BNGICC
-  version: '1.0'
-
+  version: v1.0
 servers:
-  - url: https://devapiinfam2403.azure-api.net/api/bng-icc 
-
+  - url: https://tst-int-api-gateway.azure.defra.cloud/api/ecc/v1.0
 paths:
-  '/gainsite/{GainSiteNumber}':
+  /FishingActivities:
     get:
-      summary: GainSites
-      description: GainSites
-      operationId: gainsites
+      tags:
+        - FishingActivities
+      summary: Fishing Activities
+      description: MMO - ECC - v1 - GET - Fishing Activities
+      operationId: get-fishingactivities
       parameters:
-        - name: GainSiteNumber
-          in: path
-          required: true
+        - name: customerid
+          in: header
           schema:
-            type: String
+            type: string
+        - name: inmethod
+          in: header
+          schema:
+            type: string
+        - name: inuser
+          in: header
+          schema:
+            type: string
+        - name: methodid
+          in: header
+          schema:
+            type: string
+        - name: requestid
+          in: header
+          schema:
+            type: string
+        - name: serviceid
+          in: header
+          schema:
+            type: string
+        - name: testmode
+          in: header
+          schema:
+            type: string
+        - name: timestamp
+          in: header
+          schema:
+            type: string
+        - name: userid
+          in: header
+          schema:
+            type: string
       responses:
         '200':
-          description: ''
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Root'
+              example:
+                _embedded:
+                  fishingActivityReports:
+                    - _id: string
+                      _links:
+                        fishingActivityReports:
+                          href: string
+                        self:
+                          href: string
+                      fishingActivities:
+                        - occurrence: string
+                          relatedFLUXLocations:
+                            - id: string
+                              scheme: string
+                              subRectangle: string
+                              type: string
+                          relatedFishingActivities:
+                            - relatedFLUXLocations:
+                                - id: string
+                                  scheme: string
+                                  subRectangle: string
+                                  type: string
+                              specifiedFishingGears:
+                                - applicableGearCharacteristics:
+                                    - _mmoId: string
+                                      dataType: string
+                                      type: string
+                                      unit: string
+                                      value: string
+                                  roleCodes:
+                                    - string
+                                  type: string
+                              type: string
+                          specifiedCatches:
+                            - catchType: string
+                              species:
+                                _mmoId: string
+                                code: string
+                              specifiedSizeDistribution: string
+                              weightInKg: 0
+                          specifiedFishingGears:
+                            - _mmoId: string
+                              applicableGearCharacteristics:
+                                - _mmoId: string
+                                  dataType: string
+                                  type: string
+                                  unit: string
+                                  value: string
+                              roleCodes:
+                                - string
+                              type: string
+                          type: string
+                          vesselActivityCode: string
+                      valid: true
+                _links:
+                  first:
+                    href: string
+                  last:
+                    href: string
+                  next:
+                    href: string
+                  self:
+                    href: string
+                    templated: true
+                page:
+                  number: 0
+                  size: 0
+                  totalElements: 0
+                  totalPages: 0
+        '400':
+          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+        '500':
+          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+        '522':
+          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
+        '401':
+          description: Unauthorized or 403 Forbidden - Authentication errors.
+        '413':
+          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
+        '404':
+          description: Not Found - Invalid URL path.
+        '503':
+          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
+  /LandingDeclarations:
+    get:
+      tags:
+        - LandingDeclarations
+      summary: Landing Declarations
+      description: Get Landing Declaration for vessels over 10 meters
+      operationId: get-landingdeclarations
+      parameters:
+        - name: customerid
+          in: header
+          schema:
+            type: string
+        - name: inmethod
+          in: header
+          schema:
+            type: string
+        - name: inuser
+          in: header
+          schema:
+            type: string
+        - name: methodid
+          in: header
+          schema:
+            type: string
+        - name: requestid
+          in: header
+          schema:
+            type: string
+        - name: serviceid
+          in: header
+          schema:
+            type: string
+        - name: testmode
+          in: header
+          schema:
+            type: string
+        - name: timestamp
+          in: header
+          schema:
+            type: string
+        - name: userid
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Root'
+              example:
+                _embedded:
+                  fishingActivityReports:
+                    - _id: string
+                      _links:
+                        fishingActivityReports:
+                          href: string
+                        self:
+                          href: string
+                      fishingActivities:
+                        - occurrence: string
+                          relatedFLUXLocations:
+                            - id: string
+                              scheme: string
+                              subRectangle: string
+                              type: string
+                          relatedFishingActivities:
+                            - relatedFLUXLocations:
+                                - id: string
+                                  scheme: string
+                                  subRectangle: string
+                                  type: string
+                              specifiedFishingGears:
+                                - applicableGearCharacteristics:
+                                    - _mmoId: string
+                                      dataType: string
+                                      type: string
+                                      unit: string
+                                      value: string
+                                  roleCodes:
+                                    - string
+                                  type: string
+                              type: string
+                          specifiedCatches:
+                            - catchType: string
+                              species:
+                                _mmoId: string
+                                code: string
+                              specifiedSizeDistribution: string
+                              weightInKg: 0
+                          specifiedFishingGears:
+                            - _mmoId: string
+                              applicableGearCharacteristics:
+                                - _mmoId: string
+                                  dataType: string
+                                  type: string
+                                  unit: string
+                                  value: string
+                              roleCodes:
+                                - string
+                              type: string
+                          type: string
+                          vesselActivityCode: string
+                      valid: true
+                _links:
+                  first:
+                    href: string
+                  last:
+                    href: string
+                  next:
+                    href: string
+                  self:
+                    href: string
+                    templated: true
+                page:
+                  number: 0
+                  size: 0
+                  totalElements: 0
+                  totalPages: 0
+        '400':
+          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+        '500':
+          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+        '522':
+          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
+        '401':
+          description: Unauthorized or 403 Forbidden - Authentication errors.
+        '413':
+          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
+        '404':
+          description: Not Found - Invalid URL path.
+        '503':
+          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
+  /SalesNotes:
+    get:
+      tags:
+        - SalesNotes
+      summary: Sales Notes
+      description: MMO - ECC - v1 - GET - Sales Notes
+      operationId: get-salesnotes
+      parameters:
+        - name: customerid
+          in: header
+          schema:
+            type: string
+        - name: inmethod
+          in: header
+          schema:
+            type: string
+        - name: inuser
+          in: header
+          schema:
+            type: string
+        - name: methodid
+          in: header
+          schema:
+            type: string
+        - name: requestid
+          in: header
+          schema:
+            type: string
+        - name: serviceid
+          in: header
+          schema:
+            type: string
+        - name: testmode
+          in: header
+          schema:
+            type: string
+        - name: timestamp
+          in: header
+          schema:
+            type: string
+        - name: userid
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Root'
+              example:
+                _embedded:
+                  fishingActivityReports:
+                    - _id: string
+                      _links:
+                        fishingActivityReports:
+                          href: string
+                        self:
+                          href: string
+                      fishingActivities:
+                        - occurrence: string
+                          relatedFLUXLocations:
+                            - id: string
+                              scheme: string
+                              subRectangle: string
+                              type: string
+                          relatedFishingActivities:
+                            - relatedFLUXLocations:
+                                - id: string
+                                  scheme: string
+                                  subRectangle: string
+                                  type: string
+                              specifiedFishingGears:
+                                - applicableGearCharacteristics:
+                                    - _mmoId: string
+                                      dataType: string
+                                      type: string
+                                      unit: string
+                                      value: string
+                                  roleCodes:
+                                    - string
+                                  type: string
+                              type: string
+                          specifiedCatches:
+                            - catchType: string
+                              species:
+                                _mmoId: string
+                                code: string
+                              specifiedSizeDistribution: string
+                              weightInKg: 0
+                          specifiedFishingGears:
+                            - _mmoId: string
+                              applicableGearCharacteristics:
+                                - _mmoId: string
+                                  dataType: string
+                                  type: string
+                                  unit: string
+                                  value: string
+                              roleCodes:
+                                - string
+                              type: string
+                          type: string
+                          vesselActivityCode: string
+                      valid: true
+                _links:
+                  first:
+                    href: string
+                  last:
+                    href: string
+                  next:
+                    href: string
+                  self:
+                    href: string
+                    templated: true
+                page:
+                  number: 0
+                  size: 0
+                  totalElements: 0
+                  totalPages: 0
+        '400':
+          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+        '500':
+          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+        '522':
+          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
+        '401':
+          description: Unauthorized or 403 Forbidden - Authentication errors.
+        '413':
+          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
+        '404':
+          description: Not Found - Invalid URL path.
+        '503':
+          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
+  /elogs:
+    get:
+      tags:
+        - elogs
+      summary: eLogs
+      description: MMO - ECC - v1 - GET - eLogs
+      operationId: get-elogs
+      parameters:
+        - name: customerid
+          in: header
+          schema:
+            type: string
+        - name: inmethod
+          in: header
+          schema:
+            type: string
+        - name: inuser
+          in: header
+          schema:
+            type: string
+        - name: methodid
+          in: header
+          schema:
+            type: string
+        - name: requestid
+          in: header
+          schema:
+            type: string
+        - name: serviceid
+          in: header
+          schema:
+            type: string
+        - name: testmode
+          in: header
+          schema:
+            type: string
+        - name: timestamp
+          in: header
+          schema:
+            type: string
+        - name: userid
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Root'
+              example:
+                _embedded:
+                  fishingActivityReports:
+                    - _id: string
+                      _links:
+                        fishingActivityReports:
+                          href: string
+                        self:
+                          href: string
+                      fishingActivities:
+                        - occurrence: string
+                          relatedFLUXLocations:
+                            - id: string
+                              scheme: string
+                              subRectangle: string
+                              type: string
+                          relatedFishingActivities:
+                            - relatedFLUXLocations:
+                                - id: string
+                                  scheme: string
+                                  subRectangle: string
+                                  type: string
+                              specifiedFishingGears:
+                                - applicableGearCharacteristics:
+                                    - _mmoId: string
+                                      dataType: string
+                                      type: string
+                                      unit: string
+                                      value: string
+                                  roleCodes:
+                                    - string
+                                  type: string
+                              type: string
+                          specifiedCatches:
+                            - catchType: string
+                              species:
+                                _mmoId: string
+                                code: string
+                              specifiedSizeDistribution: string
+                              weightInKg: 0
+                          specifiedFishingGears:
+                            - _mmoId: string
+                              applicableGearCharacteristics:
+                                - _mmoId: string
+                                  dataType: string
+                                  type: string
+                                  unit: string
+                                  value: string
+                              roleCodes:
+                                - string
+                              type: string
+                          type: string
+                          vesselActivityCode: string
+                      valid: true
+                _links:
+                  first:
+                    href: string
+                  last:
+                    href: string
+                  next:
+                    href: string
+                  self:
+                    href: string
+                    templated: true
+                page:
+                  number: 0
+                  size: 0
+                  totalElements: 0
+                  totalPages: 0
+        '400':
+          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+        '500':
+          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+        '522':
+          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
+        '401':
+          description: Unauthorized or 403 Forbidden - Authentication errors.
+        '413':
+          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
+        '404':
+          description: Not Found - Invalid URL path.
+        '503':
+          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
 components:
-  securitySchemes:
-    apiKeyHeader:
-      type: apiKey
-      name: Ocp-Apim-Subscription-Key
-      in: header
-    apiKeyQuery:
-      type: apiKey
-      name: subscription-key
-      in: query
-security:
-  - apiKeyHeader: [ ]
-  - apiKeyQuery: [ ]
+  schemas:
+    Root:
+      type: object
+      properties:
+        _embedded:
+          type: object
+          properties:
+            fishingActivityReports:
+              type: array
+              items:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  _links:
+                    type: object
+                    properties:
+                      fishingActivityReports:
+                        type: object
+                        properties:
+                          href:
+                            type: string
+                      self:
+                        type: object
+                        properties:
+                          href:
+                            type: string
+                  fishingActivities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        occurrence:
+                          type: string
+                        relatedFLUXLocations:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                              scheme:
+                                type: string
+                              subRectangle:
+                                type: string
+                              type:
+                                type: string
+                        relatedFishingActivities:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              relatedFLUXLocations:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    id:
+                                      type: string
+                                    scheme:
+                                      type: string
+                                    subRectangle:
+                                      type: string
+                                    type:
+                                      type: string
+                              specifiedFishingGears:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    applicableGearCharacteristics:
+                                      type: array
+                                      items:
+                                        type: object
+                                        properties:
+                                          _mmoId:
+                                            type: string
+                                          dataType:
+                                            type: string
+                                          type:
+                                            type: string
+                                          unit:
+                                            type: string
+                                          value:
+                                            type: string
+                                    roleCodes:
+                                      type: array
+                                      items:
+                                        type: string
+                                    type:
+                                      type: string
+                              type:
+                                type: string
+                        specifiedCatches:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              catchType:
+                                type: string
+                              species:
+                                type: object
+                                properties:
+                                  _mmoId:
+                                    type: string
+                                  code:
+                                    type: string
+                              specifiedSizeDistribution:
+                                type: string
+                              weightInKg:
+                                type: integer
+                                format: int32
+                        specifiedFishingGears:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              _mmoId:
+                                type: string
+                              applicableGearCharacteristics:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    _mmoId:
+                                      type: string
+                                    dataType:
+                                      type: string
+                                    type:
+                                      type: string
+                                    unit:
+                                      type: string
+                                    value:
+                                      type: string
+                              roleCodes:
+                                type: array
+                                items:
+                                  type: string
+                              type:
+                                type: string
+                        type:
+                          type: string
+                        vesselActivityCode:
+                          type: string
+                  valid:
+                    type: boolean
+        _links:
+          type: object
+          properties:
+            first:
+              type: object
+              properties:
+                href:
+                  type: string
+            last:
+              type: object
+              properties:
+                href:
+                  type: string
+            next:
+              type: object
+              properties:
+                href:
+                  type: string
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+                templated:
+                  type: boolean
+        page:
+          type: object
+          properties:
+            number:
+              type: integer
+              format: int32
+            size:
+              type: integer
+              format: int32
+            totalElements:
+              type: integer
+              format: int32
+            totalPages:
+              type: integer
+              format: int32
+tags:
+  - name: FishingActivities
+  - name: LandingDeclarations
+  - name: SalesNotes
+  - name: elogs
