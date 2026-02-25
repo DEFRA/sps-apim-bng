@@ -5,13 +5,13 @@
     "apiVersion": "v1.0",
     "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
     "authenticationSettings": {},
-    "description": "Provides CAPP icc endpoints.",
+    "description": "Provides MMO icc endpoints.",
     "isCurrent": true,
-    "displayName": "CAPP ICC",
+    "displayName": "MMO-ECC Test 25 Feb V ICC",
     "protocols": [
       "https"
     ],
-    "serviceUrl": "https://tstcppafafa1401.azurewebsites.net/api",
+    "serviceUrl": "https://defra-test.boomi.cloud:444/ws/rest/DEFRA/v1/ECC",
     "subscriptionKeyParameterNames": {
       "header": "Ocp-Apim-Subscription-Key",
       "query": "subscription-key"
