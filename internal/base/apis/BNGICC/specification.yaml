@@ -1,518 +1,1225 @@
 openapi: 3.0.1
 info:
   title: BNGICC
-  version: v1.0
+  description: This is the OpenAPI Document on Azure Functions
+  version: v1
 servers:
-  - url: https://tst-int-api-gateway.azure.defra.cloud/api/fonts/v1.0
+  - url: https://tst-int-api-gateway.azure.defra.cloud/capp/v1
 paths:
-  /measureTypes:
-    get:
+  /GetChargeByChargeCode:
+    post:
       tags:
-        - measureTypes
-      summary: MeasureTypes
-      description: All Measure Types
-      operationId: get-measuretypes
-      parameters:
-        - name: x-wss-subname
-          in: header
-          schema:
-            type: string
-        - name: x-wss-username
-          in: header
-          schema:
-            type: string
+        - Charge Code Lookup
+      summary: GetChargeByChargeCode
+      description: GetChargeByChargeCode
+      operationId: GetChargeByChargeCode
+      requestBody:
+        description: Charge Lookup Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/requestRootObject'
+            example:
+              regime: string
+              applicationDate: string
+              source: string
+              sourceRef: string
+              globalFlags:
+                - name: string
+                  value: string
+              calculations:
+                - type: string
+                  charges:
+                    - chargeCode: string
+                      externalRef: string
+                      flags:
+                        - name: string
+                          value: string
       responses:
         '200':
-          description: Success
+          description: OK
           content:
-            application/json: { }
+            application/json:
+              schema:
+                $ref: '#/components/schemas/requestRootObject'
+              example:
+                regime: string
+                applicationDate: string
+                source: string
+                sourceRef: string
+                globalFlags:
+                  - name: string
+                    value: string
+                calculations:
+                  - type: string
+                    charges:
+                      - chargeCode: string
+                        externalRef: string
+                        flags:
+                          - name: string
+                            value: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/requestRootObject'
+              example:
+                regime: string
+                applicationDate: string
+                source: string
+                sourceRef: string
+                globalFlags:
+                  - name: string
+                    value: string
+                calculations:
+                  - type: string
+                    charges:
+                      - chargeCode: string
+                        externalRef: string
+                        flags:
+                          - name: string
+                            value: string
         '400':
-          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          description: Invalid request data provided.
           content:
-            text/html:
+            application/json:
               schema:
                 type: string
-              example: <_x0034_00Response-html>string</_x0034_00Response-html>
-        '401':
-          description: Unauthorized or 403 Forbidden - Authentication errors.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_01Response-html>string</_x0034_01Response-html>
-        '404':
-          description: Not Found - Invalid URL path.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_04Response-html>string</_x0034_04Response-html>
-        '413':
-          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_13Response-html>string</_x0034_13Response-html>
+              example: string
         '500':
-          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+          description: Server error while processing the request.
           content:
-            text/html:
+            application/json:
               schema:
                 type: string
-              example: <_x0035_00Response-html>string</_x0035_00Response-html>
-        '503':
-          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_03Response-html>string</_x0035_03Response-html>
-        '522':
-          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_22Response-html>string</_x0035_22Response-html>
-  /measuresList:
-    get:
+              example: string
+  /GetCharge:
+    post:
       tags:
-        - measuresList
-      summary: ListOfMeasures
-      description: All Measures
-      operationId: get-measureslist
-      parameters:
-        - name: x-wss-subname
-          in: header
-          schema:
-            type: string
-        - name: x-wss-username
-          in: header
-          schema:
-            type: string
+        - Charge Calculation
+      summary: GetCharge
+      description: GetCharge
+      operationId: GetCharge
+      requestBody:
+        description: Permit Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/headerRoot'
+            example:
+              context:
+                regime: string
+                effectiveDate: string
+                source: string
+                sourceRef: string
+                chargeRequestType: string
       responses:
         '200':
-          description: Success
+          description: OK
           content:
-            application/json: { }
+            application/json:
+              schema:
+                $ref: '#/components/schemas/headerRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/headerRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
         '400':
-          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          description: Invalid request data provided.
           content:
-            text/html:
+            application/json:
               schema:
                 type: string
-              example: <_x0034_00Response-html>string</_x0034_00Response-html>
-        '401':
-          description: Unauthorized or 403 Forbidden - Authentication errors.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_01Response-html>string</_x0034_01Response-html>
-        '404':
-          description: Not Found - Invalid URL path.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_04Response-html>string</_x0034_04Response-html>
-        '413':
-          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_13Response-html>string</_x0034_13Response-html>
+              example: string
         '500':
-          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+          description: Server error while processing the request.
           content:
-            text/html:
+            application/json:
               schema:
                 type: string
-              example: <_x0035_00Response-html>string</_x0035_00Response-html>
-        '503':
-          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_03Response-html>string</_x0035_03Response-html>
-        '522':
-          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_22Response-html>string</_x0035_22Response-html>
-  /monitoringstatus:
-    get:
+              example: string
+  /MCPSGCalculation:
+    post:
       tags:
-        - monitoringstatus
-      summary: ListOfMonitoringStatus
-      description: ListOfMonitoringStatus
-      operationId: get-monitoringstatus
-      parameters:
-        - name: x-wss-subname
-          in: header
-          schema:
-            type: string
-        - name: x-wss-username
-          in: header
-          schema:
-            type: string
+        - MCPSG Charge Calculation
+      summary: MCPSGCalculation
+      description: MCPSGCalculation
+      operationId: MCPSGCalculation
+      requestBody:
+        description: MCPSG Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mcpsgRoot'
+            example:
+              context:
+                regime: string
+                effectiveDate: string
+                source: string
+                sourceRef: string
+                chargeRequestType: string
+              application:
+                id: string
+                registrationTypeId: string
+                registrationTypeDescription: string
+                periodSpan: string
+                activities:
+                  - id: string
+                    name: string
+                    regulatedActivityClass:
+                      id: string
+                      name: string
+                    regulatedActivitySubClass:
+                      id: string
+                      name: string
+                    standardRule:
+                      id: string
+                      name: string
+                    properties:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        propertyValueDecimal: 0
+                        propertyValueBoolean: true
+                        propertyValueDateTime: { }
+                    relatedEntryReleasePoints:
+                      - id: string
+                    relatedApplicationPermitAssets:
+                      - id: string
+                documents:
+                  - id: string
+                    name: string
+                locations:
+                  - locationId: string
+                    type: string
+                    predefinedLocationId: string
+                    predefinedLocationDescription: string
+                    subLocations:
+                      - subLocationId: string
+                        subLocationDescription: string
+                    relatedEntryReleasePoints:
+                      - id: string
+                entryOrReleasePoints:
+                  - id: string
+                    name: string
+                    entryOrRelease: string
+                    nationalGridReference: string
+                    limits:
+                      - { }
+                applicationPermitAssets:
+                  - id: string
+                    assetName: string
+                    categoryId: string
+                    categoryDescription: string
+                    subcategoryId: string
+                    subCategoryDescription: string
+                    assetVersion: 0
+                    number: 0
+                    assetProps:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        unit: string
+                        unitId: string
       responses:
         '200':
-          description: Success
+          description: OK
           content:
-            application/json: { }
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mcpsgRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mcpsgRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
         '400':
-          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          description: Invalid request data provided.
           content:
-            text/html:
+            application/json:
               schema:
                 type: string
-              example: <_x0034_00Response-html>string</_x0034_00Response-html>
-        '401':
-          description: Unauthorized or 403 Forbidden - Authentication errors.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_01Response-html>string</_x0034_01Response-html>
-        '404':
-          description: Not Found - Invalid URL path.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_04Response-html>string</_x0034_04Response-html>
-        '413':
-          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_13Response-html>string</_x0034_13Response-html>
+              example: string
         '500':
-          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+          description: Server error while processing the request.
           content:
-            text/html:
+            application/json:
               schema:
                 type: string
-              example: <_x0035_00Response-html>string</_x0035_00Response-html>
-        '503':
-          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_03Response-html>string</_x0035_03Response-html>
-        '522':
-          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_22Response-html>string</_x0035_22Response-html>
-  /readingreasons:
+              example: string
+  /NAVASCalculation:
     get:
       tags:
-        - readingreasons
-      summary: ListOfReadingReasons
-      description: ListOfReadingReasons
-      operationId: get-readingreasons
-      parameters:
-        - name: x-wss-subname
-          in: header
-          schema:
-            type: string
-        - name: x-wss-username
-          in: header
-          schema:
-            type: string
+        - NAVAS Charge Calculation
+      summary: NAVASCalculation
+      description: NAVASCalculation
+      operationId: NAVASCalculation
+      requestBody:
+        description: NAVAS Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/navRoot'
+            example:
+              context:
+                regime: string
+                effectiveDate: string
+                source: string
+                sourceRef: string
+                chargeRequestType: string
+              application:
+                id: string
+                registrationTypeId: string
+                registrationTypeDescription: string
+                periodSpan: string
+                activities:
+                  - id: string
+                    name: string
+                    regulatedActivityClass:
+                      id: string
+                      name: string
+                    regulatedActivitySubClass:
+                      id: string
+                      name: string
+                    standardRule:
+                      id: string
+                      name: string
+                    properties:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        propertyValueDecimal: 0
+                        propertyValueBoolean: true
+                        propertyValueDateTime: { }
+                    relatedEntryReleasePoints:
+                      - id: string
+                    relatedApplicationPermitAssets:
+                      - id: string
+                documents:
+                  - id: string
+                    name: string
+                locations:
+                  - locationId: string
+                    type: string
+                    predefinedLocationId: string
+                    predefinedLocationDescription: string
+                    subLocations:
+                      - subLocationId: string
+                        subLocationDescription: string
+                    relatedEntryReleasePoints:
+                      - id: string
+                entryOrReleasePoints:
+                  - id: string
+                    name: string
+                    entryOrRelease: string
+                    nationalGridReference: string
+                    limits:
+                      - { }
+                applicationPermitAssets:
+                  - id: string
+                    assetName: string
+                    categoryId: string
+                    categoryDescription: string
+                    subcategoryId: string
+                    subCategoryDescription: string
+                    assetVersion: 0
+                    number: 0
+                    assetProps:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        unit: string
+                        unitId: string
       responses:
         '200':
-          description: Success
+          description: OK
           content:
-            application/json: { }
+            application/json:
+              schema:
+                $ref: '#/components/schemas/navRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/navRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
         '400':
-          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          description: Invalid request data provided.
           content:
-            text/html:
+            application/json:
               schema:
                 type: string
-              example: <_x0034_00Response-html>string</_x0034_00Response-html>
-        '401':
-          description: Unauthorized or 403 Forbidden - Authentication errors.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_01Response-html>string</_x0034_01Response-html>
-        '404':
-          description: Not Found - Invalid URL path.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_04Response-html>string</_x0034_04Response-html>
-        '413':
-          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_13Response-html>string</_x0034_13Response-html>
+              example: string
         '500':
-          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+          description: Server error while processing the request.
           content:
-            text/html:
+            application/json:
               schema:
                 type: string
-              example: <_x0035_00Response-html>string</_x0035_00Response-html>
-        '503':
-          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_03Response-html>string</_x0035_03Response-html>
-        '522':
-          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_22Response-html>string</_x0035_22Response-html>
-  /readingsList:
-    get:
+              example: string
+  /NAVCalculation:
+    post:
       tags:
-        - readingsList
-      summary: Readings List (3 Params)
-      description: Readings List (3 Params)
-      operationId: get-readingslist
-      parameters:
-        - name: x-wss-subname
-          in: header
-          schema:
-            type: string
-        - name: x-wss-username
-          in: header
-          schema:
-            type: string
+        - NAV Charge Calculation
+      summary: NAVCalculation
+      description: NAVCalculation
+      operationId: NAVCalculation
+      requestBody:
+        description: NAV Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/navRoot'
+            example:
+              context:
+                regime: string
+                effectiveDate: string
+                source: string
+                sourceRef: string
+                chargeRequestType: string
+              application:
+                id: string
+                registrationTypeId: string
+                registrationTypeDescription: string
+                periodSpan: string
+                activities:
+                  - id: string
+                    name: string
+                    regulatedActivityClass:
+                      id: string
+                      name: string
+                    regulatedActivitySubClass:
+                      id: string
+                      name: string
+                    standardRule:
+                      id: string
+                      name: string
+                    properties:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        propertyValueDecimal: 0
+                        propertyValueBoolean: true
+                        propertyValueDateTime: { }
+                    relatedEntryReleasePoints:
+                      - id: string
+                    relatedApplicationPermitAssets:
+                      - id: string
+                documents:
+                  - id: string
+                    name: string
+                locations:
+                  - locationId: string
+                    type: string
+                    predefinedLocationId: string
+                    predefinedLocationDescription: string
+                    subLocations:
+                      - subLocationId: string
+                        subLocationDescription: string
+                    relatedEntryReleasePoints:
+                      - id: string
+                entryOrReleasePoints:
+                  - id: string
+                    name: string
+                    entryOrRelease: string
+                    nationalGridReference: string
+                    limits:
+                      - { }
+                applicationPermitAssets:
+                  - id: string
+                    assetName: string
+                    categoryId: string
+                    categoryDescription: string
+                    subcategoryId: string
+                    subCategoryDescription: string
+                    assetVersion: 0
+                    number: 0
+                    assetProps:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        unit: string
+                        unitId: string
       responses:
         '200':
-          description: Success
+          description: OK
           content:
-            application/json: { }
+            application/json:
+              schema:
+                $ref: '#/components/schemas/navRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/navRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
         '400':
-          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          description: Invalid request data provided.
           content:
-            text/html:
+            application/json:
               schema:
                 type: string
-              example: <_x0034_00Response-html>string</_x0034_00Response-html>
-        '401':
-          description: Unauthorized or 403 Forbidden - Authentication errors.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_01Response-html>string</_x0034_01Response-html>
-        '404':
-          description: Not Found - Invalid URL path.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_04Response-html>string</_x0034_04Response-html>
-        '413':
-          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_13Response-html>string</_x0034_13Response-html>
+              example: string
         '500':
-          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+          description: Server error while processing the request.
           content:
-            text/html:
+            application/json:
               schema:
                 type: string
-              example: <_x0035_00Response-html>string</_x0035_00Response-html>
-        '503':
-          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_03Response-html>string</_x0035_03Response-html>
-        '522':
-          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_22Response-html>string</_x0035_22Response-html>
-  /readingsList/reason:
-    get:
-      tags:
-        - readingsList
-      summary: Readings List (4 Params)
-      description: Readings List (4 Params)
-      operationId: get-readingslist-reason
-      parameters:
-        - name: x-wss-subname
-          in: header
-          schema:
-            type: string
-        - name: x-wss-username
-          in: header
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json: { }
-        '400':
-          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_00Response-html>string</_x0034_00Response-html>
-        '401':
-          description: Unauthorized or 403 Forbidden - Authentication errors.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_01Response-html>string</_x0034_01Response-html>
-        '404':
-          description: Not Found - Invalid URL path.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_04Response-html>string</_x0034_04Response-html>
-        '413':
-          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_13Response-html>string</_x0034_13Response-html>
-        '500':
-          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_00Response-html>string</_x0035_00Response-html>
-        '503':
-          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_03Response-html>string</_x0035_03Response-html>
-        '522':
-          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_22Response-html>string</_x0035_22Response-html>
-  /stations:
-    get:
-      tags:
-        - stations
-      summary: MonitoringStations
-      description: All Stations
-      operationId: get-stations
-      parameters:
-        - name: x-wss-subname
-          in: header
-          schema:
-            type: string
-        - name: x-wss-username
-          in: header
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json: { }
-        '400':
-          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_00Response-html>string</_x0034_00Response-html>
-        '401':
-          description: Unauthorized or 403 Forbidden - Authentication errors.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_01Response-html>string</_x0034_01Response-html>
-        '404':
-          description: Not Found - Invalid URL path.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_04Response-html>string</_x0034_04Response-html>
-        '413':
-          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0034_13Response-html>string</_x0034_13Response-html>
-        '500':
-          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_00Response-html>string</_x0035_00Response-html>
-        '503':
-          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_03Response-html>string</_x0035_03Response-html>
-        '522':
-          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
-          content:
-            text/html:
-              schema:
-                type: string
-              example: <_x0035_22Response-html>string</_x0035_22Response-html>
+              example: string
 components:
-  securitySchemes:
-    apiKeyHeader:
-      type: apiKey
-      name: Ocp-Apim-Subscription-Key
-      in: header
-    apiKeyQuery:
-      type: apiKey
-      name: subscription-key
-      in: query
-security:
-  - apiKeyHeader: [ ]
-  - apiKeyQuery: [ ]
-tags:
-  - name: measureTypes
-  - name: measuresList
-  - name: monitoringstatus
-  - name: readingreasons
-  - name: readingsList
-  - name: stations
+  schemas:
+    activity:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        regulatedActivityClass:
+          $ref: '#/components/schemas/regulatedActivityClass'
+        regulatedActivitySubClass:
+          $ref: '#/components/schemas/regulatedActivitySubClass'
+        standardRule:
+          $ref: '#/components/schemas/standardRule'
+        properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/property'
+        relatedEntryReleasePoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/relatedEntryReleasePoint'
+        relatedApplicationPermitAssets:
+          type: array
+          items:
+            $ref: '#/components/schemas/relatedApplicationPermitAsset'
+    application:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        registrationTypeId:
+          type: string
+          format: uuid
+          nullable: true
+        registrationTypeDescription:
+          type: string
+        periodSpan:
+          type: string
+        activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/activity'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/document'
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/location'
+        entryOrReleasePoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/entryOrReleasePoint'
+        applicationPermitAssets:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationPermitAsset'
+    applicationPermitAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        assetName:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+        categoryDescription:
+          type: string
+        subcategoryId:
+          type: string
+          format: uuid
+          nullable: true
+        subCategoryDescription:
+          type: string
+        assetVersion:
+          type: integer
+          format: int32
+        number:
+          type: integer
+          format: int32
+          nullable: true
+        assetProps:
+          type: array
+          items:
+            $ref: '#/components/schemas/assetProp'
+    assetProp:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        propertyValue:
+          type: string
+        unit:
+          type: string
+        unitId:
+          type: string
+          format: uuid
+          nullable: true
+    context:
+      type: object
+      properties:
+        regime:
+          type: string
+        effectiveDate:
+          type: string
+          format: date-time
+        source:
+          type: string
+        sourceRef:
+          type: string
+          format: uuid
+          nullable: true
+        chargeRequestType:
+          type: string
+    document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    entryOrReleasePoint:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        entryOrRelease:
+          type: string
+        nationalGridReference:
+          type: string
+        limits:
+          type: array
+          items:
+            type: object
+    headerRoot:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/context'
+    location:
+      type: object
+      properties:
+        locationId:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          type: string
+        predefinedLocationId:
+          type: string
+          format: uuid
+          nullable: true
+        predefinedLocationDescription:
+          type: string
+        subLocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/subLocation'
+        relatedEntryReleasePoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/relatedEntryReleasePoint'
+    mcpsgRoot:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/context'
+        application:
+          $ref: '#/components/schemas/application'
+    navRoot:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/context'
+        application:
+          $ref: '#/components/schemas/application'
+    property:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        propertyValue:
+          type: string
+        propertyValueDecimal:
+          type: number
+          format: double
+        propertyValueBoolean:
+          type: boolean
+        propertyValueDateTime:
+          type: object
+    regulatedActivityClass:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+    regulatedActivitySubClass:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+    relatedApplicationPermitAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+    relatedEntryReleasePoint:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+    requestCalculation:
+      type: object
+      properties:
+        type:
+          type: string
+        charges:
+          type: array
+          items:
+            $ref: '#/components/schemas/requestCharge'
+    requestCharge:
+      type: object
+      properties:
+        chargeCode:
+          type: string
+        externalRef:
+          type: string
+        flags:
+          type: array
+          items:
+            $ref: '#/components/schemas/requestFlag'
+    requestFlag:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    requestGlobalFlag:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    requestRootObject:
+      type: object
+      properties:
+        regime:
+          type: string
+        applicationDate:
+          type: string
+          format: date-time
+        source:
+          type: string
+        sourceRef:
+          type: string
+        globalFlags:
+          type: array
+          items:
+            $ref: '#/components/schemas/requestGlobalFlag'
+        calculations:
+          type: array
+          items:
+            $ref: '#/components/schemas/requestCalculation'
+    standardRule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+    subLocation:
+      type: object
+      properties:
+        subLocationId:
+          type: string
+          format: uuid
+          nullable: true
+        subLocationDescription:
+          type: string
 
