@@ -17,6 +17,8 @@
 				</claim>
 			</required-claims>
 		</validate-jwt>
+		<set-header name="Authorization" exists-action="delete" />
+        <authentication-certificate certificate-id="BOOMI-TST-MMO" />
 	</inbound>
 	<backend>
 		<base />
