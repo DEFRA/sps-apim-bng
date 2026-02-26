@@ -7,7 +7,7 @@
     "authenticationSettings": {},
     "description": "Provides CAPP icc endpoints.",
     "isCurrent": true,
-    "displayName": "CAPP ICC",
+    "displayName": "CAPP ICC API",
     "protocols": [
       "https"
     ],
