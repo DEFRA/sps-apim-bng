@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: BNGICC
-  description: CAPP This is the OpenAPI Document on Azure Functions
+  description: CAPP This is the OpenAPI Document on Azure Functions 
   version: v1
 servers:
   - url: https://tst-int-api-gateway.azure.defra.cloud/capp/v1
