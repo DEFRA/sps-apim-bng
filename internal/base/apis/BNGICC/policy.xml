@@ -1,8 +1,8 @@
 <policies>
 	<inbound>
-		<!-- Policy with updated App Reg names in APIOps. This is updated on 01/05/2025 part2-->
+		<!-- Policy with updated App Reg names in APIOps. This is updated on 26/02/2026-->
 		<base />
-		<rate-limit calls="35" renewal-period="45" />
+		<rate-limit calls="60" renewal-period="60" />
 		<validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
 			<openid-config url="https://login.microsoftonline.com/6f504113-6b64-43f2-ade9-242e05780007/v2.0/.well-known/openid-configuration" />
 			<audiences>
