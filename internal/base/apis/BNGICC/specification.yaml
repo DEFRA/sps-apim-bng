@@ -1,736 +1,1225 @@
 openapi: 3.0.1
 info:
   title: BNGICC
-  version: v1.0
+  description: This is the CAPP OpenAPI Document on Azure Functions
+  version: v1
 servers:
-  - url: https://tst-int-api-gateway.azure.defra.cloud/api/ecc/v1.0
+  - url: https://tst-int-api-gateway.azure.defra.cloud/capp/v1
 paths:
-  /FishingActivities:
-    get:
+  /GetChargeByChargeCode:
+    post:
       tags:
-        - FishingActivities
-      summary: Fishing Activities
-      description: MMO - ECC - v1 - GET - Fishing Activities
-      operationId: get-fishingactivities
-      parameters:
-        - name: customerid
-          in: header
-          schema:
-            type: string
-        - name: inmethod
-          in: header
-          schema:
-            type: string
-        - name: inuser
-          in: header
-          schema:
-            type: string
-        - name: methodid
-          in: header
-          schema:
-            type: string
-        - name: requestid
-          in: header
-          schema:
-            type: string
-        - name: serviceid
-          in: header
-          schema:
-            type: string
-        - name: testmode
-          in: header
-          schema:
-            type: string
-        - name: timestamp
-          in: header
-          schema:
-            type: string
-        - name: userid
-          in: header
-          schema:
-            type: string
+        - Charge Code Lookup
+      summary: GetChargeByChargeCode
+      description: GetChargeByChargeCode
+      operationId: GetChargeByChargeCode
+      requestBody:
+        description: Charge Lookup Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/requestRootObject'
+            example:
+              regime: string
+              applicationDate: string
+              source: string
+              sourceRef: string
+              globalFlags:
+                - name: string
+                  value: string
+              calculations:
+                - type: string
+                  charges:
+                    - chargeCode: string
+                      externalRef: string
+                      flags:
+                        - name: string
+                          value: string
       responses:
         '200':
-          description: Success
+          description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Root'
+                $ref: '#/components/schemas/requestRootObject'
               example:
-                _embedded:
-                  fishingActivityReports:
-                    - _id: string
-                      _links:
-                        fishingActivityReports:
-                          href: string
-                        self:
-                          href: string
-                      fishingActivities:
-                        - occurrence: string
-                          relatedFLUXLocations:
-                            - id: string
-                              scheme: string
-                              subRectangle: string
-                              type: string
-                          relatedFishingActivities:
-                            - relatedFLUXLocations:
-                                - id: string
-                                  scheme: string
-                                  subRectangle: string
-                                  type: string
-                              specifiedFishingGears:
-                                - applicableGearCharacteristics:
-                                    - _mmoId: string
-                                      dataType: string
-                                      type: string
-                                      unit: string
-                                      value: string
-                                  roleCodes:
-                                    - string
-                                  type: string
-                              type: string
-                          specifiedCatches:
-                            - catchType: string
-                              species:
-                                _mmoId: string
-                                code: string
-                              specifiedSizeDistribution: string
-                              weightInKg: 0
-                          specifiedFishingGears:
-                            - _mmoId: string
-                              applicableGearCharacteristics:
-                                - _mmoId: string
-                                  dataType: string
-                                  type: string
-                                  unit: string
-                                  value: string
-                              roleCodes:
-                                - string
-                              type: string
-                          type: string
-                          vesselActivityCode: string
-                      valid: true
-                _links:
-                  first:
-                    href: string
-                  last:
-                    href: string
-                  next:
-                    href: string
-                  self:
-                    href: string
-                    templated: true
-                page:
-                  number: 0
-                  size: 0
-                  totalElements: 0
-                  totalPages: 0
-        '400':
-          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
-        '500':
-          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
-        '522':
-          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
-        '401':
-          description: Unauthorized or 403 Forbidden - Authentication errors.
-        '413':
-          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
-        '404':
-          description: Not Found - Invalid URL path.
-        '503':
-          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
-  /LandingDeclarations:
-    get:
-      tags:
-        - LandingDeclarations
-      summary: Landing Declarations
-      description: Get Landing Declaration for vessels over 10 meters
-      operationId: get-landingdeclarations
-      parameters:
-        - name: customerid
-          in: header
-          schema:
-            type: string
-        - name: inmethod
-          in: header
-          schema:
-            type: string
-        - name: inuser
-          in: header
-          schema:
-            type: string
-        - name: methodid
-          in: header
-          schema:
-            type: string
-        - name: requestid
-          in: header
-          schema:
-            type: string
-        - name: serviceid
-          in: header
-          schema:
-            type: string
-        - name: testmode
-          in: header
-          schema:
-            type: string
-        - name: timestamp
-          in: header
-          schema:
-            type: string
-        - name: userid
-          in: header
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success
+                regime: string
+                applicationDate: string
+                source: string
+                sourceRef: string
+                globalFlags:
+                  - name: string
+                    value: string
+                calculations:
+                  - type: string
+                    charges:
+                      - chargeCode: string
+                        externalRef: string
+                        flags:
+                          - name: string
+                            value: string
+        '201':
+          description: Application data successfully submitted.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Root'
+                $ref: '#/components/schemas/requestRootObject'
               example:
-                _embedded:
-                  fishingActivityReports:
-                    - _id: string
-                      _links:
-                        fishingActivityReports:
-                          href: string
-                        self:
-                          href: string
-                      fishingActivities:
-                        - occurrence: string
-                          relatedFLUXLocations:
-                            - id: string
-                              scheme: string
-                              subRectangle: string
-                              type: string
-                          relatedFishingActivities:
-                            - relatedFLUXLocations:
-                                - id: string
-                                  scheme: string
-                                  subRectangle: string
-                                  type: string
-                              specifiedFishingGears:
-                                - applicableGearCharacteristics:
-                                    - _mmoId: string
-                                      dataType: string
-                                      type: string
-                                      unit: string
-                                      value: string
-                                  roleCodes:
-                                    - string
-                                  type: string
-                              type: string
-                          specifiedCatches:
-                            - catchType: string
-                              species:
-                                _mmoId: string
-                                code: string
-                              specifiedSizeDistribution: string
-                              weightInKg: 0
-                          specifiedFishingGears:
-                            - _mmoId: string
-                              applicableGearCharacteristics:
-                                - _mmoId: string
-                                  dataType: string
-                                  type: string
-                                  unit: string
-                                  value: string
-                              roleCodes:
-                                - string
-                              type: string
-                          type: string
-                          vesselActivityCode: string
-                      valid: true
-                _links:
-                  first:
-                    href: string
-                  last:
-                    href: string
-                  next:
-                    href: string
-                  self:
-                    href: string
-                    templated: true
-                page:
-                  number: 0
-                  size: 0
-                  totalElements: 0
-                  totalPages: 0
+                regime: string
+                applicationDate: string
+                source: string
+                sourceRef: string
+                globalFlags:
+                  - name: string
+                    value: string
+                calculations:
+                  - type: string
+                    charges:
+                      - chargeCode: string
+                        externalRef: string
+                        flags:
+                          - name: string
+                            value: string
         '400':
-          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
-        '500':
-          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
-        '522':
-          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
-        '401':
-          description: Unauthorized or 403 Forbidden - Authentication errors.
-        '413':
-          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
-        '404':
-          description: Not Found - Invalid URL path.
-        '503':
-          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
-  /SalesNotes:
-    get:
-      tags:
-        - SalesNotes
-      summary: Sales Notes
-      description: MMO - ECC - v1 - GET - Sales Notes
-      operationId: get-salesnotes
-      parameters:
-        - name: customerid
-          in: header
-          schema:
-            type: string
-        - name: inmethod
-          in: header
-          schema:
-            type: string
-        - name: inuser
-          in: header
-          schema:
-            type: string
-        - name: methodid
-          in: header
-          schema:
-            type: string
-        - name: requestid
-          in: header
-          schema:
-            type: string
-        - name: serviceid
-          in: header
-          schema:
-            type: string
-        - name: testmode
-          in: header
-          schema:
-            type: string
-        - name: timestamp
-          in: header
-          schema:
-            type: string
-        - name: userid
-          in: header
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success
+          description: Invalid request data provided.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Root'
-              example:
-                _embedded:
-                  fishingActivityReports:
-                    - _id: string
-                      _links:
-                        fishingActivityReports:
-                          href: string
-                        self:
-                          href: string
-                      fishingActivities:
-                        - occurrence: string
-                          relatedFLUXLocations:
-                            - id: string
-                              scheme: string
-                              subRectangle: string
-                              type: string
-                          relatedFishingActivities:
-                            - relatedFLUXLocations:
-                                - id: string
-                                  scheme: string
-                                  subRectangle: string
-                                  type: string
-                              specifiedFishingGears:
-                                - applicableGearCharacteristics:
-                                    - _mmoId: string
-                                      dataType: string
-                                      type: string
-                                      unit: string
-                                      value: string
-                                  roleCodes:
-                                    - string
-                                  type: string
-                              type: string
-                          specifiedCatches:
-                            - catchType: string
-                              species:
-                                _mmoId: string
-                                code: string
-                              specifiedSizeDistribution: string
-                              weightInKg: 0
-                          specifiedFishingGears:
-                            - _mmoId: string
-                              applicableGearCharacteristics:
-                                - _mmoId: string
-                                  dataType: string
-                                  type: string
-                                  unit: string
-                                  value: string
-                              roleCodes:
-                                - string
-                              type: string
-                          type: string
-                          vesselActivityCode: string
-                      valid: true
-                _links:
-                  first:
-                    href: string
-                  last:
-                    href: string
-                  next:
-                    href: string
-                  self:
-                    href: string
-                    templated: true
-                page:
-                  number: 0
-                  size: 0
-                  totalElements: 0
-                  totalPages: 0
-        '400':
-          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+                type: string
+              example: string
         '500':
-          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
-        '522':
-          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
-        '401':
-          description: Unauthorized or 403 Forbidden - Authentication errors.
-        '413':
-          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
-        '404':
-          description: Not Found - Invalid URL path.
-        '503':
-          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
-  /elogs:
-    get:
-      tags:
-        - elogs
-      summary: eLogs
-      description: MMO - ECC - v1 - GET - eLogs
-      operationId: get-elogs
-      parameters:
-        - name: customerid
-          in: header
-          schema:
-            type: string
-        - name: inmethod
-          in: header
-          schema:
-            type: string
-        - name: inuser
-          in: header
-          schema:
-            type: string
-        - name: methodid
-          in: header
-          schema:
-            type: string
-        - name: requestid
-          in: header
-          schema:
-            type: string
-        - name: serviceid
-          in: header
-          schema:
-            type: string
-        - name: testmode
-          in: header
-          schema:
-            type: string
-        - name: timestamp
-          in: header
-          schema:
-            type: string
-        - name: userid
-          in: header
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success
+          description: Server error while processing the request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Root'
+                type: string
+              example: string
+  /GetCharge:
+    post:
+      tags:
+        - Charge Calculation
+      summary: GetCharge
+      description: GetCharge
+      operationId: GetCharge
+      requestBody:
+        description: Permit Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/headerRoot'
+            example:
+              context:
+                regime: string
+                effectiveDate: string
+                source: string
+                sourceRef: string
+                chargeRequestType: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/headerRoot'
               example:
-                _embedded:
-                  fishingActivityReports:
-                    - _id: string
-                      _links:
-                        fishingActivityReports:
-                          href: string
-                        self:
-                          href: string
-                      fishingActivities:
-                        - occurrence: string
-                          relatedFLUXLocations:
-                            - id: string
-                              scheme: string
-                              subRectangle: string
-                              type: string
-                          relatedFishingActivities:
-                            - relatedFLUXLocations:
-                                - id: string
-                                  scheme: string
-                                  subRectangle: string
-                                  type: string
-                              specifiedFishingGears:
-                                - applicableGearCharacteristics:
-                                    - _mmoId: string
-                                      dataType: string
-                                      type: string
-                                      unit: string
-                                      value: string
-                                  roleCodes:
-                                    - string
-                                  type: string
-                              type: string
-                          specifiedCatches:
-                            - catchType: string
-                              species:
-                                _mmoId: string
-                                code: string
-                              specifiedSizeDistribution: string
-                              weightInKg: 0
-                          specifiedFishingGears:
-                            - _mmoId: string
-                              applicableGearCharacteristics:
-                                - _mmoId: string
-                                  dataType: string
-                                  type: string
-                                  unit: string
-                                  value: string
-                              roleCodes:
-                                - string
-                              type: string
-                          type: string
-                          vesselActivityCode: string
-                      valid: true
-                _links:
-                  first:
-                    href: string
-                  last:
-                    href: string
-                  next:
-                    href: string
-                  self:
-                    href: string
-                    templated: true
-                page:
-                  number: 0
-                  size: 0
-                  totalElements: 0
-                  totalPages: 0
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/headerRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
         '400':
-          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          description: Invalid request data provided.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
         '500':
-          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
-        '522':
-          description: Connection Timed Out - This message is returned to the client when the SOA Worker Maximum Execution Time has been exceeded.
-        '401':
-          description: Unauthorized or 403 Forbidden - Authentication errors.
-        '413':
-          description: Request Entity Too Large - The request data was too large. This is based on the SOA Input Size quota.
-        '404':
-          description: Not Found - Invalid URL path.
-        '503':
-          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the Atom is starting or stopping.
+          description: Server error while processing the request.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+  /MCPSGCalculation:
+    post:
+      tags:
+        - MCPSG Charge Calculation
+      summary: MCPSGCalculation
+      description: MCPSGCalculation
+      operationId: MCPSGCalculation
+      requestBody:
+        description: MCPSG Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mcpsgRoot'
+            example:
+              context:
+                regime: string
+                effectiveDate: string
+                source: string
+                sourceRef: string
+                chargeRequestType: string
+              application:
+                id: string
+                registrationTypeId: string
+                registrationTypeDescription: string
+                periodSpan: string
+                activities:
+                  - id: string
+                    name: string
+                    regulatedActivityClass:
+                      id: string
+                      name: string
+                    regulatedActivitySubClass:
+                      id: string
+                      name: string
+                    standardRule:
+                      id: string
+                      name: string
+                    properties:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        propertyValueDecimal: 0
+                        propertyValueBoolean: true
+                        propertyValueDateTime: { }
+                    relatedEntryReleasePoints:
+                      - id: string
+                    relatedApplicationPermitAssets:
+                      - id: string
+                documents:
+                  - id: string
+                    name: string
+                locations:
+                  - locationId: string
+                    type: string
+                    predefinedLocationId: string
+                    predefinedLocationDescription: string
+                    subLocations:
+                      - subLocationId: string
+                        subLocationDescription: string
+                    relatedEntryReleasePoints:
+                      - id: string
+                entryOrReleasePoints:
+                  - id: string
+                    name: string
+                    entryOrRelease: string
+                    nationalGridReference: string
+                    limits:
+                      - { }
+                applicationPermitAssets:
+                  - id: string
+                    assetName: string
+                    categoryId: string
+                    categoryDescription: string
+                    subcategoryId: string
+                    subCategoryDescription: string
+                    assetVersion: 0
+                    number: 0
+                    assetProps:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        unit: string
+                        unitId: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mcpsgRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mcpsgRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '400':
+          description: Invalid request data provided.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+        '500':
+          description: Server error while processing the request.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+  /NAVASCalculation:
+    get:
+      tags:
+        - NAVAS Charge Calculation
+      summary: NAVASCalculation
+      description: NAVASCalculation
+      operationId: NAVASCalculation
+      requestBody:
+        description: NAVAS Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/navRoot'
+            example:
+              context:
+                regime: string
+                effectiveDate: string
+                source: string
+                sourceRef: string
+                chargeRequestType: string
+              application:
+                id: string
+                registrationTypeId: string
+                registrationTypeDescription: string
+                periodSpan: string
+                activities:
+                  - id: string
+                    name: string
+                    regulatedActivityClass:
+                      id: string
+                      name: string
+                    regulatedActivitySubClass:
+                      id: string
+                      name: string
+                    standardRule:
+                      id: string
+                      name: string
+                    properties:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        propertyValueDecimal: 0
+                        propertyValueBoolean: true
+                        propertyValueDateTime: { }
+                    relatedEntryReleasePoints:
+                      - id: string
+                    relatedApplicationPermitAssets:
+                      - id: string
+                documents:
+                  - id: string
+                    name: string
+                locations:
+                  - locationId: string
+                    type: string
+                    predefinedLocationId: string
+                    predefinedLocationDescription: string
+                    subLocations:
+                      - subLocationId: string
+                        subLocationDescription: string
+                    relatedEntryReleasePoints:
+                      - id: string
+                entryOrReleasePoints:
+                  - id: string
+                    name: string
+                    entryOrRelease: string
+                    nationalGridReference: string
+                    limits:
+                      - { }
+                applicationPermitAssets:
+                  - id: string
+                    assetName: string
+                    categoryId: string
+                    categoryDescription: string
+                    subcategoryId: string
+                    subCategoryDescription: string
+                    assetVersion: 0
+                    number: 0
+                    assetProps:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        unit: string
+                        unitId: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/navRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/navRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '400':
+          description: Invalid request data provided.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+        '500':
+          description: Server error while processing the request.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+  /NAVCalculation:
+    post:
+      tags:
+        - NAV Charge Calculation
+      summary: NAVCalculation
+      description: NAVCalculation
+      operationId: NAVCalculation
+      requestBody:
+        description: NAV Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/navRoot'
+            example:
+              context:
+                regime: string
+                effectiveDate: string
+                source: string
+                sourceRef: string
+                chargeRequestType: string
+              application:
+                id: string
+                registrationTypeId: string
+                registrationTypeDescription: string
+                periodSpan: string
+                activities:
+                  - id: string
+                    name: string
+                    regulatedActivityClass:
+                      id: string
+                      name: string
+                    regulatedActivitySubClass:
+                      id: string
+                      name: string
+                    standardRule:
+                      id: string
+                      name: string
+                    properties:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        propertyValueDecimal: 0
+                        propertyValueBoolean: true
+                        propertyValueDateTime: { }
+                    relatedEntryReleasePoints:
+                      - id: string
+                    relatedApplicationPermitAssets:
+                      - id: string
+                documents:
+                  - id: string
+                    name: string
+                locations:
+                  - locationId: string
+                    type: string
+                    predefinedLocationId: string
+                    predefinedLocationDescription: string
+                    subLocations:
+                      - subLocationId: string
+                        subLocationDescription: string
+                    relatedEntryReleasePoints:
+                      - id: string
+                entryOrReleasePoints:
+                  - id: string
+                    name: string
+                    entryOrRelease: string
+                    nationalGridReference: string
+                    limits:
+                      - { }
+                applicationPermitAssets:
+                  - id: string
+                    assetName: string
+                    categoryId: string
+                    categoryDescription: string
+                    subcategoryId: string
+                    subCategoryDescription: string
+                    assetVersion: 0
+                    number: 0
+                    assetProps:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        unit: string
+                        unitId: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/navRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/navRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '400':
+          description: Invalid request data provided.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+        '500':
+          description: Server error while processing the request.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
 components:
   schemas:
-    Root:
+    activity:
       type: object
       properties:
-        _embedded:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        regulatedActivityClass:
+          $ref: '#/components/schemas/regulatedActivityClass'
+        regulatedActivitySubClass:
+          $ref: '#/components/schemas/regulatedActivitySubClass'
+        standardRule:
+          $ref: '#/components/schemas/standardRule'
+        properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/property'
+        relatedEntryReleasePoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/relatedEntryReleasePoint'
+        relatedApplicationPermitAssets:
+          type: array
+          items:
+            $ref: '#/components/schemas/relatedApplicationPermitAsset'
+    application:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        registrationTypeId:
+          type: string
+          format: uuid
+          nullable: true
+        registrationTypeDescription:
+          type: string
+        periodSpan:
+          type: string
+        activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/activity'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/document'
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/location'
+        entryOrReleasePoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/entryOrReleasePoint'
+        applicationPermitAssets:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationPermitAsset'
+    applicationPermitAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        assetName:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+        categoryDescription:
+          type: string
+        subcategoryId:
+          type: string
+          format: uuid
+          nullable: true
+        subCategoryDescription:
+          type: string
+        assetVersion:
+          type: integer
+          format: int32
+        number:
+          type: integer
+          format: int32
+          nullable: true
+        assetProps:
+          type: array
+          items:
+            $ref: '#/components/schemas/assetProp'
+    assetProp:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        propertyValue:
+          type: string
+        unit:
+          type: string
+        unitId:
+          type: string
+          format: uuid
+          nullable: true
+    context:
+      type: object
+      properties:
+        regime:
+          type: string
+        effectiveDate:
+          type: string
+          format: date-time
+        source:
+          type: string
+        sourceRef:
+          type: string
+          format: uuid
+          nullable: true
+        chargeRequestType:
+          type: string
+    document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    entryOrReleasePoint:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        entryOrRelease:
+          type: string
+        nationalGridReference:
+          type: string
+        limits:
+          type: array
+          items:
+            type: object
+    headerRoot:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/context'
+    location:
+      type: object
+      properties:
+        locationId:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          type: string
+        predefinedLocationId:
+          type: string
+          format: uuid
+          nullable: true
+        predefinedLocationDescription:
+          type: string
+        subLocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/subLocation'
+        relatedEntryReleasePoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/relatedEntryReleasePoint'
+    mcpsgRoot:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/context'
+        application:
+          $ref: '#/components/schemas/application'
+    navRoot:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/context'
+        application:
+          $ref: '#/components/schemas/application'
+    property:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        propertyValue:
+          type: string
+        propertyValueDecimal:
+          type: number
+          format: double
+        propertyValueBoolean:
+          type: boolean
+        propertyValueDateTime:
           type: object
-          properties:
-            fishingActivityReports:
-              type: array
-              items:
-                type: object
-                properties:
-                  _id:
-                    type: string
-                  _links:
-                    type: object
-                    properties:
-                      fishingActivityReports:
-                        type: object
-                        properties:
-                          href:
-                            type: string
-                      self:
-                        type: object
-                        properties:
-                          href:
-                            type: string
-                  fishingActivities:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        occurrence:
-                          type: string
-                        relatedFLUXLocations:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              id:
-                                type: string
-                              scheme:
-                                type: string
-                              subRectangle:
-                                type: string
-                              type:
-                                type: string
-                        relatedFishingActivities:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              relatedFLUXLocations:
-                                type: array
-                                items:
-                                  type: object
-                                  properties:
-                                    id:
-                                      type: string
-                                    scheme:
-                                      type: string
-                                    subRectangle:
-                                      type: string
-                                    type:
-                                      type: string
-                              specifiedFishingGears:
-                                type: array
-                                items:
-                                  type: object
-                                  properties:
-                                    applicableGearCharacteristics:
-                                      type: array
-                                      items:
-                                        type: object
-                                        properties:
-                                          _mmoId:
-                                            type: string
-                                          dataType:
-                                            type: string
-                                          type:
-                                            type: string
-                                          unit:
-                                            type: string
-                                          value:
-                                            type: string
-                                    roleCodes:
-                                      type: array
-                                      items:
-                                        type: string
-                                    type:
-                                      type: string
-                              type:
-                                type: string
-                        specifiedCatches:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              catchType:
-                                type: string
-                              species:
-                                type: object
-                                properties:
-                                  _mmoId:
-                                    type: string
-                                  code:
-                                    type: string
-                              specifiedSizeDistribution:
-                                type: string
-                              weightInKg:
-                                type: integer
-                                format: int32
-                        specifiedFishingGears:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              _mmoId:
-                                type: string
-                              applicableGearCharacteristics:
-                                type: array
-                                items:
-                                  type: object
-                                  properties:
-                                    _mmoId:
-                                      type: string
-                                    dataType:
-                                      type: string
-                                    type:
-                                      type: string
-                                    unit:
-                                      type: string
-                                    value:
-                                      type: string
-                              roleCodes:
-                                type: array
-                                items:
-                                  type: string
-                              type:
-                                type: string
-                        type:
-                          type: string
-                        vesselActivityCode:
-                          type: string
-                  valid:
-                    type: boolean
-        _links:
-          type: object
-          properties:
-            first:
-              type: object
-              properties:
-                href:
-                  type: string
-            last:
-              type: object
-              properties:
-                href:
-                  type: string
-            next:
-              type: object
-              properties:
-                href:
-                  type: string
-            self:
-              type: object
-              properties:
-                href:
-                  type: string
-                templated:
-                  type: boolean
-        page:
-          type: object
-          properties:
-            number:
-              type: integer
-              format: int32
-            size:
-              type: integer
-              format: int32
-            totalElements:
-              type: integer
-              format: int32
-            totalPages:
-              type: integer
-              format: int32
-tags:
-  - name: FishingActivities
-  - name: LandingDeclarations
-  - name: SalesNotes
-  - name: elogs
+    regulatedActivityClass:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+    regulatedActivitySubClass:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+    relatedApplicationPermitAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+    relatedEntryReleasePoint:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+    requestCalculation:
+      type: object
+      properties:
+        type:
+          type: string
+        charges:
+          type: array
+          items:
+            $ref: '#/components/schemas/requestCharge'
+    requestCharge:
+      type: object
+      properties:
+        chargeCode:
+          type: string
+        externalRef:
+          type: string
+        flags:
+          type: array
+          items:
+            $ref: '#/components/schemas/requestFlag'
+    requestFlag:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    requestGlobalFlag:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    requestRootObject:
+      type: object
+      properties:
+        regime:
+          type: string
+        applicationDate:
+          type: string
+          format: date-time
+        source:
+          type: string
+        sourceRef:
+          type: string
+        globalFlags:
+          type: array
+          items:
+            $ref: '#/components/schemas/requestGlobalFlag'
+        calculations:
+          type: array
+          items:
+            $ref: '#/components/schemas/requestCalculation'
+    standardRule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+    subLocation:
+      type: object
+      properties:
+        subLocationId:
+          type: string
+          format: uuid
+          nullable: true
+        subLocationDescription:
+          type: string
 

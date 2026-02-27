@@ -1,7 +1,7 @@
 {
   "properties": {
-    "displayName": "MMO-ECC Test 25 Feb V ICC",
-    "description": "Provides MMO icc endpoints.",
+    "displayName": "BNG ICC",
+    "description": "Provides CAPP changes icc endpoints.",
     "state": "published",
     "subscriptionRequired": false
   }
