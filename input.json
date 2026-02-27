@@ -1,23 +1,23 @@
 {
   "API_NAME": "BNGICC",
   "API_DISPLAY_NAME": "BNG ICC",
-  "API_DESCRIPTION": "Provides bng icc endpoints.",
+  "API_DESCRIPTION": "Provides CAPP changes icc endpoints.",
   "API_VERSION": "v1.0",
-  "API_BACKEND_URL": "https://vehicle-licensing.api.base.internal",
-  "API_BACKEND_SCOPEID_VALUE": "#{{ bngBackEndAppIdInt }}",
-  "CONSUMING_FRONTEND_CLIENTID_VALUE": "#{{ bngClientAppIdInt }}",
-  "TENANT_ID": "33333333-3333-3333-3333-333333333333",
+  "API_BACKEND_URL": "https://tstcppafafa1401.azurewebsites.net/api",
+  "API_BACKEND_SCOPEID_VALUE": "api://8bc2017d-abb2-4152-a2aa-65fcaa6ca8d1",
+  "CONSUMING_FRONTEND_CLIENTID_VALUE": "034c0a55-b8c1-4e9c-b72d-6fef2c3916c0",
+  "TENANT_ID": "6f504113-6b64-43f2-ade9-242e05780007",
 
   "RATE_LIMIT_CALLS": 100,
   "RATE_LIMIT_PERIOD": 60,
 
   "environments": {
     "dev": {
-      "API_BACKEND_URL": "https://vehicle-licensing.api.dev.internal",
-      "TENANT_ID": "66666666-6666-6666-6666-666666666666",
-      "CONSUMING_FRONTEND_CLIENTID_VALUE": "#{{ bngClientAppIdInt }}",
-      "RATE_LIMIT_CALLS": 50,
-      "RATE_LIMIT_PERIOD": 60
+      "API_BACKEND_URL": "https://tstcppafafa1401.azurewebsites.net/api",
+      "TENANT_ID": "6f504113-6b64-43f2-ade9-242e05780007",
+      "CONSUMING_FRONTEND_CLIENTID_VALUE": "034c0a55-b8c1-4e9c-b72d-6fef2c3916c0",
+      "RATE_LIMIT_CALLS": 25,
+      "RATE_LIMIT_PERIOD": 35
     },
     "tst": {
       "API_BACKEND_URL": "https://vehicle-licensing.api.tst.internal",
