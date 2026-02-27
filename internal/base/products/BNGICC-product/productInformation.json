@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "BNG ICC",
+    "description": "Provides CAPP changes icc endpoints.",
+    "state": "published",
+    "subscriptionRequired": false
+  }
+}

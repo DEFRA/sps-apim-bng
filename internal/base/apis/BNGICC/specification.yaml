@@ -1222,3 +1222,4 @@ components:
           nullable: true
         subLocationDescription:
           type: string
+

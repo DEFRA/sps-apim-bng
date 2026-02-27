@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "path": "BNGICC",
+    "apiRevision": "1",
+    "apiVersion": "v1.0",
+    "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
+    "authenticationSettings": {},
+    "isCurrent": true,
+    "displayName": "BNG ICC",
+    "protocols": [
+      "https"
+    ],
+    "serviceUrl": "https://tstcppafafa1401.azurewebsites.net/api",
+    "subscriptionKeyParameterNames": {
+      "header": "Ocp-Apim-Subscription-Key",
+      "query": "subscription-key"
+    },
+    "subscriptionRequired": false,
+    "description": "Provides CAPP changes icc endpoints."
+  }
+}
