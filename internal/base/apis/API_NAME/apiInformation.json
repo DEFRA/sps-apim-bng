@@ -5,7 +5,6 @@
     "apiVersion": "<<API_VERSION>>",
     "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/<<API_NAME>>",
     "authenticationSettings": {},
-    "description": "<<API_DESCRIPTION>>",
     "isCurrent": true,
     "displayName": "<<API_DISPLAY_NAME>>",
     "protocols": [
