@@ -2,7 +2,8 @@
   "properties": {
     "displayName": "<<API_NAME>>_BACKEND_SCOPEID",
     "secret": true,
-    "tags": [],
-    "value": "<<API_BACKEND_SCOPEID_VALUE>>"
+    "keyVault": {
+      "secretIdentifier": "https://#{{ apiOpsKeyVaultName }}.vault.azure.net/secrets/<<BACKEND_SCOPEID_KEY>>"
+    }
   }
 }
