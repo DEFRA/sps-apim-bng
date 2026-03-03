@@ -1,7 +1,7 @@
 {
   "properties": {
-    "description": "API_Name Backend",
+    "description": "<<API_Name>> Backend",
     "protocol": "http",
-    "url": "DEV_URL"
+    "url": "<<DEV_BACKEND_URL>>"
   }
 }
