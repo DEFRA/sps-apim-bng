@@ -1,6 +1,6 @@
 {
   "properties": {
-    "description": "API_Name Backend",
+    "description": "<<API_Name>> Backend",
     "protocol": "http",
     "url": "<<TST_BACKEND_URL>>"
   }
