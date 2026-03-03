@@ -2,7 +2,8 @@
   "properties": {
     "displayName": "<<API_NAME>>_FRONTEND_CLIENTID",
     "secret": true,
-    "tags": [],
-    "value": "<<CONSUMING_FRONTEND_CLIENTID_VALUE>>"
+    "keyVault": {
+      "secretIdentifier": "https://#{{ apiOpsKeyVaultName }}.vault.azure.net/secrets/<<FRONTEND_CLIENTID_KEY>>"
+    }
   }
 }
