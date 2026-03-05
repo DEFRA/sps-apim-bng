@@ -68,7 +68,8 @@ jobs:
           if (-not (Test-Path -LiteralPath $templatesRoot)) {
             throw "TemplatesRoot path not found in repo: '$templatesRoot'"
           }
-          
+
+          # Build args safely
           $args = @(
             "-InputJson", "input.json",
             "-Schema", "./scripts/Scaffold/api-onboarding.schema.json",
@@ -88,12 +89,15 @@ jobs:
           }
 
           Write-Host "[INFO] Running: ./scripts/Scaffold/ApimApiScaffold.ps1 $($args -join ' ')"
+
+          # IMPORTANT: Use correct call operator (&) without HTML encoding
           & ./scripts/Scaffold/ApimApiScaffold.ps1 @args
 
-      - name: Commit & push changes
+      - name: Commit and push changes
         shell: bash
         run: |
           set -e
+
           git status
           git diff --name-only
 
