@@ -9,7 +9,9 @@ on:
         required: true
         default: "internal"
         type: choice
-        options: [internal, external]
+        options:
+          - internal
+          - external
 
       templatesRoot:
         description: "Optional override for TemplatesRoot (leave blank to use templateSet)"
@@ -21,14 +23,18 @@ on:
         required: false
         default: "false"
         type: choice
-        options: ["false", "true"]
+        options:
+          - "false"
+          - "true"
 
       diagnostics:
         description: "Enable diagnostics logs + sample snippets (writes to TemplatesRoot/reports/)"
         required: false
         default: "false"
         type: choice
-        options: ["false", "true"]
+        options:
+          - "false"
+          - "true"
 
 permissions:
   contents: write
@@ -36,6 +42,7 @@ permissions:
 jobs:
   scaffold:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,11 +52,12 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
 
-          $templateSet  = "${{ github.event.inputs.templateSet }}"
-          $overrideRoot = "${{ github.event.inputs.templatesRoot }}"
-          $backup       = "${{ github.event.inputs.backup }}"
-          $diagnostics  = "${{ github.event.inputs.diagnostics }}"
+          $templateSet   = "${{ github.event.inputs.templateSet }}"
+          $overrideRoot  = "${{ github.event.inputs.templatesRoot }}"
+          $backup        = "${{ github.event.inputs.backup }}"
+          $diagnostics   = "${{ github.event.inputs.diagnostics }}"
 
+          # Choose TemplatesRoot
           $templatesRoot = if ([string]::IsNullOrWhiteSpace($overrideRoot)) { $templateSet } else { $overrideRoot }
 
           Write-Host "[INFO] templateSet   = $templateSet"
@@ -61,24 +69,48 @@ jobs:
             throw "TemplatesRoot path not found in repo: '$templatesRoot'"
           }
 
-          # Log some quick diagnostics to rule out path/casing issues
-          Write-Host "[INFO] PSVersion: $($PSVersionTable.PSVersion)"
-          Get-ChildItem -LiteralPath $templatesRoot -Recurse -Depth 1 | Select-Object FullName | Out-Host
+          # Early file existence checks for clear failures
+          $required = @(
+            "input.json",
+            "./scripts/Scaffold/api-onboarding.schema.json",
+            "./scripts/Scaffold/mapping.json"
+          )
+          foreach ($p in $required) {
+            if (-not (Test-Path -LiteralPath $p)) {
+              throw "Missing required file: '$p'"
+            }
+          }
 
-          # Build common flags
-          $backupFlag      = if ($backup -eq "true") { "-BackupBeforeWrite" } else { $null }
-          $diagFlag        = if ($diagnostics -eq "true") { "-Diagnostics" } else { $null }
-          $diagSamplesFlag = if ($diagnostics -eq "true") { "-DiagSaveSamples" } else { $null }
+          Write-Host "[INFO] PowerShell: $($PSVersionTable.PSVersion)"
+          Write-Host "[INFO] Listing templatesRoot (depth 1) for sanity..."
+          Get-ChildItem -LiteralPath $templatesRoot -Force | Select-Object Mode,Name | Out-Host
 
-          # IMPORTANT: Call the script directly with named params (no splatting)
-          & ./scripts/Scaffold/ApimApiScaffold.ps1 `
-            -InputJson "input.json" `
-            -Schema "./scripts/Scaffold/api-onboarding.schema.json" `
-            -Mapping "./scripts/Scaffold/mapping.json" `
-            -TemplatesRoot $templatesRoot `
-            -MaterializeTemplateFolders `
-            -AllowMissing `
-            @($backupFlag, $diagFlag, $diagSamplesFlag | Where-Object { $_ })
+          # Strongly-typed hashtable splat (name-bound, no positional ambiguity)
+          $params = @{
+            InputJson                  = "input.json"
+            Schema                     = "./scripts/Scaffold/api-onboarding.schema.json"
+            Mapping                    = "./scripts/Scaffold/mapping.json"
+            TemplatesRoot              = $templatesRoot
+            MaterializeTemplateFolders = $true
+            AllowMissing               = $true
+          }
+
+          if ($backup -eq "true") {
+            $params.BackupBeforeWrite = $true
+          }
+          if ($diagnostics -eq "true") {
+            $params.Diagnostics    = $true
+            $params.DiagSaveSamples = $true
+          }
+
+          Write-Host "[INFO] Running ./scripts/Scaffold/ApimApiScaffold.ps1 with params:"
+          $params.GetEnumerator() | Sort-Object Name | ForEach-Object {
+            $val = if ($_.Value -is [string]) { $_.Value } else { $_.Value.ToString() }
+            Write-Host ("  - {0} = {1}" -f $_.Name, $val)
+          }
+
+          # Dot-invocation avoids the & call operator entirely (no HTML encoding issues)
+          . ./scripts/Scaffold/ApimApiScaffold.ps1 @params
 
       - name: Commit and push changes
         shell: bash
