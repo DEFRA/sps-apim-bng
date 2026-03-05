@@ -1,7 +1,7 @@
 
 {
-  "version": "3.3",
-  "description": "APIM Self-Serve mapping aligned to internal/external base + dev + tst + pre, refined input.json, KV named values, and backendInformation per env (dev/tst/pre).",
+  "version": "3.4",
+  "description": "Aligned to current template folders (legacy namedValues layout) + base/dev/tst/pre backends, refined input.json with DEV/TST/PRE_BACKEND_URL.",
   "templates": {
     "apiInformation.json": "base/apis/API_NAME/apiInformation.json",
     "policy.xml": "base/apis/API_NAME/policy.xml",
@@ -9,14 +9,14 @@
     "productInformation.json": "base/products/API_NAME-product/productInformation.json",
     "versionSetInformation.json": "base/version sets/API_NAME/versionSetInformation.json",
 
-    "namedValueBackendInformation.json": "base/namedValues/BACKEND_SCOPEID_KEYNAME/namedValueInformation.json",
-    "namedValueFrontendInformation.json": "base/namedValues/FRONTEND_CLIENTID_KEYNAME/namedValueInformation.json",
+    "namedValueBackendInformation.json": "base/namedValues/API_NAME-backend-scopeid/namedValueInformation.json",
+    "namedValueFrontendInformation.json": "base/namedValues/API_NAME-frontend-clientid/namedValueInformation.json",
 
     "backendInformation.dev.json": "dev/backends/API_NAME-backend/backendInformation.json",
     "backendInformation.tst.json": "tst/backends/API_NAME-backend/backendInformation.json",
     "backendInformation.pre.json": "pre/backends/API_NAME-backend/backendInformation.json"
   },
-  "_note": "TemplatesRoot should be 'internal' or 'external' so that base/dev/tst/pre paths resolve. NamedValues folders are materialized to the keynames.",
+
   "fields": [
     {
       "inputKey": "API_NAME",
@@ -26,11 +26,9 @@
         { "target": "folder", "path": "base/apis/{API_NAME}" },
         { "target": "folder", "path": "base/products/{API_NAME}-product" },
         { "target": "folder", "path": "base/version sets/{API_NAME}" },
-
         { "target": "folder", "path": "dev/backends/{API_NAME}-backend" },
         { "target": "folder", "path": "tst/backends/{API_NAME}-backend" },
         { "target": "folder", "path": "pre/backends/{API_NAME}-backend" },
-
         { "target": "file", "file": "apiInformation.json", "jsonPath": "$.properties.path" }
       ]
     },
@@ -65,7 +63,6 @@
       "type": "string",
       "mandatory": true,
       "usage": [
-        { "target": "folder", "path": "base/namedValues/{BACKEND_SCOPEID_KEYNAME}" },
         { "target": "file", "file": "namedValueBackendInformation.json" },
         { "target": "file", "file": "policy.xml" }
       ]
@@ -75,7 +72,6 @@
       "type": "string",
       "mandatory": true,
       "usage": [
-        { "target": "folder", "path": "base/namedValues/{FRONTEND_CLIENTID_KEYNAME}" },
         { "target": "file", "file": "namedValueFrontendInformation.json" },
         { "target": "file", "file": "policy.xml" }
       ]
@@ -131,39 +127,17 @@
       ]
     }
   ],
-  "aliases": {
-    "api_name": "API_NAME",
-    "api_version": "API_VERSION",
-    "api_display_name": "API_DISPLAY_NAME",
-    "api_backend_url": "API_BACKEND_URL",
 
-    "tenant_id": "TENANT_ID",
-    "rate_limit_calls": "RATE_LIMIT_CALLS",
-    "rate_limit_period": "RATE_LIMIT_PERIOD",
-
-    "backend_scopeid": "BACKEND_SCOPEID_KEYNAME",
-    "frontend_clientid": "FRONTEND_CLIENTID_KEYNAME",
-
-    "backend_scopeid_keyname": "BACKEND_SCOPEID_KEYNAME",
-    "frontend_clientid_keyname": "FRONTEND_CLIENTID_KEYNAME",
-
-    "dev_backend_url": "DEV_BACKEND_URL",
-    "tst_backend_url": "TST_BACKEND_URL",
-    "pre_backend_url": "PRE_BACKEND_URL"
-  },
   "angleAliases": {
     "API_NAME": "API_NAME",
     "API_VERSION": "API_VERSION",
     "API_DISPLAY_NAME": "API_DISPLAY_NAME",
     "API_BACKEND_URL": "API_BACKEND_URL",
-
     "BACKEND_SCOPEID_KEYNAME": "BACKEND_SCOPEID_KEYNAME",
     "FRONTEND_CLIENTID_KEYNAME": "FRONTEND_CLIENTID_KEYNAME",
-
     "TENANT_ID": "TENANT_ID",
     "RATE_LIMIT_CALLS": "RATE_LIMIT_CALLS",
     "RATE_LIMIT_PERIOD": "RATE_LIMIT_PERIOD",
-
     "DEV_BACKEND_URL": "DEV_BACKEND_URL",
     "TST_BACKEND_URL": "TST_BACKEND_URL",
     "PRE_BACKEND_URL": "PRE_BACKEND_URL"
