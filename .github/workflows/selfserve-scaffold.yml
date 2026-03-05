@@ -1,4 +1,3 @@
-
 name: APIM Self-Serve Scaffold (Internal/External, No Environment)
 
 on:
@@ -68,23 +67,23 @@ jobs:
           if (-not (Test-Path -LiteralPath $templatesRoot)) {
             throw "TemplatesRoot path not found in repo: '$templatesRoot'"
           }
-
+          
           $args = @(
             "-InputJson", "input.json",
-            "-Schema",    "./scripts/Scaffold/api-onboarding.schema.json",
-            "-Mapping",   "./scripts/Scaffold/mapping.json",
+            "-Schema", "./scripts/Scaffold/api-onboarding.schema.json",
+            "-Mapping", "./scripts/Scaffold/mapping.json",
             "-TemplatesRoot", $templatesRoot,
-            "-MaterializeTemplateFolders",
-            "-AllowMissing"
+            "-MaterializeTemplateFolders:$true",
+            "-AllowMissing:$true"
           )
 
           if ($backup -eq "true") {
-            $args += "-BackupBeforeWrite"
+            $args += "-BackupBeforeWrite:$true"
           }
 
           if ($diagnostics -eq "true") {
-            $args += "-Diagnostics"
-            $args += "-DiagSaveSamples"
+            $args += "-Diagnostics:$true"
+            $args += "-DiagSaveSamples:$true"
           }
 
           Write-Host "[INFO] Running: ./scripts/Scaffold/ApimApiScaffold.ps1 $($args -join ' ')"
