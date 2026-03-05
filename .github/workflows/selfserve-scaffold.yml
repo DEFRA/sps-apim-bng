@@ -57,7 +57,6 @@ jobs:
           $backup        = "${{ github.event.inputs.backup }}"
           $diagnostics   = "${{ github.event.inputs.diagnostics }}"
 
-          # Choose TemplatesRoot
           $templatesRoot = if ([string]::IsNullOrWhiteSpace($overrideRoot)) { $templateSet } else { $overrideRoot }
 
           Write-Host "[INFO] templateSet   = $templateSet"
