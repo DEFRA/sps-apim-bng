@@ -3,14 +3,10 @@ name: APIM Self-Serve Scaffold (Dynamic TemplatesRoot)
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: "Environment overlay (dev, tst, pre, prod)"
-        required: true
-        default: "dev"
       templatesRoot:
         description: "Path to TemplatesRoot (internal or external)"
         required: true
-        default: "internal/base"
+        default: "internal"
       backup:
         description: "Create backup under TemplatesRoot/.bak/<timestamp>"
         required: false
@@ -44,7 +40,6 @@ jobs:
           -Schema    ./scripts/Scaffold/api-onboarding.schema.json
           -Mapping   ./scripts/Scaffold/mapping.json
           -TemplatesRoot "${{ github.event.inputs.templatesRoot }}"
-          -Environment "${{ github.event.inputs.environment }}"
           -MaterializeTemplateFolders
           -AllowMissing
 
