@@ -1,3 +1,4 @@
+
 name: APIM Self-Serve Scaffold (Internal/External, No Environment)
 
 on:
@@ -56,7 +57,6 @@ jobs:
           $backup        = "${{ github.event.inputs.backup }}"
           $diagnostics   = "${{ github.event.inputs.diagnostics }}"
 
-          # Choose TemplatesRoot
           $templatesRoot = if ([string]::IsNullOrWhiteSpace($overrideRoot)) { $templateSet } else { $overrideRoot }
 
           Write-Host "[INFO] templateSet   = $templateSet"
@@ -68,7 +68,6 @@ jobs:
             throw "TemplatesRoot path not found in repo: '$templatesRoot'"
           }
 
-          # Build args safely
           $args = @(
             "-InputJson", "input.json",
             "-Schema", "./scripts/Scaffold/api-onboarding.schema.json",
@@ -89,7 +88,6 @@ jobs:
 
           Write-Host "[INFO] Running: ./scripts/Scaffold/ApimApiScaffold.ps1 $($args -join ' ')"
 
-          # IMPORTANT: Use correct call operator (&) without HTML encoding
           & ./scripts/Scaffold/ApimApiScaffold.ps1 @args
 
       - name: Commit and push changes
