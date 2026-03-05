@@ -1,7 +1,7 @@
 
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "APIM Self-Serve API Definition (v3.2 refined input)",
+  "title": "APIM Self-Serve API Definition (v3.3 with PRE_BACKEND_URL)",
   "type": "object",
   "additionalProperties": true,
 
@@ -32,29 +32,18 @@
       "default": "v1.0"
     },
 
-    "API_BACKEND_URL": {
-      "type": "string",
-      "minLength": 1
-    },
+    "API_BACKEND_URL": { "type": "string", "minLength": 1 },
 
-    "BACKEND_SCOPEID_KEYNAME": {
-      "type": "string",
-      "minLength": 1
-    },
-    "FRONTEND_CLIENTID_KEYNAME": {
-      "type": "string",
-      "minLength": 1
-    },
+    "BACKEND_SCOPEID_KEYNAME": { "type": "string", "minLength": 1 },
+    "FRONTEND_CLIENTID_KEYNAME": { "type": "string", "minLength": 1 },
 
-    "TENANT_ID": {
-      "type": "string",
-      "minLength": 1
-    },
+    "TENANT_ID": { "type": "string", "minLength": 1 },
 
     "RATE_LIMIT_CALLS": { "type": "integer", "minimum": 0 },
     "RATE_LIMIT_PERIOD": { "type": "integer", "minimum": 0 },
 
     "DEV_BACKEND_URL": { "type": "string", "minLength": 1 },
-    "TST_BACKEND_URL": { "type": "string", "minLength": 1 }
+    "TST_BACKEND_URL": { "type": "string", "minLength": 1 },
+    "PRE_BACKEND_URL": { "type": "string", "minLength": 1 }
   }
 }

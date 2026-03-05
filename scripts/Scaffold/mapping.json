@@ -1,7 +1,7 @@
 
 {
-  "version": "3.2",
-  "description": "APIM Self-Serve mapping aligned to internal/base + internal/dev + internal/tst structure, refined input.json, KV named values, and backendInformation per env.",
+  "version": "3.3",
+  "description": "APIM Self-Serve mapping aligned to internal/external base + dev + tst + pre, refined input.json, KV named values, and backendInformation per env (dev/tst/pre).",
   "templates": {
     "apiInformation.json": "base/apis/API_NAME/apiInformation.json",
     "policy.xml": "base/apis/API_NAME/policy.xml",
@@ -13,9 +13,10 @@
     "namedValueFrontendInformation.json": "base/namedValues/FRONTEND_CLIENTID_KEYNAME/namedValueInformation.json",
 
     "backendInformation.dev.json": "dev/backends/API_NAME-backend/backendInformation.json",
-    "backendInformation.tst.json": "tst/backends/API_NAME-backend/backendInformation.json"
+    "backendInformation.tst.json": "tst/backends/API_NAME-backend/backendInformation.json",
+    "backendInformation.pre.json": "pre/backends/API_NAME-backend/backendInformation.json"
   },
-  "_note": "TemplatesRoot should be 'internal' so that base/dev/tst paths resolve. NamedValues folders are materialized to the keynames.",
+  "_note": "TemplatesRoot should be 'internal' or 'external' so that base/dev/tst/pre paths resolve. NamedValues folders are materialized to the keynames.",
   "fields": [
     {
       "inputKey": "API_NAME",
@@ -25,8 +26,11 @@
         { "target": "folder", "path": "base/apis/{API_NAME}" },
         { "target": "folder", "path": "base/products/{API_NAME}-product" },
         { "target": "folder", "path": "base/version sets/{API_NAME}" },
+
         { "target": "folder", "path": "dev/backends/{API_NAME}-backend" },
         { "target": "folder", "path": "tst/backends/{API_NAME}-backend" },
+        { "target": "folder", "path": "pre/backends/{API_NAME}-backend" },
+
         { "target": "file", "file": "apiInformation.json", "jsonPath": "$.properties.path" }
       ]
     },
@@ -47,7 +51,6 @@
         { "target": "file", "file": "apiInformation.json", "jsonPath": "$.properties.apiVersion" }
       ]
     },
-
     {
       "inputKey": "API_BACKEND_URL",
       "type": "string",
@@ -118,6 +121,14 @@
       "usage": [
         { "target": "file", "file": "backendInformation.tst.json", "jsonPath": "$.properties.url" }
       ]
+    },
+    {
+      "inputKey": "PRE_BACKEND_URL",
+      "type": "string",
+      "mandatory": false,
+      "usage": [
+        { "target": "file", "file": "backendInformation.pre.json", "jsonPath": "$.properties.url" }
+      ]
     }
   ],
   "aliases": {
@@ -137,7 +148,8 @@
     "frontend_clientid_keyname": "FRONTEND_CLIENTID_KEYNAME",
 
     "dev_backend_url": "DEV_BACKEND_URL",
-    "tst_backend_url": "TST_BACKEND_URL"
+    "tst_backend_url": "TST_BACKEND_URL",
+    "pre_backend_url": "PRE_BACKEND_URL"
   },
   "angleAliases": {
     "API_NAME": "API_NAME",
@@ -153,6 +165,7 @@
     "RATE_LIMIT_PERIOD": "RATE_LIMIT_PERIOD",
 
     "DEV_BACKEND_URL": "DEV_BACKEND_URL",
-    "TST_BACKEND_URL": "TST_BACKEND_URL"
+    "TST_BACKEND_URL": "TST_BACKEND_URL",
+    "PRE_BACKEND_URL": "PRE_BACKEND_URL"
   }
 }
