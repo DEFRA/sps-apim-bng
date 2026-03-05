@@ -1,47 +1,119 @@
-name: APIM Self-Serve Scaffold (Dynamic TemplatesRoot)
+
+name: APIM Self-Serve Scaffold (Internal/External)
 
 on:
   workflow_dispatch:
     inputs:
-      templatesRoot:
-        description: "Path to TemplatesRoot (internal or external)"
+      templateSet:
+        description: "Which template set to use"
         required: true
         default: "internal"
+        type: choice
+        options:
+          - internal
+          - external
+
+      # Optional override for advanced use (leave empty to auto-use templateSet)
+      templatesRoot:
+        description: "Optional: override TemplatesRoot path (e.g. internal, external, or custom). Leave blank to use templateSet."
+        required: false
+        default: ""
+
+      environment:
+        description: "Controls environment-specific overlay behaviour (use 'base' to avoid overriding API_BACKEND_URL)."
+        required: true
+        default: "base"
+        type: choice
+        options:
+          - base
+          - dev
+          - tst
+          - pre
+          - prod
+
       backup:
         description: "Create backup under TemplatesRoot/.bak/<timestamp>"
         required: false
         default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
       diagnostics:
-        description: "Enable diagnostics logs and sample snippets"
+        description: "Enable diagnostics logs + sample snippets (writes to TemplatesRoot/reports/)"
         required: false
         default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
 
 permissions:
-  contents: write  # Required to push changes back to repo
+  contents: write
 
 jobs:
   scaffold:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Optional: Install Pandoc if you want DOCX/PDF report exports
-      # - name: Install pandoc
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y pandoc
-
-      - name: Run in-place scaffold script
+      - name: Resolve TemplatesRoot + Run scaffold
         shell: pwsh
-        run: >
-          ./scripts/Scaffold/ApimApiScaffold.ps1
-          -InputJson input.json
-          -Schema    ./scripts/Scaffold/api-onboarding.schema.json
-          -Mapping   ./scripts/Scaffold/mapping.json
-          -TemplatesRoot "${{ github.event.inputs.templatesRoot }}"
-          -MaterializeTemplateFolders
-          -AllowMissing
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $templateSet   = "${{ github.event.inputs.templateSet }}"
+          $overrideRoot  = "${{ github.event.inputs.templatesRoot }}"
+          $environment   = "${{ github.event.inputs.environment }}"
+          $backup        = "${{ github.event.inputs.backup }}"
+          $diagnostics   = "${{ github.event.inputs.diagnostics }}"
+
+          # Decide TemplatesRoot
+          if ([string]::IsNullOrWhiteSpace($overrideRoot)) {
+            $templatesRoot = $templateSet
+          } else {
+            $templatesRoot = $overrideRoot
+          }
+
+          Write-Host "[INFO] templateSet    = $templateSet"
+          Write-Host "[INFO] templatesRoot  = $templatesRoot"
+          Write-Host "[INFO] environment    = $environment"
+          Write-Host "[INFO] backup         = $backup"
+          Write-Host "[INFO] diagnostics    = $diagnostics"
+
+          if (-not (Test-Path -LiteralPath $templatesRoot)) {
+            throw "TemplatesRoot path not found in repo: '$templatesRoot'"
+          }
+
+          $args = @(
+            "-InputJson", "input.json",
+            "-Schema",    "./scripts/Scaffold/api-onboarding.schema.json",
+            "-Mapping",   "./scripts/Scaffold/mapping.json",
+            "-TemplatesRoot", $templatesRoot,
+            "-MaterializeTemplateFolders",
+            "-AllowMissing"
+          )
+
+          # Only pass -Environment when not base (base means: don't override API_BACKEND_URL)
+          if ($environment -ne "base") {
+            $args += "-Environment"
+            $args += $environment
+          }
+
+          if ($backup -eq "true") {
+            $args += "-BackupBeforeWrite"
+          }
+
+          if ($diagnostics -eq "true") {
+            $args += "-Diagnostics"
+            $args += "-DiagSaveSamples"
+          }
+
+          Write-Host "[INFO] Running: ./scripts/Scaffold/ApimApiScaffold.ps1 $($args -join ' ')"
+          & ./scripts/Scaffold/ApimApiScaffold.ps1 @args
 
       - name: Commit & push changes
         shell: bash
@@ -49,13 +121,17 @@ jobs:
           set -e
           git status
           git diff --name-only
+
           git add -A
           if git diff --cached --quiet; then
             echo "No changes to commit."
             exit 0
           fi
+
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          SET="${{ github.event.inputs.templateSet }}"
           ENV="${{ github.event.inputs.environment }}"
-          git commit -m "APIM Self-Serve: materialize & in-place token mapping (env=${ENV}) [CI]"
+          git commit -m "APIM Self-Serve: scaffold + token mapping (set=${SET}, env=${ENV}) [CI]"
           git push origin HEAD:${{ github.ref_name }}
