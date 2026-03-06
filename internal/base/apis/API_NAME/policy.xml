@@ -17,6 +17,7 @@
 				</claim>
 			</required-claims>
 		</validate-jwt>
+		<set-backend-service backend-id="<<API_NAME>>-backend" />
 	</inbound>
 	<backend>
 		<base />
