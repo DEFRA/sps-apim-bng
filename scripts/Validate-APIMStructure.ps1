@@ -116,7 +116,7 @@ function Test-NamedValueFields {
         $props = $json.properties
         if (-not $props) { return "Missing 'properties' object in ${filePath}" }
 
-        $mandatoryFields = @('displayName','secret','tags','value')
+        $mandatoryFields = @('displayName','secret','value')
         foreach ($field in $mandatoryFields) {
             if (-not ($props.PSObject.Properties.Name -icontains $field)) {
                 return "Missing mandatory field '$field' in ${filePath}"

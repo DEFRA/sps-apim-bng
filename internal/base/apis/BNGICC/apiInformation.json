@@ -10,12 +10,11 @@
     "protocols": [
       "https"
     ],
-    "serviceUrl": "https://tstcppafafa1401.azurewebsites.net/api",
+    "serviceUrl": "https://unused",
     "subscriptionKeyParameterNames": {
       "header": "Ocp-Apim-Subscription-Key",
       "query": "subscription-key"
     },
-    "subscriptionRequired": false,
-    "description": "Provides CAPP changes icc endpoints."
+    "subscriptionRequired": false
   }
 }
