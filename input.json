@@ -9,7 +9,7 @@
   "TENANT_ID": "#{{ defraTenantId }}",
   "RATE_LIMIT_CALLS": 100,
   "RATE_LIMIT_PERIOD": 60,
-  "DEV_BACKEND_URL": "http://devurl",
-  "TST_BACKEND_URL": "http://tsturl",
-  "PRE_BACKEND_URL": "http://preurl"
+  "DEV_BACKEND_URL": "http://divyadevurl",
+  "TST_BACKEND_URL": "http://divyatsturl",
+  "PRE_BACKEND_URL": "http://divyapreurl"
 }
