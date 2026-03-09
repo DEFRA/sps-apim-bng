@@ -1,4 +1,3 @@
-
 {
   "API_NAME": "BNGICC",
   "API_DISPLAY_NAME": "BNG ICC",
@@ -9,7 +8,7 @@
   "TENANT_ID": "#{{ defraTenantId }}",
   "RATE_LIMIT_CALLS": 100,
   "RATE_LIMIT_PERIOD": 60,
-  "DEV_BACKEND_URL": "http://divyatestdevurl",
-  "TST_BACKEND_URL": "http://divyatesttsturl",
-  "PRE_BACKEND_URL": "http://divyatestpreurl"
+  "DEV_BACKEND_URL": "http://predemodevurl",
+  "TST_BACKEND_URL": "http://predemotsturl",
+  "PRE_BACKEND_URL": "http://predemopreurl"
 }
