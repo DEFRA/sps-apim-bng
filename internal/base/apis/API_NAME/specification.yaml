@@ -1,27 +1,69 @@
 openapi: 3.0.1
 info:
-  title: BNGICC
-  description: BNGICC
-  version: '1.0'
-
+  title: Address Lookup
+  description: The DEFRA Address Lookup REST API provides a method to search for a list of addresses  by Postal Code or UPRN (Unique Property Reference Number)
+  contact:
+    name: 'Department for Environment, Food and Rural Affairs - GOV UK'
+    url: https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs
+    email: defra.helpline@defra.gsi.gov.uk
+  license:
+    name: DEFRA API License Agreement
+    url: https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs/license/url
+  version: v2.1
 servers:
-  - url: https://devapiinfam2403.azure-api.net/api/bng-icc 
-
+  - url: https://dev-api-gateway.azure.defra.cloud/api/address-lookup/v2.1
 paths:
-  '/gainsite/{GainSiteNumber}':
+  /addresses:
     get:
-      summary: GainSites
-      description: GainSites
-      operationId: gainsites
+      tags:
+        - Address Lookup OAuth
+      summary: Address search by Postcode or UPRN
+      description: Search the Address service for Postal codes or URPN
+      operationId: get-postcodes-postcode
       parameters:
-        - name: GainSiteNumber
-          in: path
-          required: true
+        - name: postcode
+          in: query
+          description: The PostCode to be used in lookup
           schema:
-            type: String
+            type: string
+        - name: uprn
+          in: query
+          description: The UPRN to be used in lookup
+          schema:
+            type: string
+        - name: maxresults
+          in: query
+          description: The maxresults parameter defines how many results will be returned (limit is 100). When searching by UPRN this parameter will be ignored. Default setting is 100.
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: If results set is greater than the maxresults this parameter can be used to offset the results so that the result sets can be concatenated.
+          schema:
+            type: integer
+        - name: language
+          in: query
+          description: Language paramter is used to indecate which language is required. Valid languages are English (EN) and Welsh (CY). This filter is only applicable to DPA dataset
+          schema:
+            type: string
+        - name: dataset
+          in: query
+          description: 'Specifies which dataset is required, Delivery Point Addresses (DPA) or Local Property Identifier (LPI).'
+          schema:
+            type: string
       responses:
-        '200':
-          description: ''
+        '202':
+          description: Success
+        '400':
+          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+        '403':
+          description: Unauthorized or 403 Forbidden - Authentication errors.
+        '404':
+          description: Not Found - Invalid URL path.
+        '500':
+          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
+        '503':
+          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the service is starting or stopping.
 components:
   securitySchemes:
     apiKeyHeader:
