@@ -1,6 +1,6 @@
 {
   "API_NAME": "BNGICC",
-  "API_DISPLAY_NAME": "BNG ICC DEMO",
+  "API_DISPLAY_NAME": "Address Lookup v2.1",
   "API_VERSION": "v1.0",
   "API_BACKEND_URL": "https://unused",
   "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
@@ -8,7 +8,7 @@
   "TENANT_ID": "#{{ defraTenantId }}",
   "RATE_LIMIT_CALLS": 100,
   "RATE_LIMIT_PERIOD": 60,
-  "DEV_BACKEND_URL": "http://demodevurl",
-  "TST_BACKEND_URL": "http://demotsturl",
-  "PRE_BACKEND_URL": "http://demopreurl"
+  "DEV_BACKEND_URL": "https://defra-test.boomi.cloud:444/ws/rest/address-lookup/v2.0",
+  "TST_BACKEND_URL": "http://tsturl",
+  "PRE_BACKEND_URL": "http://preurl"
 }
