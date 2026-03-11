@@ -9,7 +9,7 @@
   "TENANT_ID": "#{{ defraTenantId }}",
   "RATE_LIMIT_CALLS": 100,
   "RATE_LIMIT_PERIOD": 60,
-  "DEV_BACKEND_URL": "http://devurl",
+  "DEV_BACKEND_URL": "https://defra-test.boomi.cloud:444/ws/rest/address-lookup/v2.0",
   "TST_BACKEND_URL": "http://tsturl",
   "PRE_BACKEND_URL": "http://preurl"
 }
