@@ -2,6 +2,6 @@
   "properties": {
     "description": "<<API_Name>> Backend",
     "protocol": "http",
-    "url": "<<BASE_BACKEND_URL>>"
+    "url": "<<API_BACKEND_URL>>"
   }
 }
