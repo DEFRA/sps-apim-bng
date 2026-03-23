@@ -1,4 +1,3 @@
-
 name: Sync subtree → Central (master)
 
 on:
@@ -24,10 +23,10 @@ env:
 
   FOLDER_MAP: |
     internal/base/apis/BNGICC=internal/base/apis/bngicc
+    internal/base/namedValues/BNGICC-frontend-clientid=internal/base/namedValues/bngicc-frontend-clientid
+    internal/base/namedValues/CONSUMING-frontend-clientid=internal/base/namedValues/CONSUMING-frontend-clientid
     internal/base/products/BNGICC-product=internal/base/products/bngicc-product
     internal/base/version sets/BNGICC=internal/base/version sets/bngicc
-    internal/base/namedValues/BNGICC-frontend-clientid=internal/base/named values/CONSUMING-frontend-clientid
-    internal/base/namedValues/BNGICC-backend-scopeid=internal/base/named values/BNGICC-backend-scopeid
 
 jobs:
   prepare-branch:
@@ -51,16 +50,13 @@ jobs:
         run: |
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          # Helps with case-only renames across platforms
-          git config --global core.ignorecase false
 
       - name: Clone central and prepare PR branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-
-          TIMESTAMP="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
           echo "=== Clone central repo ==="
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
@@ -79,46 +75,11 @@ jobs:
 
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
-          # ---------- Diagnostics helper (space-safe) ----------
-          list_first_level_under () {
-            # $1 = prefix (e.g., "internal/base/version sets/")
-            local prefix="$1"
-            echo ">> First-level under '${prefix}' (team branch):"
-            git ls-tree -r --name-only "__team_branch__" \
-              | grep -F "^${prefix}" \
-              | sed "s#^\(${prefix}[^/]\+\).*#\1#" \
-              | LC_ALL=C sort -u \
-              | sed 's/^/   - /' \
-              || true
-            echo ""
-          }
-
-          # ---------- Mapping/path validator (warn-only) ----------
-          validate_path () {
-            local p="$1"
-            case "$p" in
-              *"named values"*)
-                echo "WARNING: Path contains 'named values' (with a space): $p"
-                echo "         This is allowed, but 'namedValues' (camelCase) is recommended."
-                ;;
-            esac
-          }
-
-          echo "=== Team branch folder inventory (first-level roots) ==="
-          list_first_level_under "internal/base/apis/"
-          list_first_level_under "internal/base/products/"
-          list_first_level_under "internal/base/namedValues/"
-          list_first_level_under "internal/base/version sets/"
-          echo "========================================================"
-
           CHANGES=false
           PR_BRANCH=""
 
           while IFS= read -r mapping; do
-            # sanitize CRLF and skip blanks/comments
-            mapping="$(printf '%s' "$mapping" | tr -d '\r')"
             [ -n "${mapping}" ] || continue
-            case "${mapping}" in \#*) continue;; esac
 
             SRC="${mapping%%=*}"
             TARGET_PREFIX="${mapping#*=}"
