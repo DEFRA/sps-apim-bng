@@ -21,7 +21,6 @@ env:
 
   TEAM_WINS_ON_CONFLICT: "true"
 
-  # Top-level mapping (source → target)
   FOLDER_MAP: |
     internal/base/apis/BNGICC=internal/base/apis/bngicc
     internal/base/namedValues/BNGICC-frontend-clientid=internal/base/namedValues/bngicc-frontend-clientid
@@ -74,38 +73,51 @@ jobs:
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
-          # Create a local branch that tracks the team branch snapshot
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
           PR_BRANCH=""
 
-          # Iterate mappings line-by-line (preserve spaces)
           while IFS= read -r mapping; do
             [ -n "${mapping}" ] || continue
 
-            # Split "SRC=TARGET" and trim whitespace
-            SRC="${mapping%%=*}"; TARGET_PREFIX="${mapping#*=}"
-            SRC="${SRC#"${SRC%%[![:space:]]*}"}"; SRC="${SRC%"${SRC##*[![:space:]]}"}"
-            TARGET_PREFIX="${TARGET_PREFIX#"${TARGET_PREFIX%%[![:space:]]*}"}"
-            TARGET_PREFIX="${TARGET_PREFIX%"${TARGET_PREFIX##*[![:space:]]}"}"
+            SRC="${mapping%%=*}"
+            TARGET_PREFIX="${mapping#*=}"
 
-            [ -n "${SRC}" ] && [ -n "${TARGET_PREFIX}" ] || continue
+            # === AC1 + AC2 RULE ENFORCEMENT ================================================
+            ALLOWED_PREFIXES=(
+              "internal/base/namedValues/"
+              "internal/dev/namedValues/"
+              "internal/tst/namedValues/"
+              "internal/pre/namedValues/"
+              "external/base/namedValues/"
+              "external/dev/namedValues/"
+              "external/tst/namedValues/"
+              "external/pre/namedValues/"
+            )
 
-            echo "→ Processing subtree: SRC='${SRC}'  TARGET='${TARGET_PREFIX}'"
+            ALLOW_CREATE=false
+            for prefix in "${ALLOWED_PREFIXES[@]}"; do
+              if [[ "${TARGET_PREFIX}" == "$prefix"* ]]; then
+                ALLOW_CREATE=true
+                break
+              fi
+            done
 
-            # Check path on the TEAM branch snapshot, not on HEAD
-            if git ls-tree -r --name-only "__team_branch__" | grep -F -q -- "${SRC}/"; then
-              echo "   Found '${SRC}/' in team branch. Splitting…"
-              # Split explicitly from team branch ref
-              SPLIT_SHA="$(git subtree split -P "${SRC}" "__team_branch__")"
-
-              if [ -z "${SPLIT_SHA}" ]; then
-                echo "   ERROR: subtree split produced no commit for ${SRC}. Skipping…"
+            if [[ "$ALLOW_CREATE" == "false" ]]; then
+              if ! git ls-tree -r --name-only "${BASE_BRANCH}" | grep -F -q -- "${TARGET_PREFIX}/"; then
+                echo "⛔ Skipping '${SRC}' → '${TARGET_PREFIX}' (AC2: non-namedValues folder missing)"
                 continue
               fi
+            fi
+            # ===============================================================================
 
-              # Ensure we’re on the central base branch before merging
+            echo "→ Processing subtree: SRC='${SRC}' TARGET='${TARGET_PREFIX}'"
+
+            if git ls-tree -r --name-only "__team_branch__" | grep -F -q -- "${SRC}/"; then
+              SPLIT_SHA="$(git subtree split -P "${SRC}" "__team_branch__")"
+              [ -n "${SPLIT_SHA}" ] || continue
+
               git checkout "${BASE_BRANCH}"
 
               CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TIMESTAMP}"
@@ -116,60 +128,36 @@ jobs:
               fi
 
               EXTRA=$([ "${TEAM_WINS_ON_CONFLICT}" = "true" ] && echo "-X theirs" || echo "")
-              set +e
               git merge -s subtree -Xsubtree="${TARGET_PREFIX}" ${EXTRA} "${SPLIT_SHA}" \
-                --allow-unrelated-histories -m "${CUSTOM_MESSAGE}"
-              MERGE_RC=$?
-              set -e
-
-              if [ $MERGE_RC -ne 0 ]; then
-                echo "   Merge failed. Bootstrapping subtree…"
-                git merge --abort || git reset --merge || git reset --hard
-                git merge -s ours --no-commit --allow-unrelated-histories "${SPLIT_SHA}"
-                git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
-                git commit -m "${CUSTOM_MESSAGE}"
-              fi
+                --allow-unrelated-histories -m "${CUSTOM_MESSAGE}" || {
+                  git merge --abort || true
+                  git merge -s ours --no-commit --allow-unrelated-histories "${SPLIT_SHA}"
+                  git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
+                  git commit -m "${CUSTOM_MESSAGE}"
+              }
 
               CHANGES=true
-            else
-              echo "   Source folder '${SRC}' not found on team branch. Skipping…"
             fi
+
           done <<< "${FOLDER_MAP}"
 
           if [ "${CHANGES}" = "false" ]; then
-            echo "No mapped folders produced changes. Exiting."
+            echo "No mapped folders produced changes."
             exit 0
           fi
 
-          echo "=== Push PR branch ==="
           git push origin "${PR_BRANCH}" || {
-            echo "Branch name collision, retrying…"
             PR_BRANCH="${PR_BRANCH}-$(date +%s)"
             git branch -m "${PR_BRANCH}"
             git push origin "${PR_BRANCH}"
           }
 
-          # Export PR_BRANCH for the summary step
           echo "PR_BRANCH=${PR_BRANCH}" >> $GITHUB_ENV
 
       - name: Generate GitHub Action Summary
         run: |
-          {
-            echo "## Subtree Merge Summary"
-            echo ""
-            echo "**Central Repo:** ${CENTRAL_REPO}"
-            echo "**Base Branch:** ${BASE_BRANCH}"
-            echo "**Team Repo:** ${TEAM_REPO_URL}"
-            echo "**Team Branch:** ${TEAM_BRANCH}"
-            echo "**PR Branch:** ${PR_BRANCH:-Not created}"
-            echo ""
-            echo "### Folder Mapping"
-            echo '```'
-            echo "${FOLDER_MAP}"
-            echo '```'
-            echo ""
-            echo "**Timestamp:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-            echo "**Commit SHA:** ${GITHUB_SHA}"
-            echo ""
-            echo "✅ Merge completed. Check PR branch for details."
-          } >> $GITHUB_STEP_SUMMARY
+          echo "## Subtree Merge Summary" >> $GITHUB_STEP_SUMMARY
+          echo "**Central Repo:** ${CENTRAL_REPO}" >> $GITHUB_STEP_SUMMARY
+          echo "**Base Branch:** ${BASE_BRANCH}" >> $GITHUB_STEP_SUMMARY
+          echo "**Team Repo:** ${TEAM_REPO_URL}" >> $GITHUB_STEP_SUMMARY
+          echo "**PR Branch:** ${PR_BRANCH}" >> $GITHUB_STEP_SUMMARY
