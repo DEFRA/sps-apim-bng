@@ -8,10 +8,8 @@
     "specification.yaml": "base/apis/API_NAME/specification.yaml",
     "productInformation.json": "base/products/API_NAME-product/productInformation.json",
     "versionSetInformation.json": "base/version sets/API_NAME/versionSetInformation.json",
-
     "namedValueBackendInformation.json": "base/namedValues/API_NAME-backend-scopeid/namedValueInformation.json",
     "namedValueFrontendInformation.json": "base/namedValues/API_NAME-frontend-clientid/namedValueInformation.json",
-
     "backendInformation.dev.json": "dev/backends/API_NAME-backend/backendInformation.json",
     "backendInformation.tst.json": "tst/backends/API_NAME-backend/backendInformation.json",
     "backendInformation.pre.json": "pre/backends/API_NAME-backend/backendInformation.json"
@@ -52,12 +50,9 @@
     {
       "inputKey": "API_BACKEND_URL",
       "type": "string",
-      "mandatory": true,
-      "usage": [
-        { "target": "file", "file": "apiInformation.json", "jsonPath": "$.properties.serviceUrl" }
-      ]
+      "mandatory": false,
+      "usage": []
     },
-
     {
       "inputKey": "BACKEND_SCOPEID_KEYNAME",
       "type": "string",
@@ -76,7 +71,6 @@
         { "target": "file", "file": "policy.xml" }
       ]
     },
-
     {
       "inputKey": "TENANT_ID",
       "type": "string",
@@ -125,6 +119,13 @@
       "usage": [
         { "target": "file", "file": "backendInformation.pre.json", "jsonPath": "$.properties.url" }
       ]
+    },
+
+    {
+      "inputKey": "BASE_BACKEND_URL",
+      "type": "string",
+      "mandatory": false,
+      "usage": []
     }
   ],
 
@@ -140,6 +141,7 @@
     "RATE_LIMIT_PERIOD": "RATE_LIMIT_PERIOD",
     "DEV_BACKEND_URL": "DEV_BACKEND_URL",
     "TST_BACKEND_URL": "TST_BACKEND_URL",
-    "PRE_BACKEND_URL": "PRE_BACKEND_URL"
+    "PRE_BACKEND_URL": "PRE_BACKEND_URL",
+    "BASE_BACKEND_URL": "BASE_BACKEND_URL"
   }
 }

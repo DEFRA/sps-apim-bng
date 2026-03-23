@@ -7,11 +7,7 @@
 
   "required": [
     "API_NAME",
-    "API_DISPLAY_NAME",
-    "API_BACKEND_URL",
-    "BACKEND_SCOPEID_KEYNAME",
-    "FRONTEND_CLIENTID_KEYNAME",
-    "TENANT_ID"
+    "API_DISPLAY_NAME"
   ],
 
   "properties": {
@@ -28,8 +24,6 @@
       "default": "v1.0"
     },
 
-    "API_BACKEND_URL": { "type": "string", "minLength": 1 },
-
     "BACKEND_SCOPEID_KEYNAME": { "type": "string", "minLength": 1 },
     "FRONTEND_CLIENTID_KEYNAME": { "type": "string", "minLength": 1 },
 
@@ -38,6 +32,7 @@
     "RATE_LIMIT_CALLS": { "type": "integer", "minimum": 0 },
     "RATE_LIMIT_PERIOD": { "type": "integer", "minimum": 0 },
 
+    "BASE_BACKEND_URL": { "type": "string", "minLength": 1 },
     "DEV_BACKEND_URL": { "type": "string", "minLength": 1 },
     "TST_BACKEND_URL": { "type": "string", "minLength": 1 },
     "PRE_BACKEND_URL": { "type": "string", "minLength": 1 }
