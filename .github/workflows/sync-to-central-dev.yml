@@ -19,20 +19,19 @@ env:
   TEAM_REPO_URL: DEFRA/sps-apim-bng
   TEAM_BRANCH: develop
 
-
-# Top-level mapping (source → target)
   FOLDER_MAP: |
     internal/base/apis/BNGICC=internal/base/apis/bngicc
-    internal/base/namedValues/BNGICC-frontend-clientid=internal/base/namedValues/bngicc-frontend-clientid
-    internal/base/namedValues/CONSUMING-frontend-clientid=internal/base/namedValues/CONSUMING-frontend-clientid
     internal/base/products/BNGICC-product=internal/base/products/bngicc-product
     internal/base/version\ sets/BNGICC=internal/base/version\ sets/bngicc
+    internal/base/namedValues/BNGICC-frontend-clientid=internal/base/namedValues/CONSUMING-frontend-clientid
+    internal/base/namedValues/BNGICC-backend-scopeid=internal/base/namedValues/BNGICC-backend-scopeid
 
 jobs:
   sync:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout (team repo)
         uses: actions/checkout@v4
         with:
@@ -52,26 +51,32 @@ jobs:
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git config --global core.ignorecase false
 
-      - name: Clone central repo and sync multiple folders
+      - name: Clone central repo and sync
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
-          TS="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
           cd central-repo
 
-          git fetch --no-tags origin --depth=50
+          echo "=== Fetch develop explicitly ==="
+          git fetch origin "refs/heads/${CENTRAL_BRANCH}:refs/remotes/origin/${CENTRAL_BRANCH}" --depth=50
+
           git checkout -B "${CENTRAL_BRANCH}" "refs/remotes/origin/${CENTRAL_BRANCH}"
 
+          echo "=== Add team remote ==="
           git remote add "${TEAM_REMOTE_NAME}" \
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git" \
             || git remote set-url "${TEAM_REMOTE_NAME}" \
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
 
-          git fetch --no-tags "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
+          echo "=== Fetch team develop explicitly ==="
+          git fetch "${TEAM_REMOTE_NAME}" \
+            "refs/heads/${TEAM_BRANCH}:refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}" --depth=50
+
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
@@ -84,7 +89,7 @@ jobs:
             SRC="${mapping%%=*}"
             TARGET_PREFIX="${mapping#*=}"
 
-            # === AC1 + AC2 RULE ENFORCEMENT ================================================
+            # === AC1 + AC2 ==========================================================
             ALLOWED_PREFIXES=(
               "internal/base/namedValues/"
               "internal/dev/namedValues/"
@@ -98,19 +103,16 @@ jobs:
 
             ALLOW_CREATE=false
             for prefix in "${ALLOWED_PREFIXES[@]}"; do
-              if [[ "${TARGET_PREFIX}" == "$prefix"* ]]; then
-                ALLOW_CREATE=true
-                break
-              fi
+              [[ "${TARGET_PREFIX}" == "$prefix"* ]] && ALLOW_CREATE=true && break
             done
 
             if [[ "$ALLOW_CREATE" == "false" ]]; then
               if ! git ls-tree -r --name-only "${CENTRAL_BRANCH}" | grep -F -q -- "${TARGET_PREFIX}/"; then
-                echo "⛔ Skipping '${SRC}' → '${TARGET_PREFIX}' (AC2: non-namedValues folder missing)"
+                echo "⛔ Skipping '${SRC}' → '${TARGET_PREFIX}' (AC2)"
                 continue
               fi
             fi
-            # ===============================================================================
+            # =======================================================================
 
             echo "→ Processing subtree: SRC='${SRC}' TARGET='${TARGET_PREFIX}'"
 
@@ -126,7 +128,7 @@ jobs:
                 git checkout "${PR_BRANCH}"
               fi
 
-              CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TS}"
+              CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} | TS=${TS}"
 
               git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
               git clean -fdx -- "${TARGET_PREFIX}" || true
@@ -143,7 +145,7 @@ jobs:
           done <<< "${FOLDER_MAP}"
 
           if [ "${CHANGES}" = "false" ]; then
-            echo "No mapped folders produced changes."
+            echo "✅ No changes."
             exit 0
           fi
 
@@ -154,3 +156,6 @@ jobs:
           }
 
           echo "PR_BRANCH=${PR_BRANCH}" >> $GITHUB_ENV
+
+      - name: Summary
+        run: echo "✅ Subtree sync to develop completed"
