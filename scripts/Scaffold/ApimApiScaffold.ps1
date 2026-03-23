@@ -1,10 +1,12 @@
-
 <#
 APIM Self‑Serve token mapping tool — IN‑PLACE
 Updated for current template structure shown in screenshot:
 - namedValues folders remain legacy: API_NAME-backend-scopeid / API_NAME-frontend-clientid
 - backends exist under dev/tst/pre with mixed casing and mixed backendInformation filename casing
 - supports Tokens: <<TOKEN>> + {{token}} (case-insensitive)
+
+AC3 — Remove serviceUrl = "<<API_BACKEND_URL>>" mapping to apiInformation.json
+AC4 — Populate backendInformation.*.json properties.serviceUrl from BASE_BACKEND_URL
 #>
 [CmdletBinding()]
 param(
@@ -77,7 +79,7 @@ function Make-BackupPath([string]$targetPath){
     if($relCandidate){ $rel = $relCandidate }
   } catch {
     if ($targetPath.StartsWith($TemplatesRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
-      $rel = $targetPath.Substring($TemplatesRoot.Length).TrimStart('\','/')
+      $rel = $targetPath.Substring($TemplatesRoot.Length).TrimStart('\\','/')
     } else {
       $rel = Split-Path -Leaf $targetPath
     }
@@ -128,7 +130,7 @@ function Set-JsonPathValue([object]$obj, [string]$jsonPath, [object]$value){
 
 function Normalize-EncodedText([string]$text){
   $t = [System.Net.WebUtility]::HtmlDecode($text)
-  $t = $t -replace '\\u003c','<' -replace '\\u003e','>' -replace '\\u0026','&'
+  $t = $t -replace '\\u003c','&lt;' -replace '\\u003e','&gt;' -replace '\\u0026','&amp;'
   $t = $t -replace '\\u007B','{' -replace '\\u007D','}'
   return $t
 }
@@ -143,9 +145,9 @@ function Replace-Tokens(
   $Text = Normalize-EncodedText $Text
 
   # canonicalize <<token>> to uppercase token names
-  $Text = [regex]::Replace($Text, '<<\s*([A-Za-z0-9_]+)\s*>>', { param($m) '<<' + $m.Groups[1].Value.ToUpper() + '>>' })
+  $Text = [regex]::Replace($Text, '&lt;&lt;\s*([A-Za-z0-9_]+)\s*&gt;&gt;', { param($m) '&lt;&lt;' + $m.Groups[1].Value.ToUpper() + '&gt;&gt;' })
 
-  $reAngle = '<<\s*([A-Za-z0-9_]+)\s*>>'
+  $reAngle = '&lt;&lt;\s*([A-Za-z0-9_]+)\s*&gt;&gt;'
   $reBrace = '\{\{\s*([A-Za-z0-9_\-]+)\s*\}\}'
 
   $presentAngle = ([regex]::Matches($Text, $reAngle) | ForEach-Object { $_.Groups[1].Value.ToUpper() }) | Select-Object -Unique
@@ -164,7 +166,7 @@ function Replace-Tokens(
   foreach($NAME in $presentAngle){
     $val = Resolve-AngleValue $NAME $InputObj $MappingObj
     if(-not [string]::IsNullOrWhiteSpace($val)){
-      $Text = $Text.Replace("<<$NAME>>", $val)
+      $Text = $Text.Replace("&lt;&lt;$NAME&gt;&gt;", $val)
       Write-Diag ("ANGLE: {0} -> '{1}'" -f $NAME, $val)
     }
   }
@@ -287,6 +289,11 @@ foreach($k in @('API_NAME','API_VERSION','API_DISPLAY_NAME','API_DESCRIPTION','A
   }
 }
 
+# --- AC4: Add BASE_BACKEND_URL to brace token bag so templates can use {{base_backend_url}}
+if ($script:inputObj.PSObject.Properties.Name -contains 'BASE_BACKEND_URL') {
+  $tokens['base_backend_url'] = [string]$script:inputObj.BASE_BACKEND_URL
+}
+
 # -----------------------------------------------------------------------------
 # Step 1 — Materialize folders: rename any directory containing API_NAME (any casing)
 # This fixes API_NAME vs API_Name folders on Linux.
@@ -323,7 +330,29 @@ function Process-JsonTemplate([string]$logical){
   $text = Replace-Tokens -Text $raw -InputObj $script:inputObj -BraceTokens $tokens -MappingObj $script:mappingObj -AllowMissing ([bool]$AllowMissing)
   $obj = $text | ConvertFrom-Json
 
+  # AC4 – backendInformation.*.json MUST use BASE_BACKEND_URL
+  if ($logical -in @('backendInformation.dev.json','backendInformation.tst.json','backendInformation.pre.json')) {
+      if ($script:inputObj.PSObject.Properties.Name -contains 'BASE_BACKEND_URL') {
+
+          if (-not $obj.PSObject.Properties.Name -contains 'properties') {
+              $obj | Add-Member -MemberType NoteProperty -Name 'properties' -Value ([PSCustomObject]@{})
+          }
+
+          # Correct field for APIM backends
+          $obj.properties.url = [string]$script:inputObj.BASE_BACKEND_URL
+
+          Write-Diag "AC4: url set from BASE_BACKEND_URL for $logical"
+      }
+  }
+
   foreach($f in $script:mappingObj.fields){
+
+    # --- AC3: Skip legacy API_BACKEND_URL -> apiInformation.json.serviceUrl mapping
+    if ($f.inputKey -eq 'API_BACKEND_URL' -and $logical -eq 'apiInformation.json') {
+      Write-Diag "AC3: Skipping API_BACKEND_URL mapping for apiInformation.json"
+      continue
+    }
+
     foreach($u in $f.usage){
       if(($u.target -eq 'file') -and ($u.file -eq $logical) -and $u.jsonPath){
         $key = $f.inputKey
