@@ -74,10 +74,32 @@ jobs:
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
 
           echo "=== Fetch team branch explicitly ==="
-          git fetch "${TEAM_REMOTE_NAME}" "refs/heads/${TEAM_BRANCH}:refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}" --depth=50
+          git fetch "${TEAM_REMOTE_NAME}" \
+            "refs/heads/${TEAM_BRANCH}:refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}" --depth=50
 
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
+      - name: DEBUG — List first 300 TEAM repo paths
+        shell: bash
+        run: |
+          echo "========================================================"
+          echo " TEAM REPO — FIRST 300 PATHS"
+          echo "========================================================"
+          git ls-tree -r --name-only "__team_branch__" | head -n 300
+          echo "========================================================"
+
+      - name: DEBUG — Search for BNGICC folders
+        shell: bash
+        run: |
+          echo "=== Searching for BNGICC in team repo ==="
+          git ls-tree -r --name-only "__team_branch__" | grep -i "BNGICC" || echo "NOT FOUND"
+          echo "========================================================"
+
+      - name: Process subtree mappings
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
           CHANGES=false
           PR_BRANCH=""
 
@@ -87,7 +109,7 @@ jobs:
             SRC="${mapping%%=*}"
             TARGET_PREFIX="${mapping#*=}"
 
-            # === AC1 + AC2 RULE ====================================================
+            # === AC1 + AC2 ======================================================
             ALLOWED_PREFIXES=(
               "internal/base/namedValues/"
               "internal/dev/namedValues/"
@@ -106,38 +128,42 @@ jobs:
 
             if [[ "$ALLOW_CREATE" == "false" ]]; then
               if ! git ls-tree -r --name-only "${BASE_BRANCH}" | grep -F -q -- "${TARGET_PREFIX}/"; then
-                echo "⛔ Skipping '${SRC}' → '${TARGET_PREFIX}' (AC2: non-namedValues & missing)"
+                echo "⛔ AC2 skip: TARGET missing → '${TARGET_PREFIX}'"
                 continue
               fi
             fi
-            # =======================================================================
+            # ====================================================================
 
             echo "→ Processing subtree: SRC='${SRC}' TARGET='${TARGET_PREFIX}'"
 
-            if git ls-tree -r --name-only "__team_branch__" | grep -F -q -- "${SRC}/"; then
-              SPLIT_SHA=$(git subtree split -P "${SRC}" "__team_branch__")
-              [ -n "${SPLIT_SHA}" ] || continue
-
-              git checkout "${BASE_BRANCH}"
-
-              CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | TS=${TIMESTAMP}"
-
-              if [ "${CHANGES}" = "false" ]; then
-                PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
-                git checkout -b "${PR_BRANCH}"
-              fi
-
-              EXTRA=$([ "${TEAM_WINS_ON_CONFLICT}" = "true" ] && echo "-X theirs")
-              git merge -s subtree -Xsubtree="${TARGET_PREFIX}" ${EXTRA} "${SPLIT_SHA}" \
-                --allow-unrelated-histories -m "${CUSTOM_MESSAGE}" || {
-                  git merge --abort || true
-                  git merge -s ours --no-commit "${SPLIT_SHA}"
-                  git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
-                  git commit -m "${CUSTOM_MESSAGE}"
-                }
-
-              CHANGES=true
+            # ✅ NEW: Ensure SOURCE exists
+            if ! git ls-tree -r --name-only "__team_branch__" | grep -F -q -- "${SRC}/"; then
+              echo "⛔ SKIP: SOURCE not found in team repo → '${SRC}'"
+              continue
             fi
+
+            SPLIT_SHA=$(git subtree split -P "${SRC}" "__team_branch__")
+            [ -n "${SPLIT_SHA}" ] || { echo "⛔ Empty split for ${SRC}"; continue; }
+
+            git checkout "${BASE_BRANCH}"
+
+            CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | TS=${TIMESTAMP}"
+
+            if [ "${CHANGES}" = "false" ]; then
+              PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+              git checkout -b "${PR_BRANCH}"
+            fi
+
+            EXTRA=$([ "${TEAM_WINS_ON_CONFLICT}" = "true" ] && echo "-X theirs")
+            git merge -s subtree -Xsubtree="${TARGET_PREFIX}" ${EXTRA} "${SPLIT_SHA}" \
+              --allow-unrelated-histories -m "${CUSTOM_MESSAGE}" || {
+                git merge --abort || true
+                git merge -s ours --no-commit "${SPLIT_SHA}"
+                git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
+                git commit -m "${CUSTOM_MESSAGE}"
+              }
+
+            CHANGES=true
 
           done <<< "${FOLDER_MAP}"
 
@@ -153,6 +179,3 @@ jobs:
           }
 
           echo "PR_BRANCH=${PR_BRANCH}" >> $GITHUB_ENV
-
-      - name: Summary
-        run: echo "✅ Subtree sync to master completed"
