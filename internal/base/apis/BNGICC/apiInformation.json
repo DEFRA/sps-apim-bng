@@ -1,12 +1,12 @@
 {
   "properties": {
-    "path": "api/<<API_NAME>>",
+    "path": "BNGICC",
     "apiRevision": "1",
-    "apiVersion": "<<API_VERSION>>",
+    "apiVersion": "v1.0",
     "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/<<API_NAME>>",
     "authenticationSettings": {},
     "isCurrent": true,
-    "displayName": "<<API_DISPLAY_NAME>>",
+    "displayName": "BNG ICC",
     "protocols": [
       "https"
     ],
