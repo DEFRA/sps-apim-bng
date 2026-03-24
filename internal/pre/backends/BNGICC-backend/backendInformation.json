@@ -1,6 +1,6 @@
 {
   "properties": {
-    "description": "<<API_Name>> Backend",
+    "description": "BNGICC Backend",
     "protocol": "http",
     "url": "http://preurl"
   }
