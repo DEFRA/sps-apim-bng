@@ -2,7 +2,7 @@ name: Sync subtree → Central (develop)
 
 on:
   push:
-    branches: [develop]
+    branches: [ develop ]
 
 concurrency:
   group: subtree-sync-develop
@@ -37,7 +37,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Start SSH agent & load central deploy key
+      - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.CENTRAL_SYNC_SSH_KEY }}
@@ -45,14 +45,13 @@ jobs:
       - name: Prime known_hosts
         run: ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 
-      - name: Configure Git identity
+      - name: Configure Git
         run: |
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 
-      - name: Clone central repo and sync
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Clone central repo & prepare branch
+        env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
         run: |
           set -euo pipefail
           TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -65,37 +64,28 @@ jobs:
 
           git checkout -B "${CENTRAL_BRANCH}" "refs/remotes/origin/${CENTRAL_BRANCH}"
 
-          echo "=== Add team remote ==="
           git remote add "${TEAM_REMOTE_NAME}" \
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git" \
-            || git remote set-url "${TEAM_REMOTE_NAME}" \
+            2>/dev/null || git remote set-url "${TEAM_REMOTE_NAME}" \
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
 
-          echo "=== Fetch team branch explicitly ==="
+          echo "=== Fetch team develop explicitly ==="
           git fetch "${TEAM_REMOTE_NAME}" \
             "refs/heads/${TEAM_BRANCH}:refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}" --depth=50
 
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
-      - name: DEBUG — List first 300 TEAM repo paths
+      - name: DEBUG — Inspect team repo
         run: |
-          echo "========================================================"
-          echo " TEAM REPO — FIRST 300 PATHS"
-          echo "========================================================"
+          echo "=== TEAM REPO — FIRST 300 PATHS ==="
           git ls-tree -r --name-only "__team_branch__" | head -n 300
-          echo "========================================================"
-
-      - name: DEBUG — Search for BNGICC folders
-        run: |
-          echo "=== Searching for BNGICC in team repo ==="
-          git ls-tree -r --name-only "__team_branch__" | grep -i "BNGICC" || echo "NOT FOUND"
-          echo "========================================================"
+          echo "=== BNGICC search ==="
+          git ls-tree -r --name-only "__team_branch__" | grep -i "BNGICC" || echo "No match"
 
       - name: Process mappings
         run: |
           set -euo pipefail
           CHANGES=false
-          PR_BRANCH=""
 
           while IFS= read -r mapping; do
             [ -n "${mapping}" ] || continue
@@ -104,7 +94,7 @@ jobs:
             SRC="${mapping%%=*}"
             TARGET_PREFIX="${mapping#*=}"
 
-            # === AC1 + AC2 ======================================================
+            # === AC1 + AC2 RULES ===
             ALLOWED_PREFIXES=(
               "internal/base/namedValues/"
               "internal/dev/namedValues/"
@@ -122,26 +112,28 @@ jobs:
             done
 
             if [[ "$ALLOW_CREATE" == "false" ]]; then
-              if ! git ls-tree -r --name-only "${CENTRAL_BRANCH}" | grep -F -q -- "${TARGET_PREFIX}/"; then
-                echo "⛔ AC2 skip TARGET: '${TARGET_PREFIX}'"
+              if ! git ls-tree -r --name-only "${CENTRAL_BRANCH}" | grep -Fxq "${TARGET_PREFIX}/"; then
+                echo "⛔ AC2 skip TARGET: ${TARGET_PREFIX}"
                 continue
               fi
             fi
-            # ====================================================================
 
             echo "→ Processing subtree: SRC='${SRC}' TARGET='${TARGET_PREFIX}'"
 
-            # ✅ NEW: Source exists check
-            if ! git ls-tree -r --name-only "__team_branch__" | grep -F -q -- "${SRC}/"; then
-              echo "⛔ SKIP: SOURCE missing in team repo → '${SRC}'"
+            # ✅ Source must exist
+            if ! git ls-tree -r --name-only "__team_branch__" | grep -Fxq "${SRC}/"; then
+              echo "⛔ SKIP: SOURCE missing → ${SRC}"
               continue
             fi
 
-            SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
-            [ -n "${SPLIT_SHA}" ] || { echo "⛔ EMPTY split: ${SRC}"; continue; }
+            SPLIT_SHA=$(git subtree split --prefix="${SRC}")
+            if [ -z "${SPLIT_SHA}" ]; then
+              echo "⛔ EMPTY SPLIT: ${SRC}"
+              continue
+            fi
 
             if [ "${CHANGES}" = "false" ]; then
-              PR_BRANCH="pr-subtree-dev/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+              PR_BRANCH="pr-subtree-dev/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)"
               git checkout "${CENTRAL_BRANCH}"
               git checkout -b "${PR_BRANCH}"
             else
@@ -152,19 +144,20 @@ jobs:
 
             git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
             git clean -fdx -- "${TARGET_PREFIX}" || true
+
             git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
             git add -A "${TARGET_PREFIX}"
 
             TREE=$(git write-tree)
             NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
-            git reset --hard "$NEWCOMMIT"
+            git reset --hard "${NEWCOMMIT}"
 
             CHANGES=true
 
           done <<< "${FOLDER_MAP}"
 
           if [ "${CHANGES}" = "false" ]; then
-            echo "✅ No changes."
+            echo "✅ No changes"
             exit 0
           fi
 
