@@ -50,7 +50,7 @@
       ]
     },
     {
-      "inputKey": "API_BACKEND_URL",
+      "inputKey": "BASE_BACKEND_URL",
       "type": "string",
       "mandatory": true,
       "usage": [
@@ -132,7 +132,7 @@
     "API_NAME": "API_NAME",
     "API_VERSION": "API_VERSION",
     "API_DISPLAY_NAME": "API_DISPLAY_NAME",
-    "API_BACKEND_URL": "API_BACKEND_URL",
+    "BASE_BACKEND_URL": "BASE_BACKEND_URL",
     "BACKEND_SCOPEID_KEYNAME": "BACKEND_SCOPEID_KEYNAME",
     "FRONTEND_CLIENTID_KEYNAME": "FRONTEND_CLIENTID_KEYNAME",
     "TENANT_ID": "TENANT_ID",

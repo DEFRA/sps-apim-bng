@@ -8,7 +8,6 @@
   "required": [
     "API_NAME",
     "API_DISPLAY_NAME",
-    "API_BACKEND_URL",
     "BACKEND_SCOPEID_KEYNAME",
     "FRONTEND_CLIENTID_KEYNAME",
     "TENANT_ID"
@@ -28,7 +27,7 @@
       "default": "v1.0"
     },
 
-    "API_BACKEND_URL": { "type": "string", "minLength": 1 },
+    "BASE_BACKEND_URL": { "type": "string", "minLength": 1 },
 
     "BACKEND_SCOPEID_KEYNAME": { "type": "string", "minLength": 1 },
     "FRONTEND_CLIENTID_KEYNAME": { "type": "string", "minLength": 1 },

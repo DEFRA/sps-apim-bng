@@ -280,7 +280,7 @@ if($script:inputObj.PSObject.Properties.Name -contains 'FRONTEND_CLIENTID_KEYNAM
 if($script:inputObj.PSObject.Properties.Name -contains 'RATE_LIMIT_CALLS'){ $tokens['rate_limit_calls'] = [string]$script:inputObj.RATE_LIMIT_CALLS }
 if($script:inputObj.PSObject.Properties.Name -contains 'RATE_LIMIT_PERIOD'){ $tokens['rate_limit_period'] = [string]$script:inputObj.RATE_LIMIT_PERIOD }
 
-foreach($k in @('API_NAME','API_VERSION','API_DISPLAY_NAME','API_DESCRIPTION','API_BACKEND_URL',
+foreach($k in @('API_NAME','API_VERSION','API_DISPLAY_NAME','API_DESCRIPTION','BASE_BACKEND_URL',
                'BACKEND_SCOPEID_KEYNAME','FRONTEND_CLIENTID_KEYNAME',
                'DEV_BACKEND_URL','TST_BACKEND_URL','PRE_BACKEND_URL')){
   if($script:inputObj.PSObject.Properties.Name -contains $k){

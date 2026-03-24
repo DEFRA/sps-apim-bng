@@ -10,7 +10,7 @@
     "protocols": [
       "https"
     ],
-    "serviceUrl": "<<API_BACKEND_URL>>",
+    "serviceUrl": "<<BASE_BACKEND_URL>>",
     "subscriptionKeyParameterNames": {
       "header": "Ocp-Apim-Subscription-Key",
       "query": "subscription-key"
