@@ -1,6 +1,6 @@
 {
   "properties": {
-    "displayName": "<<API_NAME>>",
+    "displayName": "PD Doc DisplayName",
     "description": "<<API_NAME>> Product",
     "state": "published",
     "subscriptionRequired": false

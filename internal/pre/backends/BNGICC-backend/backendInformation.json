@@ -2,6 +2,6 @@
   "properties": {
     "description": "<<API_Name>> Backend",
     "protocol": "http",
-    "url": "<<PRE_BACKEND_URL>>"
+    "url": "http://PDDocPreURL"
   }
 }
