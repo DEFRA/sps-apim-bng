@@ -2,7 +2,7 @@ name: Sync subtree → Central (master)
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 
 concurrency:
   group: subtree-pr-master
@@ -21,19 +21,20 @@ env:
 
   TEAM_WINS_ON_CONFLICT: "true"
 
+  # Top-level mapping (source → target)
+  # NOTE: Lines are read one-by-one (spaces preserved).
   FOLDER_MAP: |
     internal/base/apis/BNGICC=internal/base/apis/bngicc
-    internal/base/namedValues/BNGICC-frontend-clientid=internal/base/namedValues/bngicc-frontend-clientid
-    internal/base/namedValues/CONSUMING-frontend-clientid=internal/base/namedValues/CONSUMING-frontend-clientid
     internal/base/products/BNGICC-product=internal/base/products/bngicc-product
-    internal/base/version\ sets/BNGICC=internal/base/version\ sets/bngicc
+    internal/base/version sets/BNGICC=internal/base/version sets/bngicc
+    internal/base/namedValues/BNGICC-frontend-clientid=internal/base/named values/CONSUMING-frontend-clientid
+    internal/base/namedValues/BNGICC-backend-scopeid=internal/base/named values/BNGICC-backend-scopeid
 
 jobs:
   prepare-branch:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout (team repo)
         uses: actions/checkout@v4
         with:
@@ -47,43 +48,49 @@ jobs:
       - name: Prime known_hosts
         run: ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 
-      - name: Configure Git
+      - name: Configure Git identity
         run: |
           git config --global user.name "${GITHUB_ACTOR}"
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git config --global core.ignorecase false
 
-      - name: Clone central repo & prepare base branch
+      - name: Clone central and prepare PR branch
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          TIMESTAMP="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
+          echo "=== Clone central repo ==="
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
           cd central-repo
 
-          echo "=== Fetch central master explicitly ==="
-          git fetch origin "refs/heads/${BASE_BRANCH}:refs/remotes/origin/${BASE_BRANCH}" --depth=50
-          git checkout -B "${BASE_BRANCH}" "refs/remotes/origin/${BASE_BRANCH}"
+          echo "=== Checkout base branch ==="
+          git fetch origin "${BASE_BRANCH}" --depth=50
+          git checkout "${BASE_BRANCH}"
 
-          echo "=== Configure team remote ==="
+          echo "=== CREATE PR BRANCH — do NOT merge into master ==="
+          PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+          git checkout -b "${PR_BRANCH}"
+
+          echo "=== Add team remote and fetch ==="
           git remote add "${TEAM_REMOTE_NAME}" \
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git" \
-            2>/dev/null || git remote set-url "${TEAM_REMOTE_NAME}" \
+            || git remote set-url "${TEAM_REMOTE_NAME}" \
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
 
-          echo "=== Fetch team branch explicitly ==="
-          git fetch "${TEAM_REMOTE_NAME}" \
-            "refs/heads/${TEAM_BRANCH}:refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}" --depth=50
+          git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
-      - name: DEBUG — show TEAM repo structure
+          echo "PR_BRANCH=${PR_BRANCH}" >> $GITHUB_ENV
+
+      - name: Diagnostics — team repo structure
         run: |
-          echo "=== TEAM REPO — FIRST 300 PATHS ==="
+          echo "=== TEAM BRANCH CONTENT (first 300 entries) ==="
           git ls-tree -r --name-only "__team_branch__" | head -n 300
-          echo "=== SEARCH FOR BNGICC PATHS ==="
-          git ls-tree -r --name-only "__team_branch__" | grep -i "BNGICC" || echo "No match"
+          echo "=== BNGICC search ==="
+          git ls-tree -r --name-only "__team_branch__" | grep -i BNGICC || echo "NONE"
 
       - name: Process subtree mappings
         env:
@@ -91,15 +98,23 @@ jobs:
         run: |
           set -euo pipefail
           CHANGES=false
-          PR_BRANCH=""
 
           while IFS= read -r mapping; do
+            mapping="$(printf '%s' "$mapping" | tr -d '\r')"
             [ -n "${mapping}" ] || continue
+            case "${mapping}" in \#*) continue;; esac
 
             SRC="${mapping%%=*}"
             TARGET_PREFIX="${mapping#*=}"
+            SRC="${SRC#"${SRC%%[![:space:]]*}"}"; SRC="${SRC%"${SRC##*[![:space:]]}"}"
+            TARGET_PREFIX="${TARGET_PREFIX#"${TARGET_PREFIX%%[![:space:]]*}"}"
+            TARGET_PREFIX="${TARGET_PREFIX%"${TARGET_PREFIX##*[![:space:]]}"}"
 
-            # === AC1 + AC2 RULES ===
+            echo "→ Processing subtree:"
+            echo "   SRC='${SRC}'"
+            echo "   TARGET='${TARGET_PREFIX}'"
+
+            # === AC1 + AC2 ===
             ALLOWED_PREFIXES=(
               "internal/base/namedValues/"
               "internal/dev/namedValues/"
@@ -110,67 +125,77 @@ jobs:
               "external/tst/namedValues/"
               "external/pre/namedValues/"
             )
-
             ALLOW_CREATE=false
             for prefix in "${ALLOWED_PREFIXES[@]}"; do
               [[ "${TARGET_PREFIX}" == "$prefix"* ]] && ALLOW_CREATE=true && break
             done
 
-            if [[ "$ALLOW_CREATE" == "false" ]]; then
+            if [[ "${ALLOW_CREATE}" == "false" ]]; then
               if ! git ls-tree -r --name-only "${BASE_BRANCH}" | grep -Fxq "${TARGET_PREFIX}/"; then
-                echo "⛔ AC2 SKIP — target missing: ${TARGET_PREFIX}"
+                echo "   ⛔ AC2 skip — target missing in central"
                 continue
               fi
             fi
-            # =========================
 
-            echo "→ Processing subtree: SRC='${SRC}' TARGET='${TARGET_PREFIX}'"
-
-            # ✅ REQUIRED: Source folder must exist
+            # Ensure source exists
             if ! git ls-tree -r --name-only "__team_branch__" | grep -Fxq "${SRC}/"; then
-              echo "⛔ SKIP — source folder missing in team repo: ${SRC}"
+              echo "   ⛔ Source folder does not exist — skipping"
               continue
             fi
 
-            SPLIT_SHA=$(git subtree split -P "${SRC}" "__team_branch__")
+            # Perform subtree split
+            git checkout __team_branch__
+            SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
             if [ -z "${SPLIT_SHA}" ]; then
-              echo "⛔ SKIP — empty subtree split for ${SRC}"
+              echo "   ⛔ Empty subtree split — skipping"
               continue
             fi
 
-            git checkout "${BASE_BRANCH}"
+            # ✅ ALWAYS merge into PR branch (NEVER into master)
+            git checkout "${PR_BRANCH}"
 
-            CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Team=${TEAM_BRANCH} | TS=${TIMESTAMP}"
+            CUSTOM_MSG="subtree: merge ${SRC} → ${TARGET_PREFIX} | Team:${TEAM_BRANCH} | TS:${TIMESTAMP}"
 
-            if [ "${CHANGES}" = "false" ]; then
-              PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)"
-              git checkout -b "${PR_BRANCH}"
-            fi
+            git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
+            git clean -fdx -- "${TARGET_PREFIX}" || true
 
-            EXTRA=$([ "${TEAM_WINS_ON_CONFLICT}" = "true" ] && echo "-X theirs")
+            git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
+            git add -A "${TARGET_PREFIX}"
 
-            git merge -s subtree -Xsubtree="${TARGET_PREFIX}" ${EXTRA} "${SPLIT_SHA}" \
-              --allow-unrelated-histories -m "${CUSTOM_MESSAGE}" \
-              || {
-                git merge --abort || true
-                git merge -s ours --no-commit "${SPLIT_SHA}"
-                git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
-                git commit -m "${CUSTOM_MESSAGE}"
-              }
+            TREE=$(git write-tree)
+            NEWCOMMIT=$(echo "${CUSTOM_MSG}" | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
+            git reset --hard "$NEWCOMMIT"
 
             CHANGES=true
 
           done <<< "${FOLDER_MAP}"
 
-          if [ "${CHANGES}" = "false" ]; then
-            echo "✅ No changes"
+          if [[ "${CHANGES}" = "false" ]]; then
+            echo "No changes — skipping PR push"
             exit 0
           fi
 
+          echo "=== Push PR branch ==="
           git push origin "${PR_BRANCH}" || {
+            echo "Branch conflict — retrying…"
             PR_BRANCH="${PR_BRANCH}-$(date +%s)"
             git branch -m "${PR_BRANCH}"
             git push origin "${PR_BRANCH}"
           }
 
+          echo "✅ PR branch pushed: ${PR_BRANCH}"
           echo "PR_BRANCH=${PR_BRANCH}" >> $GITHUB_ENV
+
+      - name: Generate GitHub Action Summary
+        run: |
+          {
+            echo "## Subtree Sync Summary (MASTER)"
+            echo ""
+            echo "**PR Branch:** ${PR_BRANCH}"
+            echo "**Team Repo:** ${TEAM_REPO_URL}"
+            echo "**Team Branch:** ${TEAM_BRANCH}"
+            echo "**Base Branch:** ${BASE_BRANCH}"
+            echo "**Timestamp:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+            echo ""
+            echo "✅ All subtree merges were executed inside the PR branch."
+          } >> $GITHUB_STEP_SUMMARY
