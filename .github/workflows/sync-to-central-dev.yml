@@ -136,7 +136,6 @@ jobs:
           ####################################################################
 
           echo "=== Named Values Auto-Sync ==="
-
           NV_ROOTS=(
             "internal/base/named values"
             "external/base/named values"
@@ -145,8 +144,11 @@ jobs:
           for ROOT in "${NV_ROOTS[@]}"; do
             echo "Checking in: $ROOT"
 
-          NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ \
-          | grep "^${ROOT}/[^/]\+/$" || true)
+            # Detect first-level NV subfolders from file paths
+            NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ \
+              | grep "^${ROOT}/" \
+              | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
+              | sort -u )
 
             if [[ -z "$NV_FOLDERS" ]]; then
               echo "No NV folders detected under $ROOT"
@@ -176,8 +178,7 @@ jobs:
               cp -R "$SRC_NV"/ "$TARGET_NV"/
 
               git add -A "$TARGET_NV"
-              git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-
+              git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
             done
           done
 
