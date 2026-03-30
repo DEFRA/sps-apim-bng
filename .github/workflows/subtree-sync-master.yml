@@ -200,13 +200,35 @@ jobs:
             git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
             git clean -fdx -- "${TARGET_PREFIX}" || true
 
-            # Read the subtree into the target prefix and commit as a 2-parent merge
+            # =====================================================
+            # AC1 + AC2 LOGIC: Auto-create ONLY namedValues folders - US 682809
+            # =====================================================
+            # If SRC starts with internal/base/namedValues/
+            # And TARGET_PREFIX does NOT exist in central repo
+            # → Create folder and copy content from team branch
+            if [[ "$SRC" == internal/base/namedValues/* ]]; then
+                if [[ ! -d "$TARGET_PREFIX" ]]; then
+                    echo "Target namedValues folder missing: $TARGET_PREFIX"
+                    echo "→ Creating & copying from team repo (AC1)"
+
+                    mkdir -p "$TARGET_PREFIX"
+
+                    # Checkout files from team branch into working directory
+                    git checkout __team_branch__ -- "$SRC"/
+
+                    # Copy the files into the target folder
+                    cp -R "$SRC"/ "$TARGET_PREFIX"/
+                fi
+            else
+                echo "Skipping auto-create for non-namedValues folder (AC2)"
+            fi
+
+            # Inject subtree into target
             git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
             git add -A "${TARGET_PREFIX}"
             TREE=$(git write-tree)
             NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
             git reset --hard "$NEWCOMMIT"
-
             CHANGES=true
           done <<< "${FOLDER_MAP}"
 

@@ -201,6 +201,26 @@ jobs:
             # Clean target area to avoid stale index entries
             git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
             git clean -fdx -- "${TARGET_PREFIX}" || true
+            
+            # =====================================================
+            # AC1 + AC2 LOGIC: Auto-create ONLY namedValues folders - US 682809
+            # =====================================================
+            if [[ "$SRC" == internal/base/namedValues/* ]]; then
+                if [[ ! -d "$TARGET_PREFIX" ]]; then
+                    echo "Target namedValues folder missing: $TARGET_PREFIX"
+                    echo "→ Creating & copying from team repo (AC1)"
+
+                    mkdir -p "$TARGET_PREFIX"
+
+                    # Checkout from team branch so files appear locally
+                    git checkout __team_branch__ -- "$SRC"/
+
+                    # Copy into the central repo working directory
+                    cp -R "$SRC"/ "$TARGET_PREFIX"/
+                fi
+            else
+                echo "Skipping auto-create for non-namedValues folder (AC2)"
+            fi
 
             # Read the subtree into the target prefix and commit as a 2-parent merge
             git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
