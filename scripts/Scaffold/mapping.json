@@ -1,7 +1,7 @@
 
 {
   "version": "3.4",
-  "description": "Aligned to current template folders (legacy namedValues layout) + base/dev/tst/pre backends, refined input.json with DEV/TST/PRE_BACKEND_URL.",
+  "description": "Aligned to current template folders (legacy named values layout) + base/dev/tst/pre backends, refined input.json with DEV/TST/PRE_BACKEND_URL.",
   "templates": {
     "apiInformation.json": "base/apis/API_NAME/apiInformation.json",
     "policy.xml": "base/apis/API_NAME/policy.xml",
@@ -9,8 +9,8 @@
     "productInformation.json": "base/products/API_NAME-product/productInformation.json",
     "versionSetInformation.json": "base/version sets/API_NAME/versionSetInformation.json",
 
-    "namedValueBackendInformation.json": "base/namedValues/API_NAME-backend-scopeid/namedValueInformation.json",
-    "namedValueFrontendInformation.json": "base/namedValues/API_NAME-frontend-clientid/namedValueInformation.json",
+    "namedValueBackendInformation.json": "base/named values/API_NAME-backend-scopeid/namedValueInformation.json",
+    "namedValueFrontendInformation.json": "base/named values/API_NAME-frontend-clientid/namedValueInformation.json",
 
     "backendInformation.dev.json": "dev/backends/API_NAME-backend/backendInformation.json",
     "backendInformation.tst.json": "tst/backends/API_NAME-backend/backendInformation.json",

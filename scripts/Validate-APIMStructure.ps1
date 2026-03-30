@@ -220,8 +220,8 @@ policy.xml' = {
        Validators = @{ 'versionSetInformation.json' = { param($p) Test-VersionSetInformationFields $p } }
     },
 
-    @{ Name = "namedValues/*"
-       RelDir = { param($j,$e,$n) Join-Path (Join-Path (Join-Path $j $e) "namedValues") $n }
+    @{ Name = "named values/*"
+       RelDir = { param($j,$e,$n) Join-Path (Join-Path (Join-Path $j $e) "named values") $n }
        Required = @( @('namedValueInformation.json') )
        Validators = @{ 'namedValueInformation.json' = { param($p) Test-NamedValueFields $p } }
     }
@@ -258,7 +258,7 @@ foreach ($journey in $JourneyList) {
             elseif ($exp.Name -like 'version sets/*') {
                 @($VersionSetName)
             }
-            elseif ($exp.Name -like 'namedValues/*') {
+            elseif ($exp.Name -like 'named values/*') {
                 $NamedValueName
             }
             else {
