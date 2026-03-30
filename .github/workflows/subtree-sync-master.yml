@@ -28,8 +28,8 @@ env:
     internal/base/apis/BNGICC=internal/base/apis/bngicc
     internal/base/products/BNGICC-product=internal/base/products/bngicc-product
     internal/base/version sets/BNGICC=internal/base/version sets/bngicc
-    internal/base/namedValues/BNGICC-frontend-clientid=internal/base/named values/CONSUMING-frontend-clientid
-    internal/base/namedValues/BNGICC-backend-scopeid=internal/base/named values/BNGICC-backend-scopeid
+    internal/base/named Values/BNGICC-frontend-clientid=internal/base/named values/CONSUMING-frontend-clientid
+    internal/base/named Values/BNGICC-backend-scopeid=internal/base/named values/BNGICC-backend-scopeid
 
 jobs:
   prepare-branch:
@@ -199,29 +199,28 @@ jobs:
             # Clean target area to avoid stale index entries
             git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
             git clean -fdx -- "${TARGET_PREFIX}" || true
-
+            
             # =====================================================
-            # AC1 + AC2 LOGIC: Auto-create ONLY namedValues folders - US 682809
+            # AC1 + AC2 LOGIC: Auto-create ONLY missing "named values" subfolders
+            #    Works for both internal/base/named values and external/base/named values
             # =====================================================
-            # If SRC starts with internal/base/namedValues/
-            # And TARGET_PREFIX does NOT exist in central repo
-            # → Create folder and copy content from team branch
-            if [[ "$SRC" == internal/base/namedValues/* ]]; then
+            if [[ "$SRC" == internal/base/"named values"/* || "$SRC" == external/base/"named values"/* ]]; then
                 if [[ ! -d "$TARGET_PREFIX" ]]; then
-                    echo "Target namedValues folder missing: $TARGET_PREFIX"
+                    echo "Target named values folder missing: $TARGET_PREFIX"
                     echo "→ Creating & copying from team repo (AC1)"
 
                     mkdir -p "$TARGET_PREFIX"
 
-                    # Checkout files from team branch into working directory
+                    # Checkout the folder contents from the team branch
                     git checkout __team_branch__ -- "$SRC"/
 
-                    # Copy the files into the target folder
+                    # Copy files into target folder
                     cp -R "$SRC"/ "$TARGET_PREFIX"/
                 fi
             else
-                echo "Skipping auto-create for non-namedValues folder (AC2)"
+                echo "Skipping auto-create for non-named-values folder (AC2)"
             fi
+
 
             # Inject subtree into target
             git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
