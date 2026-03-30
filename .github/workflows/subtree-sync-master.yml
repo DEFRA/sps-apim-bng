@@ -143,8 +143,9 @@ jobs:
 
           for ROOT in "${NV_ROOTS[@]}"; do
             echo "Checking NV root: $ROOT"
-
-            NV_FOLDERS=$(git ls-tree -d --name-only "__team_branch__" "$ROOT" 2>/dev/null || true)
+            
+          NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ \
+          | grep "^${ROOT}/[^/]\+/$" || true)
 
             if [[ -z "$NV_FOLDERS" ]]; then
               echo "No NV folders under: $ROOT"
