@@ -135,29 +135,31 @@ jobs:
           ####################################################################
 
           echo "=== Named Values Auto-Sync ==="
-
           NV_ROOTS=(
             "internal/base/named values"
             "external/base/named values"
           )
 
           for ROOT in "${NV_ROOTS[@]}"; do
-            echo "Checking NV root: $ROOT"
-            
-          NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ \
-          | grep "^${ROOT}/[^/]\+/$" || true)
+            echo "Checking in: $ROOT"
+
+            # Detect first-level NV subfolders from file paths
+            NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ \
+              | grep "^${ROOT}/" \
+              | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
+              | sort -u )
 
             if [[ -z "$NV_FOLDERS" ]]; then
-              echo "No NV folders under: $ROOT"
+              echo "No NV folders detected under $ROOT"
               continue
             fi
 
             for SRC_NV in $NV_FOLDERS; do
-              echo "→ Sync NV folder: $SRC_NV"
+              echo "→ Syncing NV folder: $SRC_NV"
 
               if [[ "$CHANGES" = "false" ]]; then
                 PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
-                git checkout "${BASE_BRANCH}"
+                git checkout "${CENTRAL_BRANCH}"
                 git checkout -b "${PR_BRANCH}"
                 CHANGES=true
               else
@@ -175,8 +177,7 @@ jobs:
               cp -R "$SRC_NV"/ "$TARGET_NV"/
 
               git add -A "$TARGET_NV"
-
-              git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+              git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
             done
           done
 
