@@ -32,8 +32,8 @@ env:
     internal/base/apis/BNGICC=internal/base/apis/bngicc
     internal/base/products/BNGICC-product=internal/base/products/bngicc-product
     internal/base/version sets/BNGICC=internal/base/version sets/bngicc
-    internal/base/named Values/BNGICC-frontend-clientid=internal/base/named values/CONSUMING-frontend-clientid
-    internal/base/named Values/BNGICC-backend-scopeid=internal/base/named values/BNGICC-backend-scopeid
+    internal/base/named values/BNGICC-frontend-clientid=internal/base/named values/CONSUMING-frontend-clientid
+    internal/base/named values/BNGICC-backend-scopeid=internal/base/named values/BNGICC-backend-scopeid
 
 jobs:
   sync:
