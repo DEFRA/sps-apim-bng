@@ -3,7 +3,7 @@
 <#
 APIM Self‑Serve token mapping tool — IN‑PLACE
 Updated for current template structure shown in screenshot:
-- namedValues folders remain legacy: API_NAME-backend-scopeid / API_NAME-frontend-clientid
+- named values folders remain legacy: API_NAME-backend-scopeid / API_NAME-frontend-clientid
 - backends exist under dev/tst/pre with mixed casing and mixed backendInformation filename casing
 - supports Tokens: <<TOKEN>> + {{token}} (case-insensitive)
 #>
@@ -217,11 +217,11 @@ function Tpl([string]$logical){
   # 2) fallbacks for casing mismatches on Linux
   switch($logical){
     'namedValueBackendInformation.json' {
-      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'base[\\/]namedValues[\\/].*backend\-scopeid[\\/].*namedValueInformation\.json$'
+      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'base[\\/]named values[\\/].*backend\-scopeid[\\/].*namedValueInformation\.json$'
       if($scan){ return $scan }
     }
     'namedValueFrontendInformation.json' {
-      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'base[\\/]namedValues[\\/].*frontend\-clientid[\\/].*namedValueInformation\.json$'
+      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'base[\\/]named values[\\/].*frontend\-clientid[\\/].*namedValueInformation\.json$'
       if($scan){ return $scan }
     }
     'backendInformation.dev.json' {

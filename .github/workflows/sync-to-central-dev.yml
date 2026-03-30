@@ -106,7 +106,7 @@ jobs:
             case "$p" in
               *"named values"*)
                 echo "WARNING: Path contains 'named values' (with a space): $p"
-                echo "This is allowed, but 'namedValues' (camelCase) is recommended."
+                echo "This is allowed, but 'named values' (camelCase) is recommended."
                 ;;
             esac
           }
@@ -114,7 +114,7 @@ jobs:
           echo "=== Team branch folder inventory (first-level roots) ==="
           list_first_level_under "internal/base/apis/"
           list_first_level_under "internal/base/products/"
-          list_first_level_under "internal/base/namedValues/"
+          list_first_level_under "internal/base/named values/"
           list_first_level_under "internal/base/version sets/"
           echo "========================================================"
 
