@@ -1,9 +1,8 @@
-
 name: Sync subtree → Central (develop)
 
 on:
   push:
-    branches: [ develop ]
+    branches: [develop]
 
 concurrency:
   group: subtree-sync-develop
@@ -15,18 +14,16 @@ permissions:
 env:
   CENTRAL_REPO: DEFRA/sps-apim-gateway
   CENTRAL_BRANCH: develop
-
   TEAM_REMOTE_NAME: sps-apim-bng
   TEAM_REPO_URL: DEFRA/sps-apim-bng
   TEAM_BRANCH: develop
+  REQUIRE_LINEAR_HISTORY: "false"
+  TEAM_WINS_ON_CONFLICT: "true"
 
-  # Mapping (source → target). Lines are read one-by-one (spaces preserved).
   FOLDER_MAP: |
     internal/base/apis/BNGICC=internal/base/apis/bngicc
     internal/base/products/BNGICC-product=internal/base/products/bngicc-product
     internal/base/version sets/BNGICC=internal/base/version sets/bngicc
-    internal/base/namedValues/BNGICC-frontend-clientid=internal/base/named values/CONSUMING-frontend-clientid
-    internal/base/namedValues/BNGICC-backend-scopeid=internal/base/named values/BNGICC-backend-scopeid
 
 jobs:
   sync:
@@ -52,184 +49,137 @@ jobs:
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git config --global core.ignorecase false
 
-      - name: Clone central repo and sync multiple folders
+      - name: Clone central repo and sync folders
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
         run: |
           set -euo pipefail
-
           TS="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
-          echo "=== Clone central repo ==="
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
           cd central-repo
 
-          echo "=== Checkout central branch (resilient v3) ==="
-          git fetch --no-tags origin --depth=50
+          git fetch origin "${CENTRAL_BRANCH}" --depth=50
+          git checkout -B "${CENTRAL_BRANCH}" "origin/${CENTRAL_BRANCH}"
 
-          RESOLVED_SHA="$(git ls-remote --heads origin "${CENTRAL_BRANCH}" | awk '{print $1}' | head -n1 || true)"
-          if [ -n "${RESOLVED_SHA}" ] && [ "${RESOLVED_SHA}" != "0000000000000000000000000000000000000000" ]; then
-            echo "Found remote branch origin/${CENTRAL_BRANCH} @ ${RESOLVED_SHA}. Fetching its refspec…"
-            git fetch --no-tags origin "+refs/heads/${CENTRAL_BRANCH}:refs/remotes/origin/${CENTRAL_BRANCH}"
-            git checkout -B "${CENTRAL_BRANCH}" "refs/remotes/origin/${CENTRAL_BRANCH}"
-          else
-            echo "Remote branch origin/${CENTRAL_BRANCH} not found or not a valid commit."
-            MASTER_SHA="$(git ls-remote --heads origin master | awk '{print $1}' | head -n1 || true)"
-            if [ -n "${MASTER_SHA}" ] && [ "${MASTER_SHA}" != "0000000000000000000000000000000000000000" ]; then
-              echo "Basing ${CENTRAL_BRANCH} on origin/master @ ${MASTER_SHA}…"
-              git fetch --no-tags origin "+refs/heads/master:refs/remotes/origin/master"
-              git checkout -B "${CENTRAL_BRANCH}" "refs/remotes/origin/master"
-            else
-              DEFAULT_REF="$(git symbolic-ref -q --short refs/remotes/origin/HEAD || true)"
-              if [ -n "${DEFAULT_REF}" ] && git show-ref -q "${DEFAULT_REF}"; then
-                echo "Basing ${CENTRAL_BRANCH} on ${DEFAULT_REF}…"
-                git checkout -B "${CENTRAL_BRANCH}" "${DEFAULT_REF}"
-              else
-                echo "No suitable remote base found. Creating orphan branch ${CENTRAL_BRANCH}…"
-                git checkout --orphan "${CENTRAL_BRANCH}"
-                git reset --hard
-              fi
-            fi
-          fi
+          git remote add "${TEAM_REMOTE_NAME}" "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
+          git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
-          echo "On central branch: $(git rev-parse --abbrev-ref HEAD)"
-
-          echo "=== Add team remote and fetch ==="
-          git remote add "${TEAM_REMOTE_NAME}" \
-            "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git" \
-            || git remote set-url "${TEAM_REMOTE_NAME}" \
-            "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
-          git fetch --no-tags "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
-
-          echo "=== Prepare local snapshot of team branch ==="
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
-
-          # Diagnostics helper (space-safe)
-          list_first_level_under () {
-            local prefix="$1"
-            echo ">> First-level under '${prefix}' (team branch):"
-            git ls-tree -r --name-only "__team_branch__" \
-              | grep -F "^${prefix}" \
-              | sed "s#^\(${prefix}[^/]\+\).*#\1#" \
-              | LC_ALL=C sort -u \
-              | sed 's/^/   - /' || true
-            echo ""
-          }
-
-          echo "=== Team branch folder inventory (first-level roots) ==="
-          list_first_level_under "internal/base/apis/"
-          list_first_level_under "internal/base/products/"
-          list_first_level_under "internal/base/namedValues/"
-          list_first_level_under "internal/base/version sets/"
-          echo "========================================================"
 
           CHANGES=false
           PR_BRANCH=""
 
-          echo "=== Process mappings (space-safe, PR-branch bootstrap) ==="
+          ####################################################
+          # SUBTREE SYNC
+          ####################################################
+
           while IFS= read -r mapping; do
             mapping="$(printf '%s' "$mapping" | tr -d '\r')"
             [ -n "${mapping}" ] || continue
-            case "${mapping}" in \#*) continue;; esac
+            case "${mapping}" in \#*) continue ;; esac
 
             SRC="${mapping%%=*}"
             TARGET_PREFIX="${mapping#*=}"
-            SRC="${SRC#"${SRC%%[![:space:]]*}"}"; SRC="${SRC%"${SRC##*[![:space:]]}"}"
-            TARGET_PREFIX="${TARGET_PREFIX#"${TARGET_PREFIX%%[![:space:]]*}"}"
-            TARGET_PREFIX="${TARGET_PREFIX%"${TARGET_PREFIX##*[![:space:]]}"}"
 
-            echo "→ Processing subtree:"
-            echo "   SRC   = '${SRC}'"
-            echo "   TARGET= '${TARGET_PREFIX}'"
+            echo "→ Processing subtree: $SRC"
 
-            # Check source dir exists on team snapshot
-            if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null || \
-               git ls-tree -d "__team_branch__" -- "${SRC}" | grep -q . ; then
-              echo "   ✔ Found '${SRC}/' on team branch"
-            else
-              echo "   ✘ Source folder '${SRC}' not found on team branch. Skipping…"
-              PARENT="$(dirname "${SRC}")"
-              echo "   (team) first-level under '${PARENT}/':"
-              git ls-tree -r --name-only "__team_branch__" \
-                | grep -F "^${PARENT}/" \
-                | sed "s#^\(${PARENT}/[^/]\+\).*#\1#" \
-                | LC_ALL=C sort -u | sed 's/^/     • /' | head -n 50 || true
+            FOUND=false
+            if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then
+              FOUND=true
+            elif git ls-tree -d "__team_branch__" -- "${SRC}" | grep -q . ; then
+              FOUND=true
+            fi
+
+            if [ "${FOUND}" != "true" ]; then
+              echo "✘ Source folder not found: ${SRC}"
               continue
             fi
 
-            echo "   Sample files under SRC on team branch:"
-            git ls-tree -r --name-only "__team_branch__" \
-              | grep -F "^${SRC}/" \
-              | sed 's/^/     • /' | head -n 20 || true
-
-            # Split from team snapshot
             git checkout "__team_branch__"
             SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
-            if [ -z "${SPLIT_SHA}" ]; then
-              echo "   No split produced for ${SRC}. Skipping."
-              git checkout "${CENTRAL_BRANCH}"
-              continue
-            fi
 
-            # Write into a dedicated PR branch (not CENTRAL directly)
             if [ "${CHANGES}" = "false" ]; then
-              PR_BRANCH="pr-subtree-dev/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+              PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
               git checkout "${CENTRAL_BRANCH}"
               git checkout -b "${PR_BRANCH}"
+              CHANGES=true
             else
               git checkout "${PR_BRANCH}"
             fi
-            echo "   Writing to branch: $(git rev-parse --abbrev-ref HEAD)"
-
             CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TS}"
-
-            # Conflict-free bootstrap
             git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
             git clean -fdx -- "${TARGET_PREFIX}" || true
+
             git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
+
             git add -A "${TARGET_PREFIX}"
             TREE=$(git write-tree)
             NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
-            git reset --hard "$NEWCOMMIT"
+            git reset --hard "${NEWCOMMIT}"
 
-            CHANGES=true
           done <<< "${FOLDER_MAP}"
 
-          echo "=== Push PR branch ==="
+          ####################################################
+          # ✅ NAMED VALUES AUTO-SYNC (FINAL FIX)
+          ####################################################
+
+          echo "=== Named Values Auto-Sync ==="
+
+          NV_ROOTS=(
+            "internal/base/named values"
+            "external/base/named values"
+          )
+
+          for ROOT in "${NV_ROOTS[@]}"; do
+            echo "Checking NV root: $ROOT"
+            NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ \
+              | grep "^${ROOT}/" \
+              | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
+              | sort -u)
+
+            if [[ -z "$NV_FOLDERS" ]]; then
+              echo "No NV folders under $ROOT"
+              continue
+            fi
+
+            for SRC_NV in $NV_FOLDERS; do
+              echo "→ Syncing NV folder: $SRC_NV"
+
+              if [[ "$CHANGES" = "false" ]]; then
+                PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+                git checkout "${CENTRAL_BRANCH}"
+                git checkout -b "${PR_BRANCH}"
+                CHANGES=true
+              else
+                git checkout "${PR_BRANCH}"
+              fi
+
+              TARGET_NV="$SRC_NV"
+
+              git rm -r --cached --ignore-unmatch "$TARGET_NV" || true
+              git clean -fdx -- "$TARGET_NV" || true
+              mkdir -p "$TARGET_NV"
+
+              git checkout __team_branch__ -- "$SRC_NV"/
+              cp -R "$SRC_NV"/ "$TARGET_NV"/
+
+              git add -A "$TARGET_NV"
+              git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
+            done
+          done
+
+          ####################################################
+
           if [ "${CHANGES}" = "false" ]; then
-            echo "No mapped folders produced changes. Exiting."
+            echo "No changes to sync."
             exit 0
           fi
 
           git push origin "${PR_BRANCH}" || {
-            echo "Branch name collision, retrying…"
             PR_BRANCH="${PR_BRANCH}-$(date +%s)"
             git branch -m "${PR_BRANCH}"
             git push origin "${PR_BRANCH}"
           }
 
           echo "PR_BRANCH=${PR_BRANCH}" >> $GITHUB_ENV
-
-      - name: Generate GitHub Action Summary
-        shell: bash
-        run: |
-          {
-            echo "## Subtree Sync (develop) Summary"
-            echo ""
-            echo "**Central Repo:** ${CENTRAL_REPO}"
-            echo "**Central Base:** ${CENTRAL_BRANCH}"
-            echo "**Team Repo:** ${TEAM_REPO_URL}"
-            echo "**Team Branch:** ${TEAM_BRANCH}"
-            echo "**PR Branch:** ${PR_BRANCH:-Not created}"
-            echo ""
-            echo "### Folder Mapping"
-            echo '```'
-            echo "${FOLDER_MAP}"
-            echo '```'
-            echo ""
-            echo "**Timestamp:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-            echo "**Commit SHA:** ${GITHUB_SHA}"
-            echo ""
-            echo "✅ Sync completed. Check the PR branch in central."
-          } >> $GITHUB_STEP_SUMMARY

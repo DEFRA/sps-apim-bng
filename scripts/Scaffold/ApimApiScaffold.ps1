@@ -1,8 +1,9 @@
 
+
 <#
 APIM Self‑Serve token mapping tool — IN‑PLACE
 Updated for current template structure shown in screenshot:
-- namedValues folders remain legacy: API_NAME-backend-scopeid / API_NAME-frontend-clientid
+- named values folders remain legacy: API_NAME-backend-scopeid / API_NAME-frontend-clientid
 - backends exist under dev/tst/pre with mixed casing and mixed backendInformation filename casing
 - supports Tokens: <<TOKEN>> + {{token}} (case-insensitive)
 #>
@@ -216,11 +217,11 @@ function Tpl([string]$logical){
   # 2) fallbacks for casing mismatches on Linux
   switch($logical){
     'namedValueBackendInformation.json' {
-      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'base[\\/]namedValues[\\/].*backend\-scopeid[\\/].*namedValueInformation\.json$'
+      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'base[\\/]named values[\\/].*backend\-scopeid[\\/].*namedValueInformation\.json$'
       if($scan){ return $scan }
     }
     'namedValueFrontendInformation.json' {
-      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'base[\\/]namedValues[\\/].*frontend\-clientid[\\/].*namedValueInformation\.json$'
+      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'base[\\/]named values[\\/].*frontend\-clientid[\\/].*namedValueInformation\.json$'
       if($scan){ return $scan }
     }
     'backendInformation.dev.json' {
@@ -279,7 +280,7 @@ if($script:inputObj.PSObject.Properties.Name -contains 'FRONTEND_CLIENTID_KEYNAM
 if($script:inputObj.PSObject.Properties.Name -contains 'RATE_LIMIT_CALLS'){ $tokens['rate_limit_calls'] = [string]$script:inputObj.RATE_LIMIT_CALLS }
 if($script:inputObj.PSObject.Properties.Name -contains 'RATE_LIMIT_PERIOD'){ $tokens['rate_limit_period'] = [string]$script:inputObj.RATE_LIMIT_PERIOD }
 
-foreach($k in @('API_NAME','API_VERSION','API_DISPLAY_NAME','API_DESCRIPTION','API_BACKEND_URL',
+foreach($k in @('API_NAME','API_VERSION','API_DISPLAY_NAME','API_DESCRIPTION','BASE_BACKEND_URL',
                'BACKEND_SCOPEID_KEYNAME','FRONTEND_CLIENTID_KEYNAME',
                'DEV_BACKEND_URL','TST_BACKEND_URL','PRE_BACKEND_URL')){
   if($script:inputObj.PSObject.Properties.Name -contains $k){
