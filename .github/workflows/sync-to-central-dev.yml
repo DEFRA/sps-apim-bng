@@ -133,7 +133,6 @@ jobs:
 
           for ROOT in "${NV_ROOTS[@]}"; do
             echo "Checking NV root: $ROOT"
-
             NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ \
               | grep "^${ROOT}/" \
               | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
