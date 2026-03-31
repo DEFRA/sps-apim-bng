@@ -125,8 +125,9 @@ jobs:
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # NAMED VALUES AUTO-SYNC (FINAL FIX — DIRECT COMMIT)
+          # NAMED VALUES AUTO-SYNC (DEVELOP DIRECT SYNC)
           ####################################################
+
           echo "=== Named Values Auto-Sync (develop direct sync) ==="
 
           NV_ROOTS=(
@@ -155,7 +156,6 @@ jobs:
 
             [[ -z "$NV_FOLDERS" ]] && continue
 
-            # SAFE LOOP — PRESERVES SPACES
             while IFS= read -r SRC_NV; do
               [[ -z "$SRC_NV" ]] && continue
 
@@ -175,9 +175,10 @@ jobs:
               cp -R "$SRC_NV"/ "$TARGET_NV"/
 
               git add -A "$TARGET_NV"
-              git commit -m "Auto NV Sync (develop): $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
+              git commit -m "Auto NV Sync (develop): $SRC_NV → $TARGET_NV | TS: $(date -u +"%Y-%m-%dT%H:%M:%SZ')" || true
 
             done <<< "$NV_FOLDERS"
+
           done
 
           ####################################################

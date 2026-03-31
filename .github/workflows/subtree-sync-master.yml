@@ -128,6 +128,7 @@ jobs:
           ####################################################
           # NAMED VALUES AUTO-SYNC (FINAL FIX)
           ####################################################
+
           echo "=== Named Values Auto-Sync ==="
 
           NV_ROOTS=(
@@ -143,6 +144,7 @@ jobs:
               | grep "^${ROOT}/" || echo "(none)"
             echo "-------------------"
 
+            # Collect NV subfolders (supports spaces)
             NV_FOLDERS=$(
               git ls-tree -r --name-only __team_branch__ \
                 | grep "^${ROOT}/" \
@@ -156,13 +158,13 @@ jobs:
 
             [[ -z "$NV_FOLDERS" ]] && continue
 
-            # FIXED LOOP — SUPPORTS SPACES
+            # Loop safely (no word splitting)
             while IFS= read -r SRC_NV; do
               [[ -z "$SRC_NV" ]] && continue
 
               echo "→ Sync NV: $SRC_NV"
 
-              if [ "$CHANGES" = "false" ]; then
+              if [[ "$CHANGES" = "false" ]]; then
                 PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
                 git checkout "${BASE_BRANCH}"
                 git checkout -b "${PR_BRANCH}"
@@ -185,7 +187,9 @@ jobs:
               git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +"%Y-%m-%dT%H:%M:%SZ')" || true
 
             done <<< "$NV_FOLDERS"
+
           done
+
 
           ####################################################
           # PUSH PR
