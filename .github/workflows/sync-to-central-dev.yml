@@ -49,7 +49,7 @@ jobs:
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git config --global core.ignorecase false
 
-      - name: Clone central repo and sync folders
+      - name: Clone central repo and sync
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -112,8 +112,8 @@ jobs:
             git clean -fdx -- "${TARGET_PREFIX}" || true
 
             git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
-
             git add -A "${TARGET_PREFIX}"
+
             TREE=$(git write-tree)
             NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
             git reset --hard "${NEWCOMMIT}"
@@ -134,12 +134,12 @@ jobs:
           for ROOT in "${NV_ROOTS[@]}"; do
             echo "Checking NV root: $ROOT"
 
-            # DEBUG: print every file under this root
             echo "--- DEBUG: Files under root ---"
-            git ls-tree -r --name-only __team_branch__ | grep "^${ROOT}/" || echo "(none)"
+            git ls-tree -r --name-only __team_branch__ \
+              | grep "^${ROOT}/" \
+              || echo "(none)"
             echo "--------------------------------"
 
-            # Detect first-level NV subfolders
             NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ \
               | grep "^${ROOT}/" \
               | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
@@ -157,14 +157,8 @@ jobs:
             for SRC_NV in $NV_FOLDERS; do
               echo "→ Syncing NV folder: $SRC_NV"
 
-              if [[ "$CHANGES" = "false" ]]; then
-                PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
-                git checkout "${BASE_BRANCH}"
-                git checkout -b "${PR_BRANCH}"
-                CHANGES=true
-              else
-                git checkout "${PR_BRANCH}"
-              fi
+              git checkout "${CENTRAL_BRANCH}"
+              CHANGES=true
 
               TARGET_NV="$SRC_NV"
 
@@ -178,18 +172,15 @@ jobs:
               git add -A "$TARGET_NV"
               git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
 
-            done  # inner loop ends
-          done    # outer loop ends
+            done
+          done
+
+          ####################################################
 
           if [ "${CHANGES}" = "false" ]; then
-            echo "No changes to sync."
+            echo "No changes detected."
             exit 0
           fi
 
-          git push origin "${PR_BRANCH}" || {
-            PR_BRANCH="${PR_BRANCH}-$(date +%s)"
-            git branch -m "${PR_BRANCH}"
-            git push origin "${PR_BRANCH}"
-          }
-
-          echo "PR_BRANCH=${PR_BRANCH}" >> $GITHUB_ENV
+          echo "=== Push directly to develop ==="
+          git push origin "${CENTRAL_BRANCH}"

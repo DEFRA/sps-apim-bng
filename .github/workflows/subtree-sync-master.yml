@@ -68,7 +68,7 @@ jobs:
           git remote add "${TEAM_REMOTE_NAME}" "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
-          # Snapshot team branch
+          # Snapshot of team branch
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
@@ -77,6 +77,7 @@ jobs:
           ####################################################
           # SUBTREE SYNC
           ####################################################
+
           while IFS= read -r mapping; do
             mapping="$(printf '%s' "$mapping" | tr -d '\r')"
             [ -n "${mapping}" ] || continue
@@ -115,8 +116,8 @@ jobs:
             git clean -fdx -- "${TARGET_PREFIX}" || true
 
             git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
-
             git add -A "${TARGET_PREFIX}"
+
             TREE=$(git write-tree)
             NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
             git reset --hard "$NEWCOMMIT"
@@ -124,7 +125,7 @@ jobs:
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # NAMED VALUES AUTO-SYNC (FINAL FIX)
+          # NAMED VALUES AUTO-SYNC (FINAL, FIXED, SAFE)
           ####################################################
 
           echo "=== Named Values Auto-Sync ==="
@@ -137,12 +138,12 @@ jobs:
           for ROOT in "${NV_ROOTS[@]}"; do
             echo "Checking NV root: $ROOT"
 
-            # DEBUG: print every file under this root
             echo "--- DEBUG: Files under root ---"
-            git ls-tree -r --name-only __team_branch__ | grep "^${ROOT}/" || echo "(none)"
+            git ls-tree -r --name-only __team_branch__ \
+              | grep "^${ROOT}/" \
+              || echo "(none)"
             echo "--------------------------------"
 
-            # Detect first-level NV subfolders
             NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ \
               | grep "^${ROOT}/" \
               | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
@@ -180,16 +181,17 @@ jobs:
 
               git add -A "$TARGET_NV"
               git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
+            done
+          done
 
-            done  # inner loop ends
-          done    # outer loop ends
+          ####################################################
 
           if [ "${CHANGES}" = "false" ]; then
             echo "No changes detected. Exiting."
             exit 0
           fi
 
-          echo "=== Pushing PR Branch ==="
+          echo "=== Push PR Branch ==="
           git push origin "${PR_BRANCH}" || {
             PR_BRANCH="${PR_BRANCH}-$(date +%s)"
             git branch -m "${PR_BRANCH}"
