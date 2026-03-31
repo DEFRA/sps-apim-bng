@@ -156,7 +156,7 @@ jobs:
 
             [[ -z "$NV_FOLDERS" ]] && continue
 
-            for SRC_NV in $NV_FOLDERS; do
+            while IFS= read -r SRC_NV; do
               echo "→ Sync NV: $SRC_NV"
 
               if [ "$CHANGES" = "false" ]; then
