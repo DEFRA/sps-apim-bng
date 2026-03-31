@@ -83,8 +83,7 @@ jobs:
 
             FOUND=false
             if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then FOUND=true; fi
-            if git ls-tree -d __team_branch__ -- "${SRC}" | grep -q . ; then FOUND=true; fi
-
+            if git ls-tree -d __team_branch__ -- "${SRC}" | grep -q .; then FOUND=true; fi
             [[ "$FOUND" != "true" ]] && continue
 
             git checkout __team_branch__
@@ -93,15 +92,14 @@ jobs:
             git checkout "${CENTRAL_BRANCH}"
             CHANGES=true
 
-            CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} \
-            Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} \
-            Timestamp: ${TS}"
+            CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} Timestamp: ${TS}"
 
             git rm -r --cached --ignore-unmatch "$TARGET_PREFIX" || true
             git clean -fdx -- "$TARGET_PREFIX" || true
-            git read-tree --prefix="${TARGET_PREFIX}/" -u "$SPLIT_SHA"
-            git add -A "$TARGET_PREFIX"
 
+            git read-tree --prefix="${TARGET_PREFIX}/" -u "$SPLIT_SHA"
+
+            git add -A "$TARGET_PREFIX"
             TREE=$(git write-tree)
             NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "$SPLIT_SHA")
             git reset --hard "$NEWCOMMIT"
@@ -119,10 +117,13 @@ jobs:
           )
 
           for ROOT in "${NV_ROOTS[@]}"; do
-            echo "Checking NV root: $ROOT"
 
-            # Added '|| true' to prevent crash when grep finds nothing
-            NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ | grep "^${ROOT}/" | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" | sort -u || true)
+            NV_FOLDERS=$(
+              git ls-tree -r --name-only __team_branch__ \
+                | grep "^${ROOT}/" \
+                | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
+                | sort -u
+            )
 
             [[ -z "$NV_FOLDERS" ]] && continue
 
@@ -138,13 +139,12 @@ jobs:
 
               git rm -r --cached --ignore-unmatch "$TARGET_NV" || true
               git clean -fdx -- "$TARGET_NV" || true
-              mkdir -p "$TARGET_NV"
 
-              git checkout __team_branch__ -- "$SRC_NV"/
-              cp -R "$SRC_NV"/ "$TARGET_NV"/
+              # Checkout directly from team branch
+              git checkout __team_branch__ -- "$SRC_NV"
 
               git add -A "$TARGET_NV"
-              git commit -m "Auto NV Sync (develop): $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
+              git commit -m "Auto NV Sync (develop): $SRC_NV → $TARGET_NV | $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
 
             done < <(printf "%s\n" "$NV_FOLDERS")
 

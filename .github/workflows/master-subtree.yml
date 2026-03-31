@@ -1,3 +1,4 @@
+
 name: Sync subtree → Central (master) V2
 
 on:
@@ -61,9 +62,10 @@ jobs:
           git fetch origin "${BASE_BRANCH}" --depth=50
           git checkout "${BASE_BRANCH}"
 
-          git remote add "${TEAM_REMOTE_NAME}" "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
-          git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
+          git remote add "${TEAM_REMOTE_NAME}" \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
 
+          git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
@@ -82,18 +84,14 @@ jobs:
 
             FOUND=false
             if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then FOUND=true; fi
-            if git ls-tree -d __team_branch__ -- "${SRC}" | grep -q . ; then FOUND=true; fi
+            if git ls-tree -d __team_branch__ -- "${SRC}" | grep -q .; then FOUND=true; fi
 
-            if [ "$FOUND" != "true" ]; then
-              echo "✘ Source folder not found: ${SRC}"
-              continue
-            fi
+            [[ "$FOUND" != "true" ]] && continue
 
             git checkout __team_branch__
-
             SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
 
-            if [ "$CHANGES" = "false" ]; then
+            if [[ "$CHANGES" = "false" ]]; then
               PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
               git checkout "${BASE_BRANCH}"
               git checkout -b "${PR_BRANCH}"
@@ -102,9 +100,7 @@ jobs:
               git checkout "${PR_BRANCH}"
             fi
 
-            CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} \
-            Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} \
-            Timestamp: ${TS}"
+            CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} Timestamp: ${TS}"
 
             git rm -r --cached --ignore-unmatch "$TARGET_PREFIX" || true
             git clean -fdx -- "$TARGET_PREFIX" || true
@@ -112,9 +108,9 @@ jobs:
             git read-tree --prefix="${TARGET_PREFIX}/" -u "$SPLIT_SHA"
 
             git add -A "$TARGET_PREFIX"
-
             TREE=$(git write-tree)
             NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "$SPLIT_SHA")
+
             git reset --hard "$NEWCOMMIT"
 
           done <<< "${FOLDER_MAP}"
@@ -133,8 +129,12 @@ jobs:
           for ROOT in "${NV_ROOTS[@]}"; do
             echo "Checking NV root: $ROOT"
 
-            # Added '|| true' to prevent crash when grep finds nothing
-            NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ | grep "^${ROOT}/" | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" | sort -u || true)
+            NV_FOLDERS=$(
+              git ls-tree -r --name-only __team_branch__ \
+                | grep "^${ROOT}/" \
+                | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
+                | sort -u
+            )
 
             [[ -z "$NV_FOLDERS" ]] && continue
 
@@ -143,6 +143,7 @@ jobs:
 
               echo "→ Sync NV: $SRC_NV"
 
+              # Ensure PR branch is active
               if [[ "$CHANGES" = "false" ]]; then
                 PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
                 git checkout "${BASE_BRANCH}"
@@ -154,15 +155,15 @@ jobs:
 
               TARGET_NV="$SRC_NV"
 
+              # Clean old NV folder
               git rm -r --cached --ignore-unmatch "$TARGET_NV" || true
               git clean -fdx -- "$TARGET_NV" || true
-              mkdir -p "$TARGET_NV"
 
-              git checkout __team_branch__ -- "$SRC_NV"/
-              cp -R "$SRC_NV"/ "$TARGET_NV"/
+              # Checkout directly from team branch → avoids cp/self-copy
+              git checkout __team_branch__ -- "$SRC_NV"
 
               git add -A "$TARGET_NV"
-              git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
+              git commit -m "Auto NV Sync: $SRC_NV | $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
 
             done < <(printf "%s\n" "$NV_FOLDERS")
 
@@ -171,7 +172,7 @@ jobs:
           ####################################################
           # PUSH PR
           ####################################################
-          if [ "$CHANGES" = "false" ]; then
+          if [[ "$CHANGES" = "false" ]]; then
             echo "No changes found."
             exit 0
           fi
