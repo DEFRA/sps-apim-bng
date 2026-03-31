@@ -56,53 +56,37 @@ jobs:
           set -euo pipefail
           TS="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
-          echo "=== Clone central repo ==="
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
           cd central-repo
 
-          echo "=== Checkout central branch ==="
           git fetch origin "${CENTRAL_BRANCH}" --depth=50
           git checkout -B "${CENTRAL_BRANCH}" "origin/${CENTRAL_BRANCH}"
 
-          echo "=== Add team remote ==="
           git remote add "${TEAM_REMOTE_NAME}" \
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
-
-          echo "=== Snapshot team branch ==="
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
 
           ####################################################
-          # SUBTREE SYNC — DIRECT COMMIT TO DEVELOP
+          # SUBTREE SYNC — DIRECT COMMIT
           ####################################################
           while IFS= read -r mapping; do
             mapping="$(printf '%s' "$mapping" | tr -d '\r')"
-            [ -n "${mapping}" ] || continue
-            case "${mapping}" in \#*) continue ;; esac
+            [ -n "$mapping" ] || continue
+            case "$mapping" in \#*) continue ;; esac
 
             SRC="${mapping%%=*}"
             TARGET_PREFIX="${mapping#*=}"
 
-            echo "→ Processing subtree: $SRC → $TARGET_PREFIX"
-
             FOUND=false
-            if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then
-              FOUND=true
-            elif git ls-tree -d __team_branch__ -- "${SRC}" | grep -q . ; then
-              FOUND=true
-            fi
-
-            if [[ "${FOUND}" != "true" ]]; then
-              echo "✘ Source folder not found: ${SRC}"
-              continue
-            fi
+            if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then FOUND=true; fi
+            if git ls-tree -d __team_branch__ -- "${SRC}" | grep -q . ; then FOUND=true; fi
+            [[ "$FOUND" != "true" ]] && continue
 
             git checkout __team_branch__
             SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
-
-            # DIRECT SYNC — NO PR
             git checkout "${CENTRAL_BRANCH}"
             CHANGES=true
 
@@ -110,24 +94,20 @@ jobs:
             Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} \
             Timestamp: ${TS}"
 
-            git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
-            git clean -fdx -- "${TARGET_PREFIX}" || true
-
-            git read-tree --prefix="${TARGET_PREFIX}/" -u "${SPLIT_SHA}"
-            git add -A "${TARGET_PREFIX}"
+            git rm -r --cached --ignore-unmatch "$TARGET_PREFIX" || true
+            git clean -fdx -- "$TARGET_PREFIX" || true
+            git read-tree --prefix="${TARGET_PREFIX}/" -u "$SPLIT_SHA"
+            git add -A "$TARGET_PREFIX"
 
             TREE=$(git write-tree)
-            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" \
-              | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
-
-            git reset --hard "${NEWCOMMIT}"
+            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "$SPLIT_SHA")
+            git reset --hard "$NEWCOMMIT"
 
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # NAMED VALUES AUTO-SYNC (DEVELOP DIRECT SYNC)
+          # ✅ NAMED VALUES AUTO-SYNC (FINAL FIX)
           ####################################################
-
           echo "=== Named Values Auto-Sync (develop direct sync) ==="
 
           NV_ROOTS=(
@@ -163,12 +143,10 @@ jobs:
 
               git checkout "${CENTRAL_BRANCH}"
               CHANGES=true
-
               TARGET_NV="$SRC_NV"
 
               git rm -r --cached --ignore-unmatch "$TARGET_NV" || true
               git clean -fdx -- "$TARGET_NV" || true
-
               mkdir -p "$TARGET_NV"
 
               git checkout __team_branch__ -- "$SRC_NV"/
@@ -178,16 +156,14 @@ jobs:
               git commit -m "Auto NV Sync (develop): $SRC_NV → $TARGET_NV | TS: $(date -u +"%Y-%m-%dT%H:%M:%SZ')" || true
 
             done <<< "$NV_FOLDERS"
-
           done
 
           ####################################################
-          # PUSH DIRECTLY TO DEVELOP
+          # ✅ PUSH DIRECTLY TO DEVELOP
           ####################################################
-          if [[ "${CHANGES}" = "false" ]]; then
+          if [[ "$CHANGES" = "false" ]]; then
             echo "No changes to sync."
             exit 0
           fi
 
-          echo "=== Pushing directly to develop ==="
           git push origin "${CENTRAL_BRANCH}"

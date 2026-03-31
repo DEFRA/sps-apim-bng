@@ -34,7 +34,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Start SSH
+      - name: Start SSH agent & load central deploy key
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.CENTRAL_SYNC_SSH_KEY }}
@@ -48,7 +48,7 @@ jobs:
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git config --global core.ignorecase false
 
-      - name: Clone central & run sync
+      - name: Clone central and run sync
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -61,12 +61,10 @@ jobs:
           git fetch origin "${BASE_BRANCH}" --depth=50
           git checkout "${BASE_BRANCH}"
 
-          git remote add "${TEAM_REMOTE_NAME}" \
-            "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
+          git remote add "${TEAM_REMOTE_NAME}" "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
-          git checkout -B __team_branch__ \
-            "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
+          git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
           PR_BRANCH=""
@@ -85,11 +83,8 @@ jobs:
             echo "→ Processing subtree: $SRC → $TARGET_PREFIX"
 
             FOUND=false
-            if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then
-              FOUND=true
-            elif git ls-tree -d __team_branch__ -- "$SRC" | grep -q . ; then
-              FOUND=true
-            fi
+            if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then FOUND=true; fi
+            if git ls-tree -d __team_branch__ -- "${SRC}" | grep -q . ; then FOUND=true; fi
 
             if [ "$FOUND" != "true" ]; then
               echo "✘ Source folder not found: $SRC"
@@ -116,19 +111,17 @@ jobs:
             git clean -fdx -- "$TARGET_PREFIX" || true
 
             git read-tree --prefix="${TARGET_PREFIX}/" -u "$SPLIT_SHA"
-            git add -A "$TARGET_PREFIX"
+            git add -A "${TARGET_PREFIX}"
 
             TREE=$(git write-tree)
-            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" \
-              | git commit-tree "$TREE" -p HEAD -p "$SPLIT_SHA")
+            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "$SPLIT_SHA")
             git reset --hard "$NEWCOMMIT"
 
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # NAMED VALUES AUTO-SYNC (FINAL FIX)
+          # ✅ NAMED VALUES AUTO-SYNC (NO STRAY done)
           ####################################################
-
           echo "=== Named Values Auto-Sync ==="
 
           NV_ROOTS=(
@@ -140,11 +133,9 @@ jobs:
             echo "Checking NV root: $ROOT"
 
             echo "--- DEBUG FILES ---"
-            git ls-tree -r --name-only __team_branch__ \
-              | grep "^${ROOT}/" || echo "(none)"
+            git ls-tree -r --name-only __team_branch__ | grep "^${ROOT}/" || echo "(none)"
             echo "-------------------"
 
-            # Collect NV subfolders (supports spaces)
             NV_FOLDERS=$(
               git ls-tree -r --name-only __team_branch__ \
                 | grep "^${ROOT}/" \
@@ -158,7 +149,7 @@ jobs:
 
             [[ -z "$NV_FOLDERS" ]] && continue
 
-            # Loop safely (no word splitting)
+            # ✅ SAFE LOOP — PRESERVES SPACES
             while IFS= read -r SRC_NV; do
               [[ -z "$SRC_NV" ]] && continue
 
@@ -179,7 +170,6 @@ jobs:
               git clean -fdx -- "$TARGET_NV" || true
 
               mkdir -p "$TARGET_NV"
-
               git checkout __team_branch__ -- "$SRC_NV"/
               cp -R "$SRC_NV"/ "$TARGET_NV"/
 
@@ -189,7 +179,6 @@ jobs:
             done <<< "$NV_FOLDERS"
 
           done
-
 
           ####################################################
           # PUSH PR
