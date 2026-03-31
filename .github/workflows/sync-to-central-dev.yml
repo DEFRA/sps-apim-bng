@@ -120,6 +120,21 @@ jobs:
 
           done <<< "${FOLDER_MAP}"
 
+          echo "------ DEBUG: RAW GIT LISTING FOR ROOT = $ROOT ------"
+          git ls-tree -r --name-only __team_branch__ | sed -n "s#^${ROOT}#& #p"
+          echo "------------------------------------------------------"
+
+          echo "------ DEBUG: FULL RAW PATHS MATCHING ROOT PREFIX ------"
+          git ls-tree -r --name-only __team_branch__ | grep "^${ROOT}/" || echo "(none)"
+          echo "---------------------------------------------------------"
+
+          echo "------ DEBUG: EXTRACTED NV SUBFOLDERS (sed preview) ------"
+          git ls-tree -r --name-only __team_branch__ \
+            | grep "^${ROOT}/" \
+            | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
+            || echo "(none)"
+          echo "----------------------------------------------------------"
+
           ####################################################
           # ✅ NAMED VALUES AUTO-SYNC (FINAL FIX)
           ####################################################
