@@ -1,4 +1,4 @@
-name: Sync subtree → Central (develop)
+name: Sync subtree → Central (develop) V2
 
 on:
   push:
@@ -56,26 +56,22 @@ jobs:
           set -euo pipefail
           TS="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
-          echo "=== Clone central repo ==="
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
           cd central-repo
 
-          echo "=== Checkout central branch ==="
           git fetch origin "${CENTRAL_BRANCH}" --depth=50
           git checkout -B "${CENTRAL_BRANCH}" "origin/${CENTRAL_BRANCH}"
 
-          echo "=== Add team remote ==="
           git remote add "${TEAM_REMOTE_NAME}" \
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
-          echo "=== Snapshot team branch ==="
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
 
           ####################################################
-          # SUBTREE SYNC — DIRECT COMMIT TO DEVELOP
+          # SUBTREE SYNC — DIRECT TO DEVELOP
           ####################################################
           while IFS= read -r mapping; do
             mapping="$(printf '%s' "$mapping" | tr -d '\r')"
@@ -115,7 +111,7 @@ jobs:
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # ✅ NAMED VALUES AUTO-SYNC (DEVELOP — DIRECT SYNC)
+          # ✅ NAMED VALUES AUTO-SYNC (DEVELOP)
           ####################################################
           echo "=== Named Values Auto-Sync (develop direct sync) ==="
 
@@ -145,7 +141,6 @@ jobs:
 
             [[ -z "$NV_FOLDERS" ]] && continue
 
-            # ✅ SAFE — no word splitting
             while IFS= read -r SRC_NV; do
               [[ -z "$SRC_NV" ]] && continue
 
@@ -166,9 +161,9 @@ jobs:
               git add -A "$TARGET_NV"
               git commit -m "Auto NV Sync (develop): $SRC_NV → $TARGET_NV | TS: $(date -u +"%Y-%m-%dT%H:%M:%SZ')" || true
 
-            done <<< "$NV_FOLDERS"   # ✅ closes while loop
+            done <<< "$NV_FOLDERS"
 
-          done   # ✅ closes for ROOT loop
+          done
 
           ####################################################
           # ✅ PUSH DIRECTLY TO DEVELOP
