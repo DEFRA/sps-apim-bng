@@ -120,23 +120,8 @@ jobs:
 
           done <<< "${FOLDER_MAP}"
 
-          echo "------ DEBUG: RAW GIT LISTING FOR ROOT = $ROOT ------"
-          git ls-tree -r --name-only __team_branch__ | sed -n "s#^${ROOT}#& #p"
-          echo "------------------------------------------------------"
-
-          echo "------ DEBUG: FULL RAW PATHS MATCHING ROOT PREFIX ------"
-          git ls-tree -r --name-only __team_branch__ | grep "^${ROOT}/" || echo "(none)"
-          echo "---------------------------------------------------------"
-
-          echo "------ DEBUG: EXTRACTED NV SUBFOLDERS (sed preview) ------"
-          git ls-tree -r --name-only __team_branch__ \
-            | grep "^${ROOT}/" \
-            | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
-            || echo "(none)"
-          echo "----------------------------------------------------------"
-
           ####################################################
-          # ✅ NAMED VALUES AUTO-SYNC (FINAL FIX)
+          # NAMED VALUES AUTO-SYNC (FINAL FIX)
           ####################################################
 
           echo "=== Named Values Auto-Sync ==="
@@ -148,13 +133,24 @@ jobs:
 
           for ROOT in "${NV_ROOTS[@]}"; do
             echo "Checking NV root: $ROOT"
+
+            # Debug: print file paths under root
+            echo "--- DEBUG RAW FILES UNDER ROOT ---"
+            git ls-tree -r --name-only __team_branch__ | grep "^${ROOT}/" || echo "(none)"
+            echo "----------------------------------"
+
+            # Extract first-level NV subfolders from file paths
             NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ \
               | grep "^${ROOT}/" \
               | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
               | sort -u)
 
+            echo "--- DEBUG EXTRACTED NV FOLDERS ---"
+            echo "$NV_FOLDERS"
+            echo "----------------------------------"
+
             if [[ -z "$NV_FOLDERS" ]]; then
-              echo "No NV folders under $ROOT"
+              echo "No NV folders under: $ROOT"
               continue
             fi
 
@@ -163,7 +159,7 @@ jobs:
 
               if [[ "$CHANGES" = "false" ]]; then
                 PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
-                git checkout "${CENTRAL_BRANCH}"
+                git checkout "${BASE_BRANCH}"
                 git checkout -b "${PR_BRANCH}"
                 CHANGES=true
               else
@@ -180,11 +176,9 @@ jobs:
               cp -R "$SRC_NV"/ "$TARGET_NV"/
 
               git add -A "$TARGET_NV"
-              git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
+              git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +"%Y-%m-%dT%H:%M:%SZ')" || true
             done
           done
-
-          ####################################################
 
           if [ "${CHANGES}" = "false" ]; then
             echo "No changes to sync."
