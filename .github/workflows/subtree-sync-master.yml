@@ -175,8 +175,8 @@ jobs:
 
               git add -A "$TARGET_NV"
               git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +"%Y-%m-%dT%H:%M:%SZ')" || true
-
             done <<< "$NV_FOLDERS"
+          done
 
           ####################################################
           # PUSH PR
