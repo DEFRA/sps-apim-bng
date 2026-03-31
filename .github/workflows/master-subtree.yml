@@ -53,7 +53,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TS="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          TS="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
           cd central-repo
@@ -61,8 +61,7 @@ jobs:
           git fetch origin "${BASE_BRANCH}" --depth=50
           git checkout "${BASE_BRANCH}"
 
-          git remote add "${TEAM_REMOTE_NAME}" \
-            "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
+          git remote add "${TEAM_REMOTE_NAME}" "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
@@ -81,18 +80,17 @@ jobs:
             SRC="${mapping%%=*}"
             TARGET_PREFIX="${mapping#*=}"
 
-            echo "→ Processing subtree: $SRC → $TARGET_PREFIX"
-
             FOUND=false
             if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then FOUND=true; fi
             if git ls-tree -d __team_branch__ -- "${SRC}" | grep -q . ; then FOUND=true; fi
 
             if [ "$FOUND" != "true" ]; then
-              echo "✘ Source folder not found: $SRC"
+              echo "✘ Source folder not found: ${SRC}"
               continue
             fi
 
             git checkout __team_branch__
+
             SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
 
             if [ "$CHANGES" = "false" ]; then
@@ -112,19 +110,19 @@ jobs:
             git clean -fdx -- "$TARGET_PREFIX" || true
 
             git read-tree --prefix="${TARGET_PREFIX}/" -u "$SPLIT_SHA"
+
             git add -A "$TARGET_PREFIX"
 
             TREE=$(git write-tree)
-            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" \
-              | git commit-tree "$TREE" -p HEAD -p "$SPLIT_SHA")
-
+            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "$SPLIT_SHA")
             git reset --hard "$NEWCOMMIT"
 
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # ✅ NAMED VALUES AUTO-SYNC (FINAL FIX)
+          # ✅ NAMED VALUES AUTO-SYNC (PROCESS SUBSTITUTION)
           ####################################################
+
           echo "=== Named Values Auto-Sync ==="
 
           NV_ROOTS=(
@@ -135,21 +133,12 @@ jobs:
           for ROOT in "${NV_ROOTS[@]}"; do
             echo "Checking NV root: $ROOT"
 
-            echo "--- DEBUG FILES ---"
-            git ls-tree -r --name-only __team_branch__ \
-              | grep "^${ROOT}/" || echo "(none)"
-            echo "-------------------"
-
             NV_FOLDERS=$(
               git ls-tree -r --name-only __team_branch__ \
                 | grep "^${ROOT}/" \
                 | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
                 | sort -u
             )
-
-            echo "--- DEBUG FOLDERS ---"
-            echo "$NV_FOLDERS"
-            echo "----------------------"
 
             [[ -z "$NV_FOLDERS" ]] && continue
 
@@ -171,16 +160,15 @@ jobs:
 
               git rm -r --cached --ignore-unmatch "$TARGET_NV" || true
               git clean -fdx -- "$TARGET_NV" || true
-
               mkdir -p "$TARGET_NV"
 
               git checkout __team_branch__ -- "$SRC_NV"/
               cp -R "$SRC_NV"/ "$TARGET_NV"/
 
               git add -A "$TARGET_NV"
-              git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +"%Y-%m-%dT%H:%M:%SZ')" || true
+              git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
 
-            done <<< "$NV_FOLDERS"
+            done < <(printf "%s\n" "$NV_FOLDERS")
 
           done
 
