@@ -159,7 +159,7 @@ jobs:
 
             [[ -z "$NV_FOLDERS" ]] && continue
 
-            for SRC_NV in $NV_FOLDERS; do
+            while IFS= read -r SRC_NV; do
               echo "→ Syncing NV folder: $SRC_NV"
 
               git checkout "${CENTRAL_BRANCH}"
@@ -176,7 +176,6 @@ jobs:
 
               git add -A "$TARGET_NV"
               git commit -m "Auto NV Sync (develop): $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
-
             done
           done
 
