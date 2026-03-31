@@ -56,23 +56,28 @@ jobs:
           set -euo pipefail
           TS="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
+          echo "=== Clone central repo ==="
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
           cd central-repo
 
+          echo "=== Checkout central branch ==="
           git fetch origin "${CENTRAL_BRANCH}" --depth=50
           git checkout -B "${CENTRAL_BRANCH}" "origin/${CENTRAL_BRANCH}"
 
-          git remote add "${TEAM_REMOTE_NAME}" "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
+          echo "=== Add team remote ==="
+          git remote add "${TEAM_REMOTE_NAME}" \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
+
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
+          echo "=== Snapshot team branch ==="
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
 
           ####################################################
-          # SUBTREE SYNC
+          # SUBTREE SYNC (DEVELOP DIRECT COMMIT)
           ####################################################
-
           while IFS= read -r mapping; do
             mapping="$(printf '%s' "$mapping" | tr -d '\r')"
             [ -n "${mapping}" ] || continue
@@ -81,23 +86,24 @@ jobs:
             SRC="${mapping%%=*}"
             TARGET_PREFIX="${mapping#*=}"
 
-            echo "→ Processing subtree: $SRC"
+            echo "→ Processing subtree: $SRC → $TARGET_PREFIX"
 
             FOUND=false
             if git cat-file -e "__team_branch__:${SRC}" 2>/dev/null; then
               FOUND=true
-            elif git ls-tree -d "__team_branch__" -- "${SRC}" | grep -q . ; then
+            elif git ls-tree -d __team_branch__ -- "${SRC}" | grep -q . ; then
               FOUND=true
             fi
 
-            if [ "${FOUND}" != "true" ]; then
+            if [[ "${FOUND}" != "true" ]]; then
               echo "✘ Source folder not found: ${SRC}"
               continue
             fi
 
-            git checkout "__team_branch__"
+            git checkout __team_branch__
             SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
 
+            # DIRECT SYNC (NO PR)
             git checkout "${CENTRAL_BRANCH}"
             CHANGES=true
 
@@ -112,13 +118,15 @@ jobs:
             git add -A "${TARGET_PREFIX}"
 
             TREE=$(git write-tree)
-            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
+            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" \
+              | git commit-tree "$TREE" -p HEAD -p "${SPLIT_SHA}")
+
             git reset --hard "${NEWCOMMIT}"
 
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # ✅ NAMED VALUES AUTO-SYNC (FINAL FIX)
+          # NAMED VALUES AUTO-SYNC (DEVELOP: DIRECT SYNC)
           ####################################################
 
           echo "=== Named Values Auto-Sync (develop direct sync) ==="
@@ -129,27 +137,27 @@ jobs:
           )
 
           for ROOT in "${NV_ROOTS[@]}"; do
+
             echo "Checking NV root: $ROOT"
 
-            echo "--- DEBUG: Files under root ---"
+            echo "--- DEBUG: Raw Files ---"
             git ls-tree -r --name-only __team_branch__ \
-              | grep "^${ROOT}/" \
-              || echo "(none)"
-            echo "--------------------------------"
+              | grep "^${ROOT}/" || echo "(none)"
+            echo "-------------------------"
 
-            NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ \
-              | grep "^${ROOT}/" \
-              | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
-              | sort -u)
+            # ✅ Correct NV folder detection (FINAL FIX)
+            NV_FOLDERS=$(
+              git ls-tree -r --name-only __team_branch__ \
+                | grep "^${ROOT}/" \
+                | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
+                | sort -u
+            )
 
             echo "--- DEBUG: Extracted NV folders ---"
             echo "$NV_FOLDERS"
             echo "-----------------------------------"
 
-            if [[ -z "$NV_FOLDERS" ]]; then
-              echo "No NV folders under $ROOT"
-              continue
-            fi
+            [[ -z "$NV_FOLDERS" ]] && continue
 
             for SRC_NV in $NV_FOLDERS; do
               echo "→ Syncing NV folder: $SRC_NV"
@@ -173,10 +181,9 @@ jobs:
           done
 
           ####################################################
-          # ✅ Direct Push to develop
+          # ✅ PUSH DIRECTLY TO DEVELOP
           ####################################################
-
-          if [ "${CHANGES}" = "false" ]; then
+          if [[ "${CHANGES}" = "false" ]]; then
             echo "No changes to sync."
             exit 0
           fi
