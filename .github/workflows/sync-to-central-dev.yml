@@ -67,7 +67,6 @@ jobs:
           echo "=== Add team remote ==="
           git remote add "${TEAM_REMOTE_NAME}" \
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
-
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
           echo "=== Snapshot team branch ==="
@@ -76,7 +75,7 @@ jobs:
           CHANGES=false
 
           ####################################################
-          # SUBTREE SYNC (DEVELOP DIRECT COMMIT)
+          # SUBTREE SYNC — DIRECT COMMIT TO DEVELOP
           ####################################################
           while IFS= read -r mapping; do
             mapping="$(printf '%s' "$mapping" | tr -d '\r')"
@@ -103,7 +102,7 @@ jobs:
             git checkout __team_branch__
             SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
 
-            # DIRECT SYNC (NO PR)
+            # DIRECT SYNC — NO PR
             git checkout "${CENTRAL_BRANCH}"
             CHANGES=true
 
@@ -126,9 +125,8 @@ jobs:
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # NAMED VALUES AUTO-SYNC (DEVELOP: DIRECT SYNC)
+          # NAMED VALUES AUTO-SYNC (FINAL FIX — DIRECT COMMIT)
           ####################################################
-
           echo "=== Named Values Auto-Sync (develop direct sync) ==="
 
           NV_ROOTS=(
@@ -137,15 +135,13 @@ jobs:
           )
 
           for ROOT in "${NV_ROOTS[@]}"; do
-
             echo "Checking NV root: $ROOT"
 
-            echo "--- DEBUG: Raw Files ---"
+            echo "--- DEBUG FILES ---"
             git ls-tree -r --name-only __team_branch__ \
               | grep "^${ROOT}/" || echo "(none)"
-            echo "-------------------------"
+            echo "-------------------"
 
-            # ✅ Correct NV folder detection (FINAL FIX)
             NV_FOLDERS=$(
               git ls-tree -r --name-only __team_branch__ \
                 | grep "^${ROOT}/" \
@@ -153,14 +149,17 @@ jobs:
                 | sort -u
             )
 
-            echo "--- DEBUG: Extracted NV folders ---"
+            echo "--- DEBUG FOLDERS ---"
             echo "$NV_FOLDERS"
-            echo "-----------------------------------"
+            echo "----------------------"
 
             [[ -z "$NV_FOLDERS" ]] && continue
 
+            # SAFE LOOP — PRESERVES SPACES
             while IFS= read -r SRC_NV; do
-              echo "→ Syncing NV folder: $SRC_NV"
+              [[ -z "$SRC_NV" ]] && continue
+
+              echo "→ Sync NV: $SRC_NV"
 
               git checkout "${CENTRAL_BRANCH}"
               CHANGES=true
@@ -169,6 +168,7 @@ jobs:
 
               git rm -r --cached --ignore-unmatch "$TARGET_NV" || true
               git clean -fdx -- "$TARGET_NV" || true
+
               mkdir -p "$TARGET_NV"
 
               git checkout __team_branch__ -- "$SRC_NV"/
@@ -176,11 +176,12 @@ jobs:
 
               git add -A "$TARGET_NV"
               git commit -m "Auto NV Sync (develop): $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
-            done
+
+            done <<< "$NV_FOLDERS"
           done
 
           ####################################################
-          # ✅ PUSH DIRECTLY TO DEVELOP
+          # PUSH DIRECTLY TO DEVELOP
           ####################################################
           if [[ "${CHANGES}" = "false" ]]; then
             echo "No changes to sync."
