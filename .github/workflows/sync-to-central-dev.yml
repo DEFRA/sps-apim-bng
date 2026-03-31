@@ -156,7 +156,6 @@ jobs:
               git commit -m "Auto NV Sync (develop): $SRC_NV → $TARGET_NV | TS: $(date -u +"%Y-%m-%dT%H:%M:%SZ')" || true
 
             done <<< "$NV_FOLDERS"
-          done
 
           ####################################################
           # ✅ PUSH DIRECTLY TO DEVELOP
