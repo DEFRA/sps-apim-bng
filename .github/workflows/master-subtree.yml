@@ -1,4 +1,4 @@
-name: Sync subtree → Central (master)
+name: Sync subtree → Central (master) V2
 
 on:
   push:
@@ -61,7 +61,8 @@ jobs:
           git fetch origin "${BASE_BRANCH}" --depth=50
           git checkout "${BASE_BRANCH}"
 
-          git remote add "${TEAM_REMOTE_NAME}" "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
+          git remote add "${TEAM_REMOTE_NAME}" \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
@@ -111,7 +112,7 @@ jobs:
             git clean -fdx -- "$TARGET_PREFIX" || true
 
             git read-tree --prefix="${TARGET_PREFIX}/" -u "$SPLIT_SHA"
-            git add -A "${TARGET_PREFIX}"
+            git add -A "$TARGET_PREFIX"
 
             TREE=$(git write-tree)
             NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" \
@@ -122,7 +123,7 @@ jobs:
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # ✅ NAMED VALUES AUTO-SYNC (FINAL, INDENTATION CORRECT)
+          # ✅ NAMED VALUES AUTO-SYNC (FINAL FIX)
           ####################################################
           echo "=== Named Values Auto-Sync ==="
 
@@ -152,7 +153,6 @@ jobs:
 
             [[ -z "$NV_FOLDERS" ]] && continue
 
-            # ✅ SAFE — prevents word splitting for paths containing spaces
             while IFS= read -r SRC_NV; do
               [[ -z "$SRC_NV" ]] && continue
 
@@ -171,6 +171,7 @@ jobs:
 
               git rm -r --cached --ignore-unmatch "$TARGET_NV" || true
               git clean -fdx -- "$TARGET_NV" || true
+
               mkdir -p "$TARGET_NV"
 
               git checkout __team_branch__ -- "$SRC_NV"/
@@ -179,9 +180,9 @@ jobs:
               git add -A "$TARGET_NV"
               git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +"%Y-%m-%dT%H:%M:%SZ')" || true
 
-            done <<< "$NV_FOLDERS"   # ✅ closes while loop
+            done <<< "$NV_FOLDERS"
 
-          done   # ✅ closes for ROOT loop
+          done
 
           ####################################################
           # PUSH PR
