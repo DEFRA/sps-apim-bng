@@ -120,8 +120,9 @@ jobs:
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # ✅ NAMED VALUES AUTO-SYNC (NO STRAY done)
+          # ✅ NAMED VALUES AUTO-SYNC (MASTER – PR MODE)
           ####################################################
+
           echo "=== Named Values Auto-Sync ==="
 
           NV_ROOTS=(
@@ -132,10 +133,6 @@ jobs:
           for ROOT in "${NV_ROOTS[@]}"; do
             echo "Checking NV root: $ROOT"
 
-            echo "--- DEBUG FILES ---"
-            git ls-tree -r --name-only __team_branch__ | grep "^${ROOT}/" || echo "(none)"
-            echo "-------------------"
-
             NV_FOLDERS=$(
               git ls-tree -r --name-only __team_branch__ \
                 | grep "^${ROOT}/" \
@@ -143,13 +140,8 @@ jobs:
                 | sort -u
             )
 
-            echo "--- DEBUG FOLDERS ---"
-            echo "$NV_FOLDERS"
-            echo "----------------------"
-
             [[ -z "$NV_FOLDERS" ]] && continue
 
-            # ✅ SAFE LOOP — PRESERVES SPACES
             while IFS= read -r SRC_NV; do
               [[ -z "$SRC_NV" ]] && continue
 
@@ -168,15 +160,17 @@ jobs:
 
               git rm -r --cached --ignore-unmatch "$TARGET_NV" || true
               git clean -fdx -- "$TARGET_NV" || true
-
               mkdir -p "$TARGET_NV"
+
               git checkout __team_branch__ -- "$SRC_NV"/
               cp -R "$SRC_NV"/ "$TARGET_NV"/
 
               git add -A "$TARGET_NV"
               git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +"%Y-%m-%dT%H:%M:%SZ')" || true
-            done <<< "$NV_FOLDERS"
-          done
+
+            done <<< "$NV_FOLDERS"   # ✅ closes while
+
+          done   # ✅ closes for ROOT
 
           ####################################################
           # PUSH PR
