@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout (team repo)
+      - name: Checkout team repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -56,21 +56,26 @@ jobs:
           set -euo pipefail
           TS="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
+          echo "=== Clone central repo ==="
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
           cd central-repo
 
+          echo "=== Checkout central branch ==="
           git fetch origin "${CENTRAL_BRANCH}" --depth=50
           git checkout -B "${CENTRAL_BRANCH}" "origin/${CENTRAL_BRANCH}"
 
+          echo "=== Add team remote ==="
           git remote add "${TEAM_REMOTE_NAME}" \
             "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
+
+          echo "=== Snapshot team branch ==="
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
 
           ####################################################
-          # SUBTREE SYNC — DIRECT COMMIT
+          # SUBTREE SYNC — DIRECT COMMIT TO DEVELOP
           ####################################################
           while IFS= read -r mapping; do
             mapping="$(printf '%s' "$mapping" | tr -d '\r')"
@@ -87,6 +92,7 @@ jobs:
 
             git checkout __team_branch__
             SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
+
             git checkout "${CENTRAL_BRANCH}"
             CHANGES=true
 
@@ -96,19 +102,21 @@ jobs:
 
             git rm -r --cached --ignore-unmatch "$TARGET_PREFIX" || true
             git clean -fdx -- "$TARGET_PREFIX" || true
+
             git read-tree --prefix="${TARGET_PREFIX}/" -u "$SPLIT_SHA"
             git add -A "$TARGET_PREFIX"
 
             TREE=$(git write-tree)
-            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "$SPLIT_SHA")
+            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" \
+              | git commit-tree "$TREE" -p HEAD -p "$SPLIT_SHA")
+
             git reset --hard "$NEWCOMMIT"
 
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # ✅ NAMED VALUES AUTO-SYNC (DEVELOP – DIRECT SYNC)
+          # ✅ NAMED VALUES AUTO-SYNC (DEVELOP — DIRECT SYNC)
           ####################################################
-
           echo "=== Named Values Auto-Sync (develop direct sync) ==="
 
           NV_ROOTS=(
@@ -119,6 +127,11 @@ jobs:
           for ROOT in "${NV_ROOTS[@]}"; do
             echo "Checking NV root: $ROOT"
 
+            echo "--- DEBUG FILES ---"
+            git ls-tree -r --name-only __team_branch__ \
+              | grep "^${ROOT}/" || echo "(none)"
+            echo "-------------------"
+
             NV_FOLDERS=$(
               git ls-tree -r --name-only __team_branch__ \
                 | grep "^${ROOT}/" \
@@ -126,8 +139,13 @@ jobs:
                 | sort -u
             )
 
+            echo "--- DEBUG FOLDERS ---"
+            echo "$NV_FOLDERS"
+            echo "----------------------"
+
             [[ -z "$NV_FOLDERS" ]] && continue
 
+            # ✅ SAFE — no word splitting
             while IFS= read -r SRC_NV; do
               [[ -z "$SRC_NV" ]] && continue
 
@@ -148,10 +166,9 @@ jobs:
               git add -A "$TARGET_NV"
               git commit -m "Auto NV Sync (develop): $SRC_NV → $TARGET_NV | TS: $(date -u +"%Y-%m-%dT%H:%M:%SZ')" || true
 
-            done <<< "$NV_FOLDERS"   # ✅ closes while
+            done <<< "$NV_FOLDERS"   # ✅ closes while loop
 
-          done   # ✅ closes outer for-loop
-
+          done   # ✅ closes for ROOT loop
 
           ####################################################
           # ✅ PUSH DIRECTLY TO DEVELOP

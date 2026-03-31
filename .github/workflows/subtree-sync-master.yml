@@ -114,15 +114,16 @@ jobs:
             git add -A "${TARGET_PREFIX}"
 
             TREE=$(git write-tree)
-            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" | git commit-tree "$TREE" -p HEAD -p "$SPLIT_SHA")
+            NEWCOMMIT=$(echo "${CUSTOM_MESSAGE}" \
+              | git commit-tree "$TREE" -p HEAD -p "$SPLIT_SHA")
+
             git reset --hard "$NEWCOMMIT"
 
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # ✅ NAMED VALUES AUTO-SYNC (MASTER – PR MODE)
+          # ✅ NAMED VALUES AUTO-SYNC (FINAL, INDENTATION CORRECT)
           ####################################################
-
           echo "=== Named Values Auto-Sync ==="
 
           NV_ROOTS=(
@@ -133,6 +134,11 @@ jobs:
           for ROOT in "${NV_ROOTS[@]}"; do
             echo "Checking NV root: $ROOT"
 
+            echo "--- DEBUG FILES ---"
+            git ls-tree -r --name-only __team_branch__ \
+              | grep "^${ROOT}/" || echo "(none)"
+            echo "-------------------"
+
             NV_FOLDERS=$(
               git ls-tree -r --name-only __team_branch__ \
                 | grep "^${ROOT}/" \
@@ -140,8 +146,13 @@ jobs:
                 | sort -u
             )
 
+            echo "--- DEBUG FOLDERS ---"
+            echo "$NV_FOLDERS"
+            echo "----------------------"
+
             [[ -z "$NV_FOLDERS" ]] && continue
 
+            # ✅ SAFE — prevents word splitting for paths containing spaces
             while IFS= read -r SRC_NV; do
               [[ -z "$SRC_NV" ]] && continue
 
@@ -168,9 +179,9 @@ jobs:
               git add -A "$TARGET_NV"
               git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +"%Y-%m-%dT%H:%M:%SZ')" || true
 
-            done <<< "$NV_FOLDERS"   # ✅ closes while
+            done <<< "$NV_FOLDERS"   # ✅ closes while loop
 
-          done   # ✅ closes for ROOT
+          done   # ✅ closes for ROOT loop
 
           ####################################################
           # PUSH PR
