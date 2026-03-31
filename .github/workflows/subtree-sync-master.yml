@@ -137,23 +137,23 @@ jobs:
           for ROOT in "${NV_ROOTS[@]}"; do
             echo "Checking NV root: $ROOT"
 
-            # Debug: print file paths under root
-            echo "--- DEBUG RAW FILES UNDER ROOT ---"
+            # DEBUG: print every file under this root
+            echo "--- DEBUG: Files under root ---"
             git ls-tree -r --name-only __team_branch__ | grep "^${ROOT}/" || echo "(none)"
-            echo "----------------------------------"
+            echo "--------------------------------"
 
-            # Extract first-level NV subfolders from file paths
+            # Detect first-level NV subfolders
             NV_FOLDERS=$(git ls-tree -r --name-only __team_branch__ \
               | grep "^${ROOT}/" \
               | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
               | sort -u)
 
-            echo "--- DEBUG EXTRACTED NV FOLDERS ---"
+            echo "--- DEBUG: Extracted NV folders ---"
             echo "$NV_FOLDERS"
-            echo "----------------------------------"
+            echo "-----------------------------------"
 
             if [[ -z "$NV_FOLDERS" ]]; then
-              echo "No NV folders under: $ROOT"
+              echo "No NV folders under $ROOT"
               continue
             fi
 
@@ -179,9 +179,10 @@ jobs:
               cp -R "$SRC_NV"/ "$TARGET_NV"/
 
               git add -A "$TARGET_NV"
-              git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +"%Y-%m-%dT%H:%M:%SZ')" || true
-            done
-          done
+              git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
+
+            done  # inner loop ends
+          done    # outer loop ends
 
           if [ "${CHANGES}" = "false" ]; then
             echo "No changes detected. Exiting."
