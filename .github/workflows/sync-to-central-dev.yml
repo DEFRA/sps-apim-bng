@@ -49,7 +49,7 @@ jobs:
           git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git config --global core.ignorecase false
 
-      - name: Clone central repo and sync
+      - name: Clone central repo and sync folders
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -68,7 +68,6 @@ jobs:
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
-          PR_BRANCH=""
 
           ####################################################
           # SUBTREE SYNC
@@ -99,15 +98,13 @@ jobs:
             git checkout "__team_branch__"
             SPLIT_SHA="$(git subtree split --prefix="${SRC}")"
 
-            if [ "${CHANGES}" = "false" ]; then
-              PR_BRANCH="pr-subtree/${TEAM_REMOTE_NAME}/$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
-              git checkout "${CENTRAL_BRANCH}"
-              git checkout -b "${PR_BRANCH}"
-              CHANGES=true
-            else
-              git checkout "${PR_BRANCH}"
-            fi
-            CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TS}"
+            git checkout "${CENTRAL_BRANCH}"
+            CHANGES=true
+
+            CUSTOM_MESSAGE="subtree: sync ${SRC} → ${TARGET_PREFIX} \
+            Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} \
+            Timestamp: ${TS}"
+
             git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
             git clean -fdx -- "${TARGET_PREFIX}" || true
 
@@ -124,7 +121,7 @@ jobs:
           # ✅ NAMED VALUES AUTO-SYNC (FINAL FIX)
           ####################################################
 
-          echo "=== Named Values Auto-Sync ==="
+          echo "=== Named Values Auto-Sync (develop direct sync) ==="
 
           NV_ROOTS=(
             "internal/base/named values"
@@ -170,17 +167,19 @@ jobs:
               cp -R "$SRC_NV"/ "$TARGET_NV"/
 
               git add -A "$TARGET_NV"
-              git commit -m "Auto NV Sync: $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
+              git commit -m "Auto NV Sync (develop): $SRC_NV → $TARGET_NV | TS: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
 
             done
           done
 
           ####################################################
+          # ✅ Direct Push to develop
+          ####################################################
 
           if [ "${CHANGES}" = "false" ]; then
-            echo "No changes detected."
+            echo "No changes to sync."
             exit 0
           fi
 
-          echo "=== Push directly to develop ==="
+          echo "=== Pushing directly to develop ==="
           git push origin "${CENTRAL_BRANCH}"

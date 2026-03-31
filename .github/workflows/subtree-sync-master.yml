@@ -60,15 +60,12 @@ jobs:
           git clone --depth=50 "git@github.com:${CENTRAL_REPO}.git" central-repo
           cd central-repo
 
-          echo "=== Checkout base branch ==="
           git fetch origin "${BASE_BRANCH}" --depth=50
           git checkout "${BASE_BRANCH}"
 
-          echo "=== Add team remote ==="
           git remote add "${TEAM_REMOTE_NAME}" "https://x-access-token:${GITHUB_TOKEN}@github.com/${TEAM_REPO_URL}.git"
           git fetch "${TEAM_REMOTE_NAME}" "${TEAM_BRANCH}"
 
-          # Snapshot of team branch
           git checkout -B __team_branch__ "refs/remotes/${TEAM_REMOTE_NAME}/${TEAM_BRANCH}"
 
           CHANGES=false
@@ -111,7 +108,11 @@ jobs:
             else
               git checkout "${PR_BRANCH}"
             fi
-            CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} | Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} | Timestamp: ${TS}"
+
+            CUSTOM_MESSAGE="subtree: merge ${SRC} → ${TARGET_PREFIX} \
+            Source: ${TEAM_REMOTE_NAME}/${TEAM_BRANCH} \
+            Timestamp: ${TS}"
+
             git rm -r --cached --ignore-unmatch "${TARGET_PREFIX}" || true
             git clean -fdx -- "${TARGET_PREFIX}" || true
 
@@ -125,7 +126,7 @@ jobs:
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # NAMED VALUES AUTO-SYNC (FINAL, FIXED, SAFE)
+          # NAMED VALUES AUTO-SYNC (FINAL FIX)
           ####################################################
 
           echo "=== Named Values Auto-Sync ==="
