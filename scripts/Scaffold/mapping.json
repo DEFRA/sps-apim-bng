@@ -1,0 +1,145 @@
+
+{
+  "version": "3.4",
+  "description": "Aligned to current template folders (legacy named values layout) + base/dev/tst/pre backends, refined input.json with DEV/TST/PRE_BACKEND_URL.",
+  "templates": {
+    "apiInformation.json": "base/apis/API_NAME/apiInformation.json",
+    "policy.xml": "base/apis/API_NAME/policy.xml",
+    "specification.yaml": "base/apis/API_NAME/specification.yaml",
+    "productInformation.json": "base/products/API_NAME-product/productInformation.json",
+    "versionSetInformation.json": "base/version sets/API_NAME/versionSetInformation.json",
+
+    "namedValueBackendInformation.json": "base/named values/API_NAME-backend-scopeid/namedValueInformation.json",
+    "namedValueFrontendInformation.json": "base/named values/API_NAME-frontend-clientid/namedValueInformation.json",
+
+    "backendInformation.dev.json": "dev/backends/API_NAME-backend/backendInformation.json",
+    "backendInformation.tst.json": "tst/backends/API_NAME-backend/backendInformation.json",
+    "backendInformation.pre.json": "pre/backends/API_NAME-backend/backendInformation.json"
+  },
+
+  "fields": [
+    {
+      "inputKey": "API_NAME",
+      "type": "string",
+      "mandatory": true,
+      "usage": [
+        { "target": "folder", "path": "base/apis/{API_NAME}" },
+        { "target": "folder", "path": "base/products/{API_NAME}-product" },
+        { "target": "folder", "path": "base/version sets/{API_NAME}" },
+        { "target": "folder", "path": "dev/backends/{API_NAME}-backend" },
+        { "target": "folder", "path": "tst/backends/{API_NAME}-backend" },
+        { "target": "folder", "path": "pre/backends/{API_NAME}-backend" },
+        { "target": "file", "file": "apiInformation.json", "jsonPath": "$.properties.path" }
+      ]
+    },
+    {
+      "inputKey": "API_DISPLAY_NAME",
+      "type": "string",
+      "mandatory": true,
+      "usage": [
+        { "target": "file", "file": "apiInformation.json", "jsonPath": "$.properties.displayName" },
+        { "target": "file", "file": "productInformation.json", "jsonPath": "$.properties.displayName" }
+      ]
+    },
+    {
+      "inputKey": "API_VERSION",
+      "type": "string",
+      "mandatory": false,
+      "usage": [
+        { "target": "file", "file": "apiInformation.json", "jsonPath": "$.properties.apiVersion" }
+      ]
+    },
+    {
+      "inputKey": "BASE_BACKEND_URL",
+      "type": "string",
+      "mandatory": true,
+      "usage": [
+        { "target": "file", "file": "apiInformation.json", "jsonPath": "$.properties.serviceUrl" }
+      ]
+    },
+
+    {
+      "inputKey": "BACKEND_SCOPEID_KEYNAME",
+      "type": "string",
+      "mandatory": true,
+      "usage": [
+        { "target": "file", "file": "namedValueBackendInformation.json" },
+        { "target": "file", "file": "policy.xml" }
+      ]
+    },
+    {
+      "inputKey": "FRONTEND_CLIENTID_KEYNAME",
+      "type": "string",
+      "mandatory": true,
+      "usage": [
+        { "target": "file", "file": "namedValueFrontendInformation.json" },
+        { "target": "file", "file": "policy.xml" }
+      ]
+    },
+
+    {
+      "inputKey": "TENANT_ID",
+      "type": "string",
+      "mandatory": true,
+      "usage": [
+        { "target": "file", "file": "policy.xml" }
+      ]
+    },
+    {
+      "inputKey": "RATE_LIMIT_CALLS",
+      "type": "integer",
+      "mandatory": false,
+      "usage": [
+        { "target": "file", "file": "policy.xml" }
+      ]
+    },
+    {
+      "inputKey": "RATE_LIMIT_PERIOD",
+      "type": "integer",
+      "mandatory": false,
+      "usage": [
+        { "target": "file", "file": "policy.xml" }
+      ]
+    },
+
+    {
+      "inputKey": "DEV_BACKEND_URL",
+      "type": "string",
+      "mandatory": false,
+      "usage": [
+        { "target": "file", "file": "backendInformation.dev.json", "jsonPath": "$.properties.url" }
+      ]
+    },
+    {
+      "inputKey": "TST_BACKEND_URL",
+      "type": "string",
+      "mandatory": false,
+      "usage": [
+        { "target": "file", "file": "backendInformation.tst.json", "jsonPath": "$.properties.url" }
+      ]
+    },
+    {
+      "inputKey": "PRE_BACKEND_URL",
+      "type": "string",
+      "mandatory": false,
+      "usage": [
+        { "target": "file", "file": "backendInformation.pre.json", "jsonPath": "$.properties.url" }
+      ]
+    }
+  ],
+
+  "angleAliases": {
+    "API_NAME": "API_NAME",
+    "API_VERSION": "API_VERSION",
+    "API_DISPLAY_NAME": "API_DISPLAY_NAME",
+    "BASE_BACKEND_URL": "BASE_BACKEND_URL",
+    "BACKEND_SCOPEID_KEYNAME": "BACKEND_SCOPEID_KEYNAME",
+    "FRONTEND_CLIENTID_KEYNAME": "FRONTEND_CLIENTID_KEYNAME",
+    "TENANT_ID": "TENANT_ID",
+    "RATE_LIMIT_CALLS": "RATE_LIMIT_CALLS",
+    "RATE_LIMIT_PERIOD": "RATE_LIMIT_PERIOD",
+    "DEV_BACKEND_URL": "DEV_BACKEND_URL",
+    "TST_BACKEND_URL": "TST_BACKEND_URL",
+    "PRE_BACKEND_URL": "PRE_BACKEND_URL"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "<<API_NAME>>",
+    "description": "<<API_NAME>> Product",
+    "state": "published",
+    "subscriptionRequired": false
+  }
+}
