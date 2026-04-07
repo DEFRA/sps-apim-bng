@@ -2,7 +2,7 @@
   "API_NAME": "BNGICC",
   "API_DISPLAY_NAME": "BNGN ICC",
   "API_VERSION": "v1.0",
-  "BASE_BACKEND_URL": "https://unused",
+  "BASE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation_update",
   "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
   "FRONTEND_CLIENTID_KEYNAME": "bngicc-frontend-clientid",
   "TENANT_ID": "#{{ defraTenantId }}",
