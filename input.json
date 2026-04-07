@@ -1,6 +1,6 @@
 {
   "API_NAME": "BNGICC",
-  "API_DISPLAY_NAME": "BNG ICC",
+  "API_DISPLAY_NAME": "CAPP ICC",
   "API_VERSION": "v1.0",
   "BASE_BACKEND_URL": "https://divtstnvbase",
   "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
