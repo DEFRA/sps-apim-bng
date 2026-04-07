@@ -1,14 +1,14 @@
 {
   "API_NAME": "BNGICC",
-  "API_DISPLAY_NAME": "Address Lookup v2.1",
+  "API_DISPLAY_NAME": "CAPP ICC",
   "API_VERSION": "v1.0",
   "BASE_BACKEND_URL": "https://unused",
-  "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
-  "FRONTEND_CLIENTID_KEYNAME": "bngicc-frontend-clientid",
+  "BACKEND_SCOPEID_KEYNAME": "cappicc-backend-scopeid",
+  "FRONTEND_CLIENTID_KEYNAME": "cappicc-frontend-clientid",
   "TENANT_ID": "#{{ defraTenantId }}",
-  "RATE_LIMIT_CALLS": 300,
-  "RATE_LIMIT_PERIOD": 100,
-  "DEV_BACKEND_URL": "http://newdevurl",
-  "TST_BACKEND_URL": "http://newtsturl",
-  "PRE_BACKEND_URL": "http://newpreurl"
+  "RATE_LIMIT_CALLS": 100,
+  "RATE_LIMIT_PERIOD": 60,
+  "DEV_BACKEND_URL": "https://devcppafafa1401.azurewebsites.net/api",
+  "TST_BACKEND_URL": "http://tsturl",
+  "PRE_BACKEND_URL": "http://preurl"
 }
