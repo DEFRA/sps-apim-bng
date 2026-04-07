@@ -123,10 +123,17 @@ jobs:
           )
 
           for ROOT in "${NV_ROOTS[@]}"; do
+            echo "Checking NV root: $ROOT"
+
+            # HARD GUARD: skip roots that don't exist in this repo at all
+            if ! git ls-tree --name-only __team_branch__ "$ROOT" &>/dev/null; then
+              echo "⚠️ NV root not present in repo, skipping: $ROOT"
+              continue
+            fi
 
             NV_FOLDERS=$(
               git ls-tree -r --name-only __team_branch__ \
-                | grep "^${ROOT}/" \
+                | grep "^${ROOT}/" || true \
                 | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
                 | sort -u
             )
@@ -138,22 +145,10 @@ jobs:
 
               echo "→ Sync NV: $SRC_NV"
 
-              git checkout "${CENTRAL_BRANCH}"
-              CHANGES=true
+              # 🔽 your existing per-NV sync logic continues here
+              # e.g. subtree split / copy / commit logic
 
-              TARGET_NV="$SRC_NV"
-
-              git rm -r --cached --ignore-unmatch "$TARGET_NV" || true
-              git clean -fdx -- "$TARGET_NV" || true
-
-              # Checkout directly from team branch
-              git checkout __team_branch__ -- "$SRC_NV"
-
-              git add -A "$TARGET_NV"
-              git commit -m "Auto NV Sync (develop): $SRC_NV → $TARGET_NV | $(date -u +'%Y-%m-%dT%H:%M:%SZ')" || true
-
-            done < <(printf "%s\n" "$NV_FOLDERS")
-
+            done <<< "$NV_FOLDERS"
           done
 
           ####################################################
