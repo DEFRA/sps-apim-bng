@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: BNGICC
-  description: BNGICC Test 07 Apr - 16:58
+  description: BNGICC
   version: '1.0'
 
 servers:

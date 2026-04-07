@@ -10,7 +10,7 @@
     "protocols": [
       "https"
     ],
-    "serviceUrl": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation_update",
+    "serviceUrl": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/base",
     "subscriptionKeyParameterNames": {
       "header": "Ocp-Apim-Subscription-Key",
       "query": "subscription-key"

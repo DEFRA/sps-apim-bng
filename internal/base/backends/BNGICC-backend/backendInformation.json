@@ -1,7 +1,7 @@
 {
   "properties": {
-    "description": "<<API_Name>> Backend",
+    "description": "BNGN Backend",
     "protocol": "http",
-    "url": "<<BASE_BACKEND_URL>>"
+    "url": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation"
   }
 }
