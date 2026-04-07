@@ -24,6 +24,10 @@ env:
     internal/base/apis/BNGICC=internal/base/apis/bngicc
     internal/base/products/BNGICC-product=internal/base/products/bngicc-product
     internal/base/version sets/BNGICC=internal/base/version sets/bngicc
+    internal/base/backends/BNGICC-backend=internal/base/backends/BNGICC-backend
+    internal/dev/backends/BNGICC-backend=internal/dev/backends/BNGICC-backend
+    internal/tst/backends/BNGICC-backend=internal/tst/backends/BNGICC-backend
+    internal/pre/backends/BNGICC-backend=internal/pre/backends/BNGICC-backend
 
 jobs:
   sync:
