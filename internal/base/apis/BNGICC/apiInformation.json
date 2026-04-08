@@ -6,11 +6,11 @@
     "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
     "authenticationSettings": {},
     "isCurrent": true,
-    "displayName": "CAPP ICC",
+    "displayName": "BNGN ICC",
     "protocols": [
       "https"
     ],
-    "serviceUrl": "https://unused",
+    "serviceUrl": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/base",
     "subscriptionKeyParameterNames": {
       "header": "Ocp-Apim-Subscription-Key",
       "query": "subscription-key"
