@@ -17,6 +17,7 @@
 				</claim>
 			</required-claims>
 		</validate-jwt>
+		 <authentication-certificate certificate-id="BOOMI-TST-MMO" />
 		<set-backend-service backend-id="BNGICC-backend" />
 	</inbound>
 	<backend>
