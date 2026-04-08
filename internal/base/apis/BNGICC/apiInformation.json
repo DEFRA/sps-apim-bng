@@ -6,11 +6,11 @@
     "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
     "authenticationSettings": {},
     "isCurrent": true,
-    "displayName": "BNGN ICC",
+    "displayName": "MMO ICC",
     "protocols": [
       "https"
     ],
-    "serviceUrl": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/base",
+    "serviceUrl": "https://defra-test.boomi.cloud:444/ws/rest/DEFRA/v1/ECC/base",
     "subscriptionKeyParameterNames": {
       "header": "Ocp-Apim-Subscription-Key",
       "query": "subscription-key"
