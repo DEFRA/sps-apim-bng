@@ -224,6 +224,10 @@ function Tpl([string]$logical){
       $scan = Find-CaseInsensitiveFile $TemplatesRoot 'base[\\/]named values[\\/].*frontend\-clientid[\\/].*namedValueInformation\.json$'
       if($scan){ return $scan }
     }
+    'backendInformation.base.json' {
+      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'base[\\/]backends[\\/].*\-backend[\\/].*backendinformation\.json$'
+      if($scan){ return $scan }
+    }
     'backendInformation.dev.json' {
       $scan = Find-CaseInsensitiveFile $TemplatesRoot 'dev[\\/]backends[\\/].*\-backend[\\/].*backendinformation\.json$'
       if($scan){ return $scan }
@@ -234,27 +238,6 @@ function Tpl([string]$logical){
     }
     'backendInformation.pre.json' {
       $scan = Find-CaseInsensitiveFile $TemplatesRoot 'pre[\\/]backends[\\/].*\-backend[\\/].*backendinformation\.json$'
-      if($scan){ return $scan }
-    }
-    'backendInformation.base.internal.json' {
-      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'internal[\\/]base[\\/]backends[\\/].*\-backend[\\/].*backendinformation\.json$'
-      if($scan){ return $scan }
-    }
-    'backendInformation.base.external.json' {
-      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'external[\\/]base[\\/]backends[\\/].*\-backend[\\/].*backendinformation\.json$'
-      if($scan){ return $scan }
-    }
-
-    'backendInformation.dev.external.json' {
-      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'external[\\/]dev[\\/]backends[\\/].*\-backend[\\/].*backendinformation\.json$'
-      if($scan){ return $scan }
-    }
-    'backendInformation.tst.external.json' {
-      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'external[\\/]tst[\\/]backends[\\/].*\-backend[\\/].*backendinformation\.json$'
-      if($scan){ return $scan }
-    }
-    'backendInformation.pre.external.json' {
-      $scan = Find-CaseInsensitiveFile $TemplatesRoot 'external[\\/]pre[\\/]backends[\\/].*\-backend[\\/].*backendinformation\.json$'
       if($scan){ return $scan }
     }
   }
@@ -382,17 +365,10 @@ try{
   Process-TextTemplate 'policy.xml'
   Process-TextTemplate 'specification.yaml'
 
-# INTERNAL backends
-  Process-JsonTemplate 'backendInformation.base.internal.json'
+  Process-JsonTemplate 'backendInformation.base.json'
   Process-JsonTemplate 'backendInformation.dev.json'
   Process-JsonTemplate 'backendInformation.tst.json'
   Process-JsonTemplate 'backendInformation.pre.json'
-
-  # EXTERNAL backends
-  Process-JsonTemplate 'backendInformation.base.external.json'
-  Process-JsonTemplate 'backendInformation.dev.external.json'
-  Process-JsonTemplate 'backendInformation.tst.external.json'
-  Process-JsonTemplate 'backendInformation.pre.external.json'
 
   Write-Host "✅ Completed IN-PLACE." -ForegroundColor Green
   exit 0
