@@ -1,0 +1,7 @@
+{
+  "properties": {
+    "description": "BNGICC Backend",
+    "protocol": "http",
+    "url": "https://defra-test.boomi.cloud:444/ws/rest/DEFRA/v1/ECC/extdev"
+  }
+}
