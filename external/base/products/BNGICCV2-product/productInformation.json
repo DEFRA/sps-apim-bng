@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "BNG ICC V2",
+    "description": "BNGICCV2 Product",
+    "state": "published",
+    "subscriptionRequired": false
+  }
+}
