@@ -211,8 +211,6 @@ jobs:
           else
             echo "No named value changes to commit"
           fi
-              continue
-
 
           ####################################################
           # PUSH DIRECTLY TO DEVELOP

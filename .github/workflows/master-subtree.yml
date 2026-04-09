@@ -221,7 +221,6 @@ jobs:
           else
             echo "No named value changes to commit"
           fi
-              continue
 
           ####################################################
           # PUSH PR
