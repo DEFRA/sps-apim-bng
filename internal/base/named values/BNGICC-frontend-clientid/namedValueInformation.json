@@ -1,6 +1,6 @@
 {
   "properties": {
-    "displayName": "BNGICC_BACKE_SCOPEID",
+    "displayName": "BNGICC_FRONTEND_CLIENTID",
     "secret": true,
     "keyVault": {
       "secretIdentifier": "https://#{{ apiOpsKeyVaultName }}.vault.azure.net/secrets/bngicc-backend-scopeid"
