@@ -126,8 +126,9 @@ jobs:
 
           done <<< "${FOLDER_MAP}"
 
+
           ####################################################
-          # NAMED VALUES AUTO-SYNC (BASE + OPTIONAL ENV OVERRIDES)
+          # NAMED VALUES AUTO-SYNC (BASE + OPTIONAL ENV)
           ####################################################
           echo "=== Named Values Auto-Sync ==="
 
@@ -145,66 +146,60 @@ jobs:
           TEAM_REMOTE="sps-apim-bng"
           TEAM_REMOTE_BRANCH="master"
 
-          # Ensure teams repo is available
           git fetch "$TEAM_REMOTE"
 
           for ROOT in "${NV_ROOTS[@]}"; do
             echo ""
-            echo "🔍 Checking NV root: $ROOT"
+            echo "Checking NV root: $ROOT"
 
             ####################################################
-            # HARD GUARD: Root must exist in teams repo
-            # (dev/tst/pre are OPTIONAL and may not exist)
+            # Root may legitimately NOT exist (env overrides)
             ####################################################
             if ! git ls-tree --name-only "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" "$ROOT" &>/dev/null; then
-              echo "ℹ️  NV root not present (expected for env overrides): $ROOT"
-              echo "ℹ️  Base named values will be used instead"
+              echo "NV root not present (expected): $ROOT"
+              echo "Base named values will be used"
               continue
             fi
 
             ####################################################
-            # DISCOVER TEAM-OWNED NV FOLDERS (FOLDER-LEVEL)
+            # Discover team-owned NV folders
+            # IMPORTANT: grep MUST be tolerant of no matches
             ####################################################
             NV_FOLDERS=$(
               git ls-tree -r --name-only "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" |
-                grep "^${ROOT}/" |
+                grep "^${ROOT}/" || true |
                 awk -F/ '{ print $1"/"$2"/"$3"/"$4 }' |
                 sort -u
             )
 
             if [[ -z "$NV_FOLDERS" ]]; then
-              echo "ℹ️  No named value folders found under $ROOT"
+              echo "No named value folders under $ROOT (valid)"
               continue
             fi
 
             ####################################################
-            # SYNC EACH TEAM NV FOLDER
+            # Sync folders
             ####################################################
             echo "$NV_FOLDERS" | while IFS= read -r SRC_NV_FOLDER; do
               [[ -z "$SRC_NV_FOLDER" ]] && continue
 
               echo "→ Sync NV folder: $SRC_NV_FOLDER"
 
-              # Materialise folder in central repo
               mkdir -p "$SRC_NV_FOLDER"
-
-              # Checkout authoritative content from teams repo
               git checkout "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" -- "$SRC_NV_FOLDER"
-
-              # Stage changes
               git add "$SRC_NV_FOLDER"
-
             done
           done
 
           ####################################################
-          # COMMIT NAMED VALUE CHANGES (IF ANY)
+          # Commit if anything changed
           ####################################################
           if ! git diff --cached --quiet; then
             git commit -m "Sync named values from sps-apim-bng"
           else
-            echo "✅ No named value changes to commit"
+            echo "No named value changes to commit"
           fi
+
           ####################################################
           # PUSH PR
           ####################################################
