@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "rtnvpre",
+    "secret": true,
+    "tags": [],
+    "value": "testvalue"
+  }
+}
