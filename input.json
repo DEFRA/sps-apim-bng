@@ -2,7 +2,7 @@
   "API_NAME": "BNGICCV2",
   "API_DISPLAY_NAME": "BNG ICC V2",
   "API_VERSION": "v1.0",
-  "BASE_BACKEND_URL": "https://unused",
+  "BASE_BACKEND_URL": "https://baseurl",
   "BACKEND_SCOPEID_KEYNAME": "bngiccv2-backend-scopeid",
   "FRONTEND_CLIENTID_KEYNAME": "bngiccv2-frontend-clientid",
   "TENANT_ID": "#{{ defraTenantId }}",
