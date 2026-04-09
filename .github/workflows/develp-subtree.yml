@@ -120,8 +120,6 @@ jobs:
           ####################################################
           # NAMED VALUES AUTO-SYNC (FINAL SAFE VERSION)
           ####################################################
-          set -euo pipefail
-
           echo "=== Named Values Auto-Sync ==="
 
           NV_ROOTS=(
@@ -138,67 +136,41 @@ jobs:
           TEAM_REMOTE="sps-apim-bng"
           TEAM_REMOTE_BRANCH="master"
 
-          # Ensure teams repo is available
           git fetch "$TEAM_REMOTE"
 
           for ROOT in "${NV_ROOTS[@]}"; do
             echo ""
             echo "Checking NV root: $ROOT"
 
-            ####################################################
-            # Root may legitimately NOT exist (env overrides)
-            ####################################################
+            # Env roots are optional
             if ! git ls-tree --name-only "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" "$ROOT" &>/dev/null; then
               echo "NV root not present (expected): $ROOT"
               continue
             fi
 
-            ####################################################
-            # Discover NV folders via namedValueInformation.json
-            # (tolerant of no matches)
-            ####################################################
             NV_ITEMS=$(
               git ls-tree -r --name-only "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" |
                 grep "^${ROOT}/.*namedValueInformation\.json$" || true
             )
 
             if [[ -z "$NV_ITEMS" ]]; then
-              echo "No named values under $ROOT fi    echo "No named values under $ROOT (valid)"
+              echo "No named values under $ROOT (valid)"
+              continue
+            fi
 
-            ####################################################
-            # Process each discovered item
-            ####################################################
             echo "$NV_ITEMS" | while IFS= read -r ITEM; do
               [[ -z "$ITEM" ]] && continue
 
               echo "→ Sync NV item: $ITEM"
 
-              ####################################################
-              # NORMALISE PATH
-              # If ITEM is a file, operate on its parent folder
-              ####################################################
               if [[ -f "$ITEM" ]]; then
-                echo " Detected file path, normalising to folder"
                 NV_FOLDER="$(dirname "$ITEM")"
               else
                 NV_FOLDER="$ITEM"
               fi
 
-              ####################################################
-              # SAFETY CHECK
-              ####################################################
-              if [[ ! -d "$NV_FOLDER" ]]; then
-                mkdir -p "$NV_FOLDER"
-              fi
-
-              ####################################################
-              # Checkout authoritative content from teams repo
-              ####################################################
+              mkdir -p "$NV_FOLDER"
               git checkout "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" -- "$NV_FOLDER"
-
-              ####################################################
-              # Stage changes
-              ####################################################
               git add "$NV_FOLDER"
             done
           done
