@@ -1,8 +1,0 @@
-{
-  "properties": {
-    "displayName": "AA_BACKEND_SCOPEID",
-    "secret": true,
-    "tags": [],
-    "value": "testvalue"
-  }
-}

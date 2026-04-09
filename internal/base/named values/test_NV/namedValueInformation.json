@@ -1,9 +1,0 @@
-{
-  "properties": {
-    "displayName": "FRONTEND_CLIENTIDV2",
-    "secret": true,
-    "keyVault": {
-      "secretIdentifier": "https://#{{ apiOpsKeyVaultName }}.vault.azure.net/secrets/<<FRONTEND_CLIENTID_KEYNAME>>"
-    }
-  }
-}
