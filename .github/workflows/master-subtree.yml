@@ -177,6 +177,16 @@ jobs:
 
             done
           done
+
+          ####################################################
+          # COMMIT NAMED VALUE CHANGES (IF ANY)
+          ####################################################
+          if ! git diff --cached --quiet; then
+            git commit -m "Sync named values from sps-apim-bng"
+          else
+            echo "✅ No named value changes to commit"
+          fi
+
           ####################################################
           # PUSH PR
           ####################################################
