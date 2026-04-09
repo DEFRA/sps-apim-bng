@@ -1,7 +1,7 @@
 {
   "properties": {
-    "displayName": "<<API_NAME>>",
-    "description": "<<API_NAME>> Product",
+    "displayName": "BNG ICC V2",
+    "description": "BNGICCV2 Product",
     "state": "published",
     "subscriptionRequired": false
   }
