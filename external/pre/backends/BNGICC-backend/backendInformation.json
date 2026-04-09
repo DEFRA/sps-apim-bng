@@ -2,6 +2,6 @@
   "properties": {
     "description": "BNGICC Backend",
     "protocol": "http",
-    "url": "https://defra-test.boomi.cloud:444/ws/rest/DEFRA/v1/ECC/extpre"
+    "url": "https://prerwdwebwa4426.azurewebsites.net/api/v1/"
   }
 }
