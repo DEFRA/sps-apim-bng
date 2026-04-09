@@ -118,7 +118,7 @@ jobs:
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # NAMED VALUES AUTO-SYNC (BASE + OPTIONAL ENV)
+          # NAMED VALUES AUTO-SYNC (FINAL, ROBUST)
           ####################################################
           echo "=== Named Values Auto-Sync ==="
 
@@ -142,33 +142,29 @@ jobs:
             echo ""
             echo "Checking NV root: $ROOT"
 
-            ####################################################
-            # Root may legitimately NOT exist (env overrides)
-            ####################################################
+            # Root may not exist (env overrides are optional)
             if ! git ls-tree --name-only "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" "$ROOT" &>/dev/null; then
               echo "NV root not present (expected): $ROOT"
-              echo "Base named values will be used"
               continue
             fi
 
             ####################################################
-            # Discover team-owned NV folders
-            # IMPORTANT: grep MUST be tolerant of no matches
+            # DISCOVER NV FOLDERS (PARENT OF namedValueInformation.json)
             ####################################################
             NV_FOLDERS=$(
               git ls-tree -r --name-only "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" |
-                grep "^${ROOT}/" || true |
-                awk -F/ '{ print $1"/"$2"/"$3"/"$4 }' |
+                grep "^${ROOT}/.*namedValueInformation\.json$" || true |
+                sed 's#/namedValueInformation\.json$##' |
                 sort -u
             )
 
             if [[ -z "$NV_FOLDERS" ]]; then
-              echo "No named value folders under $ROOT (valid)"
+              echo "No named values under $ROOT (valid)"
               continue
             fi
 
             ####################################################
-            # Sync folders
+            # SYNC EACH NV FOLDER
             ####################################################
             echo "$NV_FOLDERS" | while IFS= read -r SRC_NV_FOLDER; do
               [[ -z "$SRC_NV_FOLDER" ]] && continue
@@ -182,7 +178,7 @@ jobs:
           done
 
           ####################################################
-          # Commit if anything changed
+          # COMMIT IF ANYTHING CHANGED
           ####################################################
           if ! git diff --cached --quiet; then
             git commit -m "Sync named values from sps-apim-bng"
