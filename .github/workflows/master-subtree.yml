@@ -128,8 +128,10 @@ jobs:
 
 
           ####################################################
-          # NAMED VALUES AUTO-SYNC (FINAL, ROBUST)
+          # NAMED VALUES AUTO-SYNC (FINAL SAFE VERSION)
           ####################################################
+          set -euo pipefail
+
           echo "=== Named Values Auto-Sync ==="
 
           NV_ROOTS=(
@@ -146,55 +148,80 @@ jobs:
           TEAM_REMOTE="sps-apim-bng"
           TEAM_REMOTE_BRANCH="master"
 
+          # Ensure teams repo is available
           git fetch "$TEAM_REMOTE"
 
           for ROOT in "${NV_ROOTS[@]}"; do
             echo ""
             echo "Checking NV root: $ROOT"
 
-            # Root may not exist (env overrides are optional)
+            ####################################################
+            # Root may legitimately NOT exist (env overrides)
+            ####################################################
             if ! git ls-tree --name-only "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" "$ROOT" &>/dev/null; then
               echo "NV root not present (expected): $ROOT"
               continue
             fi
 
             ####################################################
-            # DISCOVER NV FOLDERS (PARENT OF namedValueInformation.json)
+            # Discover NV folders via namedValueInformation.json
+            # (tolerant of no matches)
             ####################################################
-            NV_FOLDERS=$(
+            NV_ITEMS=$(
               git ls-tree -r --name-only "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" |
-                grep "^${ROOT}/.*namedValueInformation\.json$" || true |
-                sed 's#/namedValueInformation\.json$##' |
-                sort -u
+                grep "^${ROOT}/.*namedValueInformation\.json$" || true
             )
 
-            if [[ -z "$NV_FOLDERS" ]]; then
-              echo "No named values under $ROOT (valid)"
-              continue
-            fi
+            if [[ -z "$NV_ITEMS" ]]; then
+              echo "No named values under $ROOT fi    echo "No named values under $ROOT (valid)"
 
             ####################################################
-            # SYNC EACH NV FOLDER
+            # Process each discovered item
             ####################################################
-            echo "$NV_FOLDERS" | while IFS= read -r SRC_NV_FOLDER; do
-              [[ -z "$SRC_NV_FOLDER" ]] && continue
+            echo "$NV_ITEMS" | while IFS= read -r ITEM; do
+              [[ -z "$ITEM" ]] && continue
 
-              echo "→ Sync NV folder: $SRC_NV_FOLDER"
+              echo "→ Sync NV item: $ITEM"
 
-              mkdir -p "$SRC_NV_FOLDER"
-              git checkout "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" -- "$SRC_NV_FOLDER"
-              git add "$SRC_NV_FOLDER"
+              ####################################################
+              # NORMALISE PATH
+              # If ITEM is a file, operate on its parent folder
+              ####################################################
+              if [[ -f "$ITEM" ]]; then
+                echo " Detected file path, normalising to folder"
+                NV_FOLDER="$(dirname "$ITEM")"
+              else
+                NV_FOLDER="$ITEM"
+              fi
+
+              ####################################################
+              # SAFETY CHECK
+              ####################################################
+              if [[ ! -d "$NV_FOLDER" ]]; then
+                mkdir -p "$NV_FOLDER"
+              fi
+
+              ####################################################
+              # Checkout authoritative content from teams repo
+              ####################################################
+              git checkout "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" -- "$NV_FOLDER"
+
+              ####################################################
+              # Stage changes
+              ####################################################
+              git add "$NV_FOLDER"
             done
           done
 
           ####################################################
-          # COMMIT IF ANYTHING CHANGED
+          # Commit Named Value changes (if any)
           ####################################################
           if ! git diff --cached --quiet; then
             git commit -m "Sync named values from sps-apim-bng"
           else
             echo "No named value changes to commit"
           fi
+              continue
 
           ####################################################
           # PUSH PR
