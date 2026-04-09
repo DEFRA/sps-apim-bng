@@ -120,7 +120,7 @@ jobs:
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # ✅ NAMED VALUES AUTO-SYNC (CORRECT SOURCE)
+          # NAMED VALUES AUTO-SYNC (BASE + OPTIONAL ENV OVERRIDES)
           ####################################################
           echo "=== Named Values Auto-Sync ==="
 
@@ -145,13 +145,19 @@ jobs:
             echo ""
             echo "🔍 Checking NV root: $ROOT"
 
-            # Guard: NV root must exist in teams repo
+            ####################################################
+            # HARD GUARD: Root must exist in teams repo
+            # (dev/tst/pre are OPTIONAL and may not exist)
+            ####################################################
             if ! git ls-tree --name-only "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" "$ROOT" &>/dev/null; then
-              echo "⚠️  NV root not present in teams repo, skipping: $ROOT"
+              echo "ℹ️  NV root not present (expected for env overrides): $ROOT"
+              echo "ℹ️  Base named values will be used instead"
               continue
             fi
 
-            # ✅ Discover team-owned NV folders
+            ####################################################
+            # DISCOVER TEAM-OWNED NV FOLDERS (FOLDER-LEVEL)
+            ####################################################
             NV_FOLDERS=$(
               git ls-tree -r --name-only "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" |
                 grep "^${ROOT}/" |
@@ -159,17 +165,23 @@ jobs:
                 sort -u
             )
 
-            [[ -z "$NV_FOLDERS" ]] && continue
+            if [[ -z "$NV_FOLDERS" ]]; then
+              echo "ℹ️  No named value folders found under $ROOT"
+              continue
+            fi
 
+            ####################################################
+            # SYNC EACH TEAM NV FOLDER
+            ####################################################
             echo "$NV_FOLDERS" | while IFS= read -r SRC_NV_FOLDER; do
               [[ -z "$SRC_NV_FOLDER" ]] && continue
 
               echo "→ Sync NV folder: $SRC_NV_FOLDER"
 
-              # Always materialise folder
+              # Materialise folder in central repo
               mkdir -p "$SRC_NV_FOLDER"
 
-              # Checkout from TEAMS repo, not subtree branch
+              # Checkout authoritative content from teams repo
               git checkout "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" -- "$SRC_NV_FOLDER"
 
               # Stage changes
@@ -186,7 +198,6 @@ jobs:
           else
             echo "✅ No named value changes to commit"
           fi
-
           ####################################################
           # PUSH PR
           ####################################################
