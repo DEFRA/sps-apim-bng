@@ -118,9 +118,9 @@ jobs:
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # ✅ NAMED VALUES AUTO-SYNC (PROCESS SUBSTITUTION)
+          # NAMED VALUES AUTO-SYNC (FOLDER-SCOPED, SAFE)
           ####################################################
-          echo "=== Named Values Auto-Sync (develop) ==="
+          echo "=== Named Values Auto-Sync ==="
 
           NV_ROOTS=(
             "internal/base/named values"
@@ -133,33 +133,43 @@ jobs:
             "internal/pre/named values"
           )
 
-          for ROOT in "${NV_ROOTS[@]}"; do
-            echo "Checking NV root: $ROOT"
+          TEAM_BRANCH="__team_branch__"
 
-            # HARD GUARD: skip roots that don't exist in this repo at all
-            if ! git ls-tree --name-only __team_branch__ "$ROOT" &>/dev/null; then
-              echo "⚠️ NV root not present in repo, skipping: $ROOT"
+          for ROOT in "${NV_ROOTS[@]}"; do
+            echo ""
+            echo "🔍 Checking NV root: $ROOT"
+
+            # HARD GUARD — root must exist in the team repo
+            if ! git ls-tree --name-only "$TEAM_BRANCH" "$ROOT" &>/dev/null; then
+              echo "⚠️  Named Values root not present in team repo, skipping: $ROOT"
               continue
             fi
 
+            # DISCOVER TEAM-OWNED NV FOLDERS (folder-level, not files)
             NV_FOLDERS=$(
-              git ls-tree -r --name-only __team_branch__ \
-                | grep "^${ROOT}/" || true \
-                | sed -E "s#^${ROOT}/([^/]+)/.*#${ROOT}/\1#;" \
-                | sort -u
+              git ls-tree -r --name-only "$TEAM_BRANCH" |
+                grep "^${ROOT}/" |
+                awk -F/ '{ print $1"/"$2"/"$3"/"$4 }' |
+                sort -u
             )
 
             [[ -z "$NV_FOLDERS" ]] && continue
 
-            while IFS= read -r SRC_NV; do
-              [[ -z "$SRC_NV" ]] && continue
+            echo "$NV_FOLDERS" | while IFS= read -r SRC_NV_FOLDER; do
+              [[ -z "$SRC_NV_FOLDER" ]] && continue
 
-              echo "→ Sync NV: $SRC_NV"
+              echo "→ Sync NV folder: $SRC_NV_FOLDER"
 
-              # 🔽 your existing per-NV sync logic continues here
-              # e.g. subtree split / copy / commit logic
+              # ENSURE DIRECTORY EXISTS IN CENTRAL
+              mkdir -p "$SRC_NV_FOLDER"
 
-            done <<< "$NV_FOLDERS"
+              # OVERLAY FILES FROM TEAM REPO (AUTHORITATIVE)
+              git checkout "$TEAM_BRANCH" -- "$SRC_NV_FOLDER"
+
+              # STAGE ONLY THIS TEAM FOLDER
+              git add "$SRC_NV_FOLDER"
+
+            done
           done
 
           ####################################################
