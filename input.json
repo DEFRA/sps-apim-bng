@@ -2,13 +2,13 @@
   "API_NAME": "BNGICC",
   "API_DISPLAY_NAME": "MMO Ext ICC",
   "API_VERSION": "v1.0",
-  "BASE_BACKEND_URL": "https://defra-test.boomi.cloud:444/ws/rest/DEFRA/v1/ECC/extbase",
+  "BASE_BACKEND_URL": "https://baseurl",
   "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
   "FRONTEND_CLIENTID_KEYNAME": "bngicc-frontend-clientid",
   "TENANT_ID": "#{{ defraTenantId }}",
-  "RATE_LIMIT_CALLS": 115,
-  "RATE_LIMIT_PERIOD": 75,
-  "DEV_BACKEND_URL": "https://defra-test.boomi.cloud:444/ws/rest/DEFRA/v1/ECC/extdev",
-  "TST_BACKEND_URL": "https://defra-test.boomi.cloud:444/ws/rest/DEFRA/v1/ECC/exttst",
-  "PRE_BACKEND_URL": "https://defra-test.boomi.cloud:444/ws/rest/DEFRA/v1/ECC/extpre"
+  "RATE_LIMIT_CALLS": 100,
+  "RATE_LIMIT_PERIOD": 60,
+  "DEV_BACKEND_URL": "http://devurl",
+  "TST_BACKEND_URL": "http://tsturl",
+  "PRE_BACKEND_URL": "http://preurl"
 }

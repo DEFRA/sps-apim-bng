@@ -6,11 +6,11 @@
     "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
     "authenticationSettings": {},
     "isCurrent": true,
-    "displayName": "MMO ICC",
+    "displayName": "BNG ICC",
     "protocols": [
       "https"
     ],
-    "serviceUrl": "https://defra-test.boomi.cloud:444/ws/rest/DEFRA/v1/ECC/base",
+    "serviceUrl": "https://baseurl",
     "subscriptionKeyParameterNames": {
       "header": "Ocp-Apim-Subscription-Key",
       "query": "subscription-key"
