@@ -111,7 +111,7 @@ jobs:
           done <<< "${FOLDER_MAP}"
 
           ####################################################
-          # NAMED VALUES AUTO-SYNC (FOLDER-SCOPED, SAFE)
+          # ✅ NAMED VALUES AUTO-SYNC (CORRECT SOURCE)
           ####################################################
           echo "=== Named Values Auto-Sync ==="
 
@@ -126,21 +126,25 @@ jobs:
             "internal/pre/named values"
           )
 
-          TEAM_BRANCH="__team_branch__"
+          TEAM_REMOTE="sps-apim-bng"
+          TEAM_REMOTE_BRANCH="develop"
+
+          # Ensure teams repo is available
+          git fetch "$TEAM_REMOTE"
 
           for ROOT in "${NV_ROOTS[@]}"; do
             echo ""
             echo "🔍 Checking NV root: $ROOT"
 
-            # HARD GUARD — root must exist in the team repo
-            if ! git ls-tree --name-only "$TEAM_BRANCH" "$ROOT" &>/dev/null; then
-              echo "⚠️  Named Values root not present in team repo, skipping: $ROOT"
+            # Guard: NV root must exist in teams repo
+            if ! git ls-tree --name-only "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" "$ROOT" &>/dev/null; then
+              echo "⚠️  NV root not present in teams repo, skipping: $ROOT"
               continue
             fi
 
-            # DISCOVER TEAM-OWNED NV FOLDERS (folder-level, not files)
+            # Discover team-owned NV folders
             NV_FOLDERS=$(
-              git ls-tree -r --name-only "$TEAM_BRANCH" |
+              git ls-tree -r --name-only "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" |
                 grep "^${ROOT}/" |
                 awk -F/ '{ print $1"/"$2"/"$3"/"$4 }' |
                 sort -u
@@ -153,13 +157,13 @@ jobs:
 
               echo "→ Sync NV folder: $SRC_NV_FOLDER"
 
-              # ENSURE DIRECTORY EXISTS IN CENTRAL
+              # Always materialise folder
               mkdir -p "$SRC_NV_FOLDER"
 
-              # OVERLAY FILES FROM TEAM REPO (AUTHORITATIVE)
-              git checkout "$TEAM_BRANCH" -- "$SRC_NV_FOLDER"
+              # Checkout from TEAMS repo, not subtree branch
+              git checkout "$TEAM_REMOTE/$TEAM_REMOTE_BRANCH" -- "$SRC_NV_FOLDER"
 
-              # STAGE ONLY THIS TEAM FOLDER
+              # Stage changes
               git add "$SRC_NV_FOLDER"
 
             done
