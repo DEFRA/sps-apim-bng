@@ -3,7 +3,7 @@
     "displayName": "BNGICC_FRONTEND_CLIENTID",
     "secret": true,
     "keyVault": {
-      "secretIdentifier": "https://#{{ apiOpsKeyVaultName }}.vault.azure.net/secrets/bngicc-frontend-clientid"
+      "secretIdentifier": "https://#{{ apiOpsKeyVaultName }}.vault.azure.net/secrets/bngicc-backend-scopeid"
     }
   }
 }

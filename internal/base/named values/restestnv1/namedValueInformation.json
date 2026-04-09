@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "rt1",
+    "secret": true,
+    "tags": [],
+    "value": "testvalue"
+  }
+}
