@@ -1,6 +1,6 @@
 {
   "properties": {
-    "displayName": "BNGICCV2_FRONTEND_CLIENTID_V2",
+    "displayName": "BNGICCV2_FRONTEND_CLIENTID_V3",
     "secret": true,
     "keyVault": {
       "secretIdentifier": "https://#{{ apiOpsKeyVaultName }}.vault.azure.net/secrets/bngiccv2-frontend-clientid"
