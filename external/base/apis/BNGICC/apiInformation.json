@@ -6,11 +6,11 @@
     "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
     "authenticationSettings": {},
     "isCurrent": true,
-    "displayName": "EPR Organisations Contact Details API",
+    "displayName": "BNG ICC",
     "protocols": [
       "https"
     ],
-    "serviceUrl": "https://devrwdwebwa4426.azurewebsites.net/api/v1/base",
+    "serviceUrl": "https://unused",
     "subscriptionKeyParameterNames": {
       "header": "Ocp-Apim-Subscription-Key",
       "query": "subscription-key"
