@@ -2,13 +2,13 @@
   "API_NAME": "BNGICCV2",
   "API_DISPLAY_NAME": "BNG ICC V2",
   "API_VERSION": "v1.0",
-  "BASE_BACKEND_URL": "https://baseurl",
-  "BACKEND_SCOPEID_KEYNAME": "bngiccv2-backend-scopeid",
-  "FRONTEND_CLIENTID_KEYNAME": "bngiccv2-frontend-clientid",
+  "BASE_BACKEND_URL": "https://unused/base",
+  "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
+  "FRONTEND_CLIENTID_KEYNAME": "bngicc-frontend-clientid",
   "TENANT_ID": "#{{ defraTenantId }}",
   "RATE_LIMIT_CALLS": 100,
   "RATE_LIMIT_PERIOD": 60,
-  "DEV_BACKEND_URL": "http://devurl",
-  "TST_BACKEND_URL": "http://tsturl",
-  "PRE_BACKEND_URL": "http://preurl"
+  "DEV_BACKEND_URL": "http://devurl/dev",
+  "TST_BACKEND_URL": "http://tsturl/tst",
+  "PRE_BACKEND_URL": "http://preurl/pre"
 }

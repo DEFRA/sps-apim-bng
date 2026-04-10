@@ -10,7 +10,7 @@
     "protocols": [
       "https"
     ],
-    "serviceUrl": "https://unused",
+    "serviceUrl": "https://unused/base",
     "subscriptionKeyParameterNames": {
       "header": "Ocp-Apim-Subscription-Key",
       "query": "subscription-key"
