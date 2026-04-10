@@ -1,12 +1,12 @@
 {
   "properties": {
-    "path": "api/<<API_NAME>>",
+    "path": "BNGICC",
     "apiRevision": "1",
-    "apiVersion": "<<API_VERSION>>",
-    "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/<<API_NAME>>",
+    "apiVersion": "v1.0",
+    "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
     "authenticationSettings": {},
     "isCurrent": true,
-    "displayName": "<<API_DISPLAY_NAME>>",
+    "displayName": "EPR Organisations Contact Details API",
     "protocols": [
       "https"
     ],

@@ -1,0 +1,7 @@
+{
+  "properties": {
+    "description": "BNGICC Backend",
+    "protocol": "http",
+    "url": "https://devrwdwebwa4426.azurewebsites.net/api/v1/"
+  }
+}
