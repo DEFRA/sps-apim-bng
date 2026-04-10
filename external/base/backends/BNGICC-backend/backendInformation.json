@@ -2,6 +2,6 @@
   "properties": {
     "description": "BNGICC Backend",
     "protocol": "http",
-    "url": "<<BASE_BACKEND_URL>>"
+    "url": "https://baseurlv3"
   }
 }
