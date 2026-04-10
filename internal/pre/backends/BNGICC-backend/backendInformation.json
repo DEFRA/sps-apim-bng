@@ -2,6 +2,6 @@
   "properties": {
     "description": "BNGICC Backend",
     "protocol": "http",
-    "url": "http://preurl/pre"
+    "url": "https://prerwdwebwa4426.azurewebsites.net/api/v1/"
   }
 }
