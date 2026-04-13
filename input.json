@@ -1,13 +1,13 @@
 {
   "API_NAME": "BNGICC",
-  "API_DISPLAY_NAME": "EPR Organisations Contact Details API",
+  "API_DISPLAY_NAME": "EPR EXT Organisations Contact Details API",
   "API_VERSION": "v1.0",
-  "BASE_BACKEND_URL": "https://devrwdwebwa4426.azurewebsites.net/api/v1/base",
+  "BASE_BACKEND_URL": "https://devrwdwebwa4426.azurewebsites.net/api/v1/baseepr",
   "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
   "FRONTEND_CLIENTID_KEYNAME": "bngicc-frontend-clientid",
-  "TENANT_ID": "#{{ defraTenantId }}",
-  "RATE_LIMIT_CALLS": 115,
-  "RATE_LIMIT_PERIOD": 75,
+  "TENANT_ID": "#{{ b2cTenantId }}",
+  "RATE_LIMIT_CALLS": 125,
+  "RATE_LIMIT_PERIOD": 85,
   "DEV_BACKEND_URL": "https://devrwdwebwa4426.azurewebsites.net/api/v1/",
   "TST_BACKEND_URL": "https://tstrwdwebwa4426.azurewebsites.net/api/v1/",
   "PRE_BACKEND_URL": "https://prerwdwebwa4426.azurewebsites.net/api/v1/"
