@@ -50,15 +50,6 @@
       ]
     },
     {
-      "inputKey": "BASE_BACKEND_URL",
-      "type": "string",
-      "mandatory": false,
-      "usage": [
-        { "target": "file", "file": "apiInformation.json", "jsonPath": "$.properties.serviceUrl" }
-      ]
-    },
-
-    {
       "inputKey": "BACKEND_SCOPEID_KEYNAME",
       "type": "string",
       "mandatory": true,
