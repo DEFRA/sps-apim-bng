@@ -2,7 +2,7 @@
   "API_NAME": "BNGICC",
   "API_DISPLAY_NAME": "EPR Organisations Contact Details API",
   "API_VERSION": "v1.0",
-  "BASE_BACKEND_URL": "https://devrwdwebwa4426.azurewebsites.net/api/v1/base",
+  "BASE_BACKEND_URL": "",
   "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
   "FRONTEND_CLIENTID_KEYNAME": "bngicc-frontend-clientid",
   "TENANT_ID": "#{{ defraTenantId }}",
