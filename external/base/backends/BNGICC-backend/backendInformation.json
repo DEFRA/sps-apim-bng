@@ -1,0 +1,7 @@
+{
+  "properties": {
+    "description": "BNGICC Backend",
+    "protocol": "http",
+    "url": "https://basecppafafa1401.azurewebsites.net/api"
+  }
+}
