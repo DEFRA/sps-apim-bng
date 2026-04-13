@@ -6,15 +6,15 @@
     "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
     "authenticationSettings": {},
     "isCurrent": true,
-    "displayName": "EPR EXT Organisations Contact Details API",
+    "displayName": "CAPP Ext API",
     "protocols": [
       "https"
     ],
+    "serviceUrl": "http://unused",
     "subscriptionKeyParameterNames": {
       "header": "Ocp-Apim-Subscription-Key",
       "query": "subscription-key"
     },
-    "subscriptionRequired": false,
-    "serviceUrl": "https://devrwdwebwa4426.azurewebsites.net/api/v1/baseepr"
+    "subscriptionRequired": false
   }
 }

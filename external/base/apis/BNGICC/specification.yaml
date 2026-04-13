@@ -1,252 +1,1224 @@
 openapi: 3.0.1
 info:
-  title: EPR Organisations Contact Details API
-  description: API to retrieve organization contact details based on a date parameter.
-  version: v1.0
+  title: CAPP
+  description: This is the OpenAPI Document on Azure Functions
+  version: v1
 servers:
-  - url: http://dev-ext-api-gateway.azure.defra.cloud/api/epr-orgcontactdetails/v1.0
-  - url: https://dev-ext-api-gateway.azure.defra.cloud/api/epr-orgcontactdetails/v1.0
+  - url: https://tst-int-api-gateway.azure.defra.cloud/capp/v1
 paths:
-  /organisations-details:
-    get:
+  /GetChargeByChargeCode:
+    post:
       tags:
-        - OrganisationsDetails
-      summary: Retrieve organization contact details
-      description: Retrieve organization contact details
-      operationId: getOrganisationsDetails
-      parameters:
-        - name: createdOrModifiedAfter
-          in: query
-          schema:
-            type: string
-            description: 'Optional date parameter in ISO 8601 format (YYYY-MM-DD). If no date is passed, all organization records are returned. If a date is passed, only records created or modified on or after that date are returned.'
-            format: date
-            example: '2021-01-30'
+        - Charge Code Lookup
+      summary: GetChargeByChargeCode
+      description: GetChargeByChargeCode
+      operationId: GetChargeByChargeCode
+      requestBody:
+        description: Charge Lookup Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/requestRootObject'
+            example:
+              regime: string
+              applicationDate: string
+              source: string
+              sourceRef: string
+              globalFlags:
+                - name: string
+                  value: string
+              calculations:
+                - type: string
+                  charges:
+                    - chargeCode: string
+                      externalRef: string
+                      flags:
+                        - name: string
+                          value: string
       responses:
         '200':
-          description: Successful response with organisations' details
+          description: OK
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  organisationsDetails:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/OrganisationDetail'
-              examples:
-                successExample:
-                  value:
-                    organisationsDetails:
-                      - organisationId: ORG12345
-                        organisationName: Example Organisation Ltd
-                        organisationTradingName: Example Trading Name
-                        companiesHouseNumber: '12345678'
-                        homeNationCode: ENG
-                        serviceOfNoticeAddrLine1: 123 Example Street
-                        serviceOfNoticeAddrLine2: Suite 456
-                        serviceOfNoticeAddrCity: London
-                        serviceOfNoticeAddrCounty: Greater London
-                        serviceOfNoticeAddrCountry: United Kingdom
-                        serviceOfNoticeAddrPostcode: E1 6AN
-                        serviceOfNoticeAddrPhoneNumber: +44 20 7946 0123
-                        soleTraderFirstName: John
-                        soleTraderLastName: Doe
-                        soleTraderPhoneNumber: +44 7911 123456
-                        soleTraderEmail: john.doe@example.com
-                        primaryContactPersonFirstName: Jane
-                        primaryContactPersonLastName: Smith
-                        primaryContactPersonPhoneNumber: +44 7911 654321
-                        primaryContactPersonEmail: jane.smith@example.com
-                        subsidiaryDetails:
-                          - subsidiaryId: SUB12345
-                            subsidiaryName: Happy Shopper
-                            subsidiaryTradingName: Example Trading Name
+                $ref: '#/components/schemas/requestRootObject'
+              example:
+                regime: string
+                applicationDate: string
+                source: string
+                sourceRef: string
+                globalFlags:
+                  - name: string
+                    value: string
+                calculations:
+                  - type: string
+                    charges:
+                      - chargeCode: string
+                        externalRef: string
+                        flags:
+                          - name: string
+                            value: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/requestRootObject'
+              example:
+                regime: string
+                applicationDate: string
+                source: string
+                sourceRef: string
+                globalFlags:
+                  - name: string
+                    value: string
+                calculations:
+                  - type: string
+                    charges:
+                      - chargeCode: string
+                        externalRef: string
+                        flags:
+                          - name: string
+                            value: string
         '400':
-          description: Bad request due to invalid input
+          description: Invalid request data provided.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/errorResponse'
-              examples:
-                badRequestExample:
-                  value:
-                    error: Bad Request
-                    message: The request was malformed or invalid.
-                    errorCode: invalid_request
-                    description: The request did not conform to the required format.
-        '401':
-          description: Unauthorized - token invalid or expired
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorResponse'
-              examples:
-                invalidTokenExample:
-                  value:
-                    error: Unauthorized
-                    message: The token is invalid or has expired.
-                    errorCode: invalid_token
-                    description: The token provided is invalid or has expired.
-        '403':
-          description: Forbidden - Insufficient permissions to access the resource
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorResponse'
-              examples:
-                forbiddenExample:
-                  value:
-                    error: Forbidden
-                    message: You do not have the necessary permissions to access this resource.
-                    errorCode: insufficient_permissions
-                    description: The user does not have sufficient permissions for this resource.
-        '404':
-          description: Not Found - The requested organisations could not be found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorResponse'
-              examples:
-                notFoundExample:
-                  value:
-                    error: Not Found
-                    message: The requested resource could not be found.
-                    errorCode: resource_not_found
-                    description: The resource you requested does not exist.
+                type: string
+              example: string
         '500':
-          description: Internal server error
+          description: Server error while processing the request.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/errorResponse'
-              examples:
-                serverErrorExample:
-                  value:
-                    error: Internal Server Error
-                    message: An unexpected error occurred on the server.
-                    errorCode: server_error
-                    description: Something went wrong on the server side.
+                type: string
+              example: string
+  /GetCharge:
+    post:
+      tags:
+        - Charge Calculation
+      summary: GetCharge
+      description: GetCharge
+      operationId: GetCharge
+      requestBody:
+        description: Permit Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/headerRoot'
+            example:
+              context:
+                regime: string
+                effectiveDate: string
+                source: string
+                sourceRef: string
+                chargeRequestType: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/headerRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/headerRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+        '400':
+          description: Invalid request data provided.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+        '500':
+          description: Server error while processing the request.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+  /MCPSGCalculation:
+    post:
+      tags:
+        - MCPSG Charge Calculation
+      summary: MCPSGCalculation
+      description: MCPSGCalculation
+      operationId: MCPSGCalculation
+      requestBody:
+        description: MCPSG Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/mcpsgRoot'
+            example:
+              context:
+                regime: string
+                effectiveDate: string
+                source: string
+                sourceRef: string
+                chargeRequestType: string
+              application:
+                id: string
+                registrationTypeId: string
+                registrationTypeDescription: string
+                periodSpan: string
+                activities:
+                  - id: string
+                    name: string
+                    regulatedActivityClass:
+                      id: string
+                      name: string
+                    regulatedActivitySubClass:
+                      id: string
+                      name: string
+                    standardRule:
+                      id: string
+                      name: string
+                    properties:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        propertyValueDecimal: 0
+                        propertyValueBoolean: true
+                        propertyValueDateTime: { }
+                    relatedEntryReleasePoints:
+                      - id: string
+                    relatedApplicationPermitAssets:
+                      - id: string
+                documents:
+                  - id: string
+                    name: string
+                locations:
+                  - locationId: string
+                    type: string
+                    predefinedLocationId: string
+                    predefinedLocationDescription: string
+                    subLocations:
+                      - subLocationId: string
+                        subLocationDescription: string
+                    relatedEntryReleasePoints:
+                      - id: string
+                entryOrReleasePoints:
+                  - id: string
+                    name: string
+                    entryOrRelease: string
+                    nationalGridReference: string
+                    limits:
+                      - { }
+                applicationPermitAssets:
+                  - id: string
+                    assetName: string
+                    categoryId: string
+                    categoryDescription: string
+                    subcategoryId: string
+                    subCategoryDescription: string
+                    assetVersion: 0
+                    number: 0
+                    assetProps:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        unit: string
+                        unitId: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mcpsgRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/mcpsgRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '400':
+          description: Invalid request data provided.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+        '500':
+          description: Server error while processing the request.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+  /NAVASCalculation:
+    get:
+      tags:
+        - NAVAS Charge Calculation
+      summary: NAVASCalculation
+      description: NAVASCalculation
+      operationId: NAVASCalculation
+      requestBody:
+        description: NAVAS Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/navRoot'
+            example:
+              context:
+                regime: string
+                effectiveDate: string
+                source: string
+                sourceRef: string
+                chargeRequestType: string
+              application:
+                id: string
+                registrationTypeId: string
+                registrationTypeDescription: string
+                periodSpan: string
+                activities:
+                  - id: string
+                    name: string
+                    regulatedActivityClass:
+                      id: string
+                      name: string
+                    regulatedActivitySubClass:
+                      id: string
+                      name: string
+                    standardRule:
+                      id: string
+                      name: string
+                    properties:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        propertyValueDecimal: 0
+                        propertyValueBoolean: true
+                        propertyValueDateTime: { }
+                    relatedEntryReleasePoints:
+                      - id: string
+                    relatedApplicationPermitAssets:
+                      - id: string
+                documents:
+                  - id: string
+                    name: string
+                locations:
+                  - locationId: string
+                    type: string
+                    predefinedLocationId: string
+                    predefinedLocationDescription: string
+                    subLocations:
+                      - subLocationId: string
+                        subLocationDescription: string
+                    relatedEntryReleasePoints:
+                      - id: string
+                entryOrReleasePoints:
+                  - id: string
+                    name: string
+                    entryOrRelease: string
+                    nationalGridReference: string
+                    limits:
+                      - { }
+                applicationPermitAssets:
+                  - id: string
+                    assetName: string
+                    categoryId: string
+                    categoryDescription: string
+                    subcategoryId: string
+                    subCategoryDescription: string
+                    assetVersion: 0
+                    number: 0
+                    assetProps:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        unit: string
+                        unitId: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/navRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/navRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '400':
+          description: Invalid request data provided.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+        '500':
+          description: Server error while processing the request.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+  /NAVCalculation:
+    post:
+      tags:
+        - NAV Charge Calculation
+      summary: NAVCalculation
+      description: NAVCalculation
+      operationId: NAVCalculation
+      requestBody:
+        description: NAV Application Data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/navRoot'
+            example:
+              context:
+                regime: string
+                effectiveDate: string
+                source: string
+                sourceRef: string
+                chargeRequestType: string
+              application:
+                id: string
+                registrationTypeId: string
+                registrationTypeDescription: string
+                periodSpan: string
+                activities:
+                  - id: string
+                    name: string
+                    regulatedActivityClass:
+                      id: string
+                      name: string
+                    regulatedActivitySubClass:
+                      id: string
+                      name: string
+                    standardRule:
+                      id: string
+                      name: string
+                    properties:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        propertyValueDecimal: 0
+                        propertyValueBoolean: true
+                        propertyValueDateTime: { }
+                    relatedEntryReleasePoints:
+                      - id: string
+                    relatedApplicationPermitAssets:
+                      - id: string
+                documents:
+                  - id: string
+                    name: string
+                locations:
+                  - locationId: string
+                    type: string
+                    predefinedLocationId: string
+                    predefinedLocationDescription: string
+                    subLocations:
+                      - subLocationId: string
+                        subLocationDescription: string
+                    relatedEntryReleasePoints:
+                      - id: string
+                entryOrReleasePoints:
+                  - id: string
+                    name: string
+                    entryOrRelease: string
+                    nationalGridReference: string
+                    limits:
+                      - { }
+                applicationPermitAssets:
+                  - id: string
+                    assetName: string
+                    categoryId: string
+                    categoryDescription: string
+                    subcategoryId: string
+                    subCategoryDescription: string
+                    assetVersion: 0
+                    number: 0
+                    assetProps:
+                      - id: string
+                        name: string
+                        propertyValue: string
+                        unit: string
+                        unitId: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/navRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '201':
+          description: Application data successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/navRoot'
+              example:
+                context:
+                  regime: string
+                  effectiveDate: string
+                  source: string
+                  sourceRef: string
+                  chargeRequestType: string
+                application:
+                  id: string
+                  registrationTypeId: string
+                  registrationTypeDescription: string
+                  periodSpan: string
+                  activities:
+                    - id: string
+                      name: string
+                      regulatedActivityClass:
+                        id: string
+                        name: string
+                      regulatedActivitySubClass:
+                        id: string
+                        name: string
+                      standardRule:
+                        id: string
+                        name: string
+                      properties:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          propertyValueDecimal: 0
+                          propertyValueBoolean: true
+                          propertyValueDateTime: { }
+                      relatedEntryReleasePoints:
+                        - id: string
+                      relatedApplicationPermitAssets:
+                        - id: string
+                  documents:
+                    - id: string
+                      name: string
+                  locations:
+                    - locationId: string
+                      type: string
+                      predefinedLocationId: string
+                      predefinedLocationDescription: string
+                      subLocations:
+                        - subLocationId: string
+                          subLocationDescription: string
+                      relatedEntryReleasePoints:
+                        - id: string
+                  entryOrReleasePoints:
+                    - id: string
+                      name: string
+                      entryOrRelease: string
+                      nationalGridReference: string
+                      limits:
+                        - { }
+                  applicationPermitAssets:
+                    - id: string
+                      assetName: string
+                      categoryId: string
+                      categoryDescription: string
+                      subcategoryId: string
+                      subCategoryDescription: string
+                      assetVersion: 0
+                      number: 0
+                      assetProps:
+                        - id: string
+                          name: string
+                          propertyValue: string
+                          unit: string
+                          unitId: string
+        '400':
+          description: Invalid request data provided.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
+        '500':
+          description: Server error while processing the request.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: string
 components:
   schemas:
-    OrganisationDetail:
+    activity:
       type: object
       properties:
-        organisationId:
+        id:
           type: string
-          description: The identification number assigned to an organisation when they create an account
-          example: ORG12345
-        organisationName:
+          format: uuid
+          nullable: true
+        name:
           type: string
-          description: Organisation name
-          example: Example Organisation Ltd
-        organisationTradingName:
-          type: string
-          description: Organisation Trading
-          example: Example Trading Name
-        companiesHouseNumber:
-          type: string
-          description: Companies House registration number. Limited orgs only
-          example: '12345678'
-        homeNationCode:
-          type: string
-          description: 'Home nation code: The UK nation where organisation is registered.'
-          example: ENG
-        serviceOfNoticeAddrLine1:
-          type: string
-          description: Service of notice address line 1.
-          example: 123 Example Street
-        serviceOfNoticeAddrLine2:
-          type: string
-          description: Service of notice address line 2.
-          example: Suite 456
-        serviceOfNoticeAddrCity:
-          type: string
-          description: Service of notice address city.
-          example: London
-        serviceOfNoticeAddrCounty:
-          type: string
-          description: Service of notice address county.
-          example: Greater London
-        serviceOfNoticeAddrCountry:
-          type: string
-          description: Service of notice address country.
-          example: United Kingdom
-        serviceOfNoticeAddrPostcode:
-          type: string
-          example: E1 6AN
-        serviceOfNoticeAddrPhoneNumber:
-          type: string
-          description: Service of notice address phone number.
-          example: +44 20 7946 0123
-        soleTraderFirstName:
-          type: string
-          description: Sole trader first name.
-          example: John
-        soleTraderLastName:
-          type: string
-          description: Sole trader last name.
-          example: Doe
-        soleTraderPhoneNumber:
-          type: string
-          description: Sole trader phone number.
-          example: +44 7911 123456
-        soleTraderEmail:
-          type: string
-          description: Sole trader email.
-          format: email
-          example: john.doe@example.com
-        primaryContactPersonFirstName:
-          type: string
-          description: Primary contact first name.
-          example: Jane
-        primaryContactPersonLastName:
-          type: string
-          description: Primary contact last name.
-          example: Smith
-        primaryContactPersonPhoneNumber:
-          type: string
-          description: Primary contact phone number.
-          example: +44 7911 654321
-        primaryContactPersonEmail:
-          type: string
-          description: Primary contact email.
-          format: email
-          example: jane.smith@example.com
-        subsidiaryDetails:
+        regulatedActivityClass:
+          $ref: '#/components/schemas/regulatedActivityClass'
+        regulatedActivitySubClass:
+          $ref: '#/components/schemas/regulatedActivitySubClass'
+        standardRule:
+          $ref: '#/components/schemas/standardRule'
+        properties:
           type: array
           items:
-            $ref: '#/components/schemas/SubsidiaryDetails'
-    SubsidiaryDetails:
+            $ref: '#/components/schemas/property'
+        relatedEntryReleasePoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/relatedEntryReleasePoint'
+        relatedApplicationPermitAssets:
+          type: array
+          items:
+            $ref: '#/components/schemas/relatedApplicationPermitAsset'
+    application:
       type: object
       properties:
-        subsidiaryId:
+        id:
           type: string
-          description: An identification number assigned to a subsidiary by its parent company.
-          example: SUB12345
-        subsidiaryName:
+          format: uuid
+          nullable: true
+        registrationTypeId:
           type: string
-          description: ' The subsidiary name. This will be different from the parent company'
-          example: Happy Shopper
-        subsidiaryTradingName:
+          format: uuid
+          nullable: true
+        registrationTypeDescription:
           type: string
-          description: The trading name for subsidiary
-          example: Example Trading Name
-    errorResponse:
+        periodSpan:
+          type: string
+        activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/activity'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/document'
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/location'
+        entryOrReleasePoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/entryOrReleasePoint'
+        applicationPermitAssets:
+          type: array
+          items:
+            $ref: '#/components/schemas/applicationPermitAsset'
+    applicationPermitAsset:
       type: object
       properties:
-        error:
+        id:
           type: string
-          description: 'A short error code or type (e.g., "unauthorized", "invalid_token", "server_error")'
-        message:
+          format: uuid
+          nullable: true
+        assetName:
           type: string
-          description: A detailed message explaining the error
-        errorCode:
+        categoryId:
           type: string
-          description: A unique error code related to the type of error
-        description:
+          format: uuid
+          nullable: true
+        categoryDescription:
           type: string
-          description: A more detailed description about the error context
-tags:
-  - name: OrganisationsDetails
-    description: Operations related to retrieving organisations' contact details
+        subcategoryId:
+          type: string
+          format: uuid
+          nullable: true
+        subCategoryDescription:
+          type: string
+        assetVersion:
+          type: integer
+          format: int32
+        number:
+          type: integer
+          format: int32
+          nullable: true
+        assetProps:
+          type: array
+          items:
+            $ref: '#/components/schemas/assetProp'
+    assetProp:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        propertyValue:
+          type: string
+        unit:
+          type: string
+        unitId:
+          type: string
+          format: uuid
+          nullable: true
+    context:
+      type: object
+      properties:
+        regime:
+          type: string
+        effectiveDate:
+          type: string
+          format: date-time
+        source:
+          type: string
+        sourceRef:
+          type: string
+          format: uuid
+          nullable: true
+        chargeRequestType:
+          type: string
+    document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+    entryOrReleasePoint:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        entryOrRelease:
+          type: string
+        nationalGridReference:
+          type: string
+        limits:
+          type: array
+          items:
+            type: object
+    headerRoot:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/context'
+    location:
+      type: object
+      properties:
+        locationId:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          type: string
+        predefinedLocationId:
+          type: string
+          format: uuid
+          nullable: true
+        predefinedLocationDescription:
+          type: string
+        subLocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/subLocation'
+        relatedEntryReleasePoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/relatedEntryReleasePoint'
+    mcpsgRoot:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/context'
+        application:
+          $ref: '#/components/schemas/application'
+    navRoot:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/context'
+        application:
+          $ref: '#/components/schemas/application'
+    property:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+        propertyValue:
+          type: string
+        propertyValueDecimal:
+          type: number
+          format: double
+        propertyValueBoolean:
+          type: boolean
+        propertyValueDateTime:
+          type: object
+    regulatedActivityClass:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+    regulatedActivitySubClass:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+    relatedApplicationPermitAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+    relatedEntryReleasePoint:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+    requestCalculation:
+      type: object
+      properties:
+        type:
+          type: string
+        charges:
+          type: array
+          items:
+            $ref: '#/components/schemas/requestCharge'
+    requestCharge:
+      type: object
+      properties:
+        chargeCode:
+          type: string
+        externalRef:
+          type: string
+        flags:
+          type: array
+          items:
+            $ref: '#/components/schemas/requestFlag'
+    requestFlag:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    requestGlobalFlag:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    requestRootObject:
+      type: object
+      properties:
+        regime:
+          type: string
+        applicationDate:
+          type: string
+          format: date-time
+        source:
+          type: string
+        sourceRef:
+          type: string
+        globalFlags:
+          type: array
+          items:
+            $ref: '#/components/schemas/requestGlobalFlag'
+        calculations:
+          type: array
+          items:
+            $ref: '#/components/schemas/requestCalculation'
+    standardRule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        name:
+          type: string
+    subLocation:
+      type: object
+      properties:
+        subLocationId:
+          type: string
+          format: uuid
+          nullable: true
+        subLocationDescription:
+          type: string
