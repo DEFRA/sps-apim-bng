@@ -6,15 +6,15 @@
     "apiVersionSetId": "/subscriptions/#{{ subscriptionId }}/resourceGroups/#{{ apiManagementServiceResourceGroup }}/providers/Microsoft.ApiManagement/service/#{{ apiManagementServiceName }}/apiVersionSets/BNGICC",
     "authenticationSettings": {},
     "isCurrent": true,
-    "displayName": "BNG ICC",
+    "displayName": "EPR EXT Organisations Contact Details API",
     "protocols": [
       "https"
     ],
-    "serviceUrl": "https://unused",
     "subscriptionKeyParameterNames": {
       "header": "Ocp-Apim-Subscription-Key",
       "query": "subscription-key"
     },
-    "subscriptionRequired": false
+    "subscriptionRequired": false,
+    "serviceUrl": "https://devrwdwebwa4426.azurewebsites.net/api/v1/baseepr"
   }
 }

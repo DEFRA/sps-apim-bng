@@ -1,79 +1,252 @@
 openapi: 3.0.1
 info:
-  title: Address Lookup
-  description: The DEFRA Address Lookup REST API provides a method to search for a list of addresses  by Postal Code or UPRN (Unique Property Reference Number)
-  contact:
-    name: 'Department for Environment, Food and Rural Affairs - GOV UK'
-    url: https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs
-    email: defra.helpline@defra.gsi.gov.uk
-  license:
-    name: DEFRA API License Agreement
-    url: https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs/license/url
-  version: v2.1
+  title: EPR Organisations Contact Details API
+  description: API to retrieve organization contact details based on a date parameter.
+  version: v1.0
 servers:
-  - url: https://dev-api-gateway.azure.defra.cloud/api/address-lookup/v2.1
+  - url: http://dev-ext-api-gateway.azure.defra.cloud/api/epr-orgcontactdetails/v1.0
+  - url: https://dev-ext-api-gateway.azure.defra.cloud/api/epr-orgcontactdetails/v1.0
 paths:
-  /addresses:
+  /organisations-details:
     get:
       tags:
-        - Address Lookup OAuth
-      summary: Address search by Postcode or UPRN
-      description: Search the Address service for Postal codes or URPN
-      operationId: get-postcodes-postcode
+        - OrganisationsDetails
+      summary: Retrieve organization contact details
+      description: Retrieve organization contact details
+      operationId: getOrganisationsDetails
       parameters:
-        - name: postcode
+        - name: createdOrModifiedAfter
           in: query
-          description: The PostCode to be used in lookup
           schema:
             type: string
-        - name: uprn
-          in: query
-          description: The UPRN to be used in lookup
-          schema:
-            type: string
-        - name: maxresults
-          in: query
-          description: The maxresults parameter defines how many results will be returned (limit is 100). When searching by UPRN this parameter will be ignored. Default setting is 100.
-          schema:
-            type: integer
-        - name: offset
-          in: query
-          description: If results set is greater than the maxresults this parameter can be used to offset the results so that the result sets can be concatenated.
-          schema:
-            type: integer
-        - name: language
-          in: query
-          description: Language paramter is used to indecate which language is required. Valid languages are English (EN) and Welsh (CY). This filter is only applicable to DPA dataset
-          schema:
-            type: string
-        - name: dataset
-          in: query
-          description: 'Specifies which dataset is required, Delivery Point Addresses (DPA) or Local Property Identifier (LPI).'
-          schema:
-            type: string
+            description: 'Optional date parameter in ISO 8601 format (YYYY-MM-DD). If no date is passed, all organization records are returned. If a date is passed, only records created or modified on or after that date are returned.'
+            format: date
+            example: '2021-01-30'
       responses:
-        '202':
-          description: Success
+        '200':
+          description: Successful response with organisations' details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organisationsDetails:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OrganisationDetail'
+              examples:
+                successExample:
+                  value:
+                    organisationsDetails:
+                      - organisationId: ORG12345
+                        organisationName: Example Organisation Ltd
+                        organisationTradingName: Example Trading Name
+                        companiesHouseNumber: '12345678'
+                        homeNationCode: ENG
+                        serviceOfNoticeAddrLine1: 123 Example Street
+                        serviceOfNoticeAddrLine2: Suite 456
+                        serviceOfNoticeAddrCity: London
+                        serviceOfNoticeAddrCounty: Greater London
+                        serviceOfNoticeAddrCountry: United Kingdom
+                        serviceOfNoticeAddrPostcode: E1 6AN
+                        serviceOfNoticeAddrPhoneNumber: +44 20 7946 0123
+                        soleTraderFirstName: John
+                        soleTraderLastName: Doe
+                        soleTraderPhoneNumber: +44 7911 123456
+                        soleTraderEmail: john.doe@example.com
+                        primaryContactPersonFirstName: Jane
+                        primaryContactPersonLastName: Smith
+                        primaryContactPersonPhoneNumber: +44 7911 654321
+                        primaryContactPersonEmail: jane.smith@example.com
+                        subsidiaryDetails:
+                          - subsidiaryId: SUB12345
+                            subsidiaryName: Happy Shopper
+                            subsidiaryTradingName: Example Trading Name
         '400':
-          description: 'Bad Request - There are miscellaneous errors with the request, for example, mismatches between the request and what is allowed for the operation.'
+          description: Bad request due to invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                badRequestExample:
+                  value:
+                    error: Bad Request
+                    message: The request was malformed or invalid.
+                    errorCode: invalid_request
+                    description: The request did not conform to the required format.
+        '401':
+          description: Unauthorized - token invalid or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                invalidTokenExample:
+                  value:
+                    error: Unauthorized
+                    message: The token is invalid or has expired.
+                    errorCode: invalid_token
+                    description: The token provided is invalid or has expired.
         '403':
-          description: Unauthorized or 403 Forbidden - Authentication errors.
+          description: Forbidden - Insufficient permissions to access the resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                forbiddenExample:
+                  value:
+                    error: Forbidden
+                    message: You do not have the necessary permissions to access this resource.
+                    errorCode: insufficient_permissions
+                    description: The user does not have sufficient permissions for this resource.
         '404':
-          description: Not Found - Invalid URL path.
+          description: Not Found - The requested organisations could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                notFoundExample:
+                  value:
+                    error: Not Found
+                    message: The requested resource could not be found.
+                    errorCode: resource_not_found
+                    description: The resource you requested does not exist.
         '500':
-          description: Internal Server Error - This generic error message appears when an unexpected condition was encountered and a more specific message is not suitable.
-        '503':
-          description: Service Unavailable - The caller has hit a throttle or the request was rejected because the service is starting or stopping.
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+              examples:
+                serverErrorExample:
+                  value:
+                    error: Internal Server Error
+                    message: An unexpected error occurred on the server.
+                    errorCode: server_error
+                    description: Something went wrong on the server side.
 components:
-  securitySchemes:
-    apiKeyHeader:
-      type: apiKey
-      name: Ocp-Apim-Subscription-Key
-      in: header
-    apiKeyQuery:
-      type: apiKey
-      name: subscription-key
-      in: query
-security:
-  - apiKeyHeader: [ ]
-  - apiKeyQuery: [ ]
+  schemas:
+    OrganisationDetail:
+      type: object
+      properties:
+        organisationId:
+          type: string
+          description: The identification number assigned to an organisation when they create an account
+          example: ORG12345
+        organisationName:
+          type: string
+          description: Organisation name
+          example: Example Organisation Ltd
+        organisationTradingName:
+          type: string
+          description: Organisation Trading
+          example: Example Trading Name
+        companiesHouseNumber:
+          type: string
+          description: Companies House registration number. Limited orgs only
+          example: '12345678'
+        homeNationCode:
+          type: string
+          description: 'Home nation code: The UK nation where organisation is registered.'
+          example: ENG
+        serviceOfNoticeAddrLine1:
+          type: string
+          description: Service of notice address line 1.
+          example: 123 Example Street
+        serviceOfNoticeAddrLine2:
+          type: string
+          description: Service of notice address line 2.
+          example: Suite 456
+        serviceOfNoticeAddrCity:
+          type: string
+          description: Service of notice address city.
+          example: London
+        serviceOfNoticeAddrCounty:
+          type: string
+          description: Service of notice address county.
+          example: Greater London
+        serviceOfNoticeAddrCountry:
+          type: string
+          description: Service of notice address country.
+          example: United Kingdom
+        serviceOfNoticeAddrPostcode:
+          type: string
+          example: E1 6AN
+        serviceOfNoticeAddrPhoneNumber:
+          type: string
+          description: Service of notice address phone number.
+          example: +44 20 7946 0123
+        soleTraderFirstName:
+          type: string
+          description: Sole trader first name.
+          example: John
+        soleTraderLastName:
+          type: string
+          description: Sole trader last name.
+          example: Doe
+        soleTraderPhoneNumber:
+          type: string
+          description: Sole trader phone number.
+          example: +44 7911 123456
+        soleTraderEmail:
+          type: string
+          description: Sole trader email.
+          format: email
+          example: john.doe@example.com
+        primaryContactPersonFirstName:
+          type: string
+          description: Primary contact first name.
+          example: Jane
+        primaryContactPersonLastName:
+          type: string
+          description: Primary contact last name.
+          example: Smith
+        primaryContactPersonPhoneNumber:
+          type: string
+          description: Primary contact phone number.
+          example: +44 7911 654321
+        primaryContactPersonEmail:
+          type: string
+          description: Primary contact email.
+          format: email
+          example: jane.smith@example.com
+        subsidiaryDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubsidiaryDetails'
+    SubsidiaryDetails:
+      type: object
+      properties:
+        subsidiaryId:
+          type: string
+          description: An identification number assigned to a subsidiary by its parent company.
+          example: SUB12345
+        subsidiaryName:
+          type: string
+          description: ' The subsidiary name. This will be different from the parent company'
+          example: Happy Shopper
+        subsidiaryTradingName:
+          type: string
+          description: The trading name for subsidiary
+          example: Example Trading Name
+    errorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: 'A short error code or type (e.g., "unauthorized", "invalid_token", "server_error")'
+        message:
+          type: string
+          description: A detailed message explaining the error
+        errorCode:
+          type: string
+          description: A unique error code related to the type of error
+        description:
+          type: string
+          description: A more detailed description about the error context
+tags:
+  - name: OrganisationsDetails
+    description: Operations related to retrieving organisations' contact details
