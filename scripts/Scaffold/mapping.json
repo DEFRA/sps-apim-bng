@@ -52,7 +52,7 @@
     {
       "inputKey": "BASE_BACKEND_URL",
       "type": "string",
-      "mandatory": true,
+      "mandatory": false,
       "usage": [
         { "target": "file", "file": "apiInformation.json", "jsonPath": "$.properties.serviceUrl" }
       ]
