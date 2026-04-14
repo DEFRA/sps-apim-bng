@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "displayName": "BNG_BACKEND_APIKEY",
+    "secret": true,
+    "tags": [],
+    "value": "ProdKey"
+  }
+}
