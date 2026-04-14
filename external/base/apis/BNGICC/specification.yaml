@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: CAPP Ext API
-  description: This is the OpenAPI Document on Azure Functions
+  description: This is the OpenAPI Document on Azure Functions Prathap
   version: v1.0
 servers:
   - url: https://devapiinfam2403.azure-api.net/BNGICC/v1.0
