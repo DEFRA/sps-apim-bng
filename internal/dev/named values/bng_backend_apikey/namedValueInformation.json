@@ -3,6 +3,6 @@
     "displayName": "BNG_BACKEND_APIKEY",
     "secret": true,
     "tags": [],
-    "value": "ProdKey"
+    "value": "DevKey"
   }
 }
