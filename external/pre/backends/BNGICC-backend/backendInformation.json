@@ -2,6 +2,6 @@
   "properties": {
     "description": "BNGICC Backend",
     "protocol": "http",
-    "url": "https://precppafafa1401.azurewebsites.net/api"
+    "url": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/pre"
   }
 }
