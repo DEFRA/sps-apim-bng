@@ -5,7 +5,7 @@
   "BASE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/base",
   "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
   "FRONTEND_CLIENTID_KEYNAME": "bngicc-frontend-clientid",
-  "TENANT_ID": "#{{ defraTenantId }}",
+  "TENANT_ID": "#{{ b2cTenantId }}",
   "RATE_LIMIT_CALLS": 112,
   "RATE_LIMIT_PERIOD": 72,
   "DEV_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation",
