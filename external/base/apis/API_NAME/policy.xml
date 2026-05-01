@@ -1,6 +1,6 @@
 <policies>
 	<inbound>
-		<!-- Policy with updated App Reg names in APIOps. This is updated on 01/05/2025 part2-->
+		<!-- Policy with updated App Reg names in APIOps. This is updated on 01/05/2025 Divya part2-->
 		<base />
 		<rate-limit calls="<<RATE_LIMIT_CALLS>>" renewal-period="<<RATE_LIMIT_PERIOD>>" />
 		<validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
