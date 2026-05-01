@@ -1,6 +1,6 @@
 {
   "API_NAME": "BNGICC",
-  "API_DISPLAY_NAME": "BNG EXT API",
+  "API_DISPLAY_NAME": "BNG EXT API TEST",
   "API_VERSION": "v1.0",
   "BASE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/base",
   "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
@@ -8,7 +8,7 @@
   "TENANT_ID": "#{{ b2cTenantId }}",
   "RATE_LIMIT_CALLS": 112,
   "RATE_LIMIT_PERIOD": 72,
-  "DEV_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation",
+  "DEV_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/dev",
   "TST_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/tst",
   "PRE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/pre"
 }
