@@ -9,7 +9,7 @@
 				<audience>api://{{BNGICC_BACKEND_SCOPEID}}</audience>
 			</audiences>
 			<issuers>
-				<issuer>https://sts.windows.net/#{{ b2cTenantId }}/</issuer>
+				<issuer>https://sts.windows.net/#{{ defraTenantId }}/</issuer>
 			</issuers>
 			<required-claims>
 				<claim name="appid" match="any">
