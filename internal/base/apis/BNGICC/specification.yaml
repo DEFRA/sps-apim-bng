@@ -1,6 +1,6 @@
 openapi: 3.0.1
 info:
-  title: BNG-API V2.0 E2E
+  title: BNG-API V2.0
   description: ''
   version: v2.0
 servers:
