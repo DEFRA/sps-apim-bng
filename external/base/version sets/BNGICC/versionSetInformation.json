@@ -1,1 +1,6 @@
-
+{
+  "properties": {
+    "displayName": "BNGICC API",
+    "versioningScheme": "Segment"
+  }
+}

@@ -1,1 +1,8 @@
-
+{
+  "properties": {
+    "displayName": "BNG EXT API",
+    "description": "BNGICC Product",
+    "state": "published",
+    "subscriptionRequired": false
+  }
+}
