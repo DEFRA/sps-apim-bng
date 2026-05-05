@@ -1,6 +1,6 @@
 # SPS-APIM-BNG
 
-> ⚠️ **This repository contains under-development code and is used for APIM self-service development purposes.**
+> ⚠️ **This repository contains under-development code and is used for APIM self-service development purposes (Using for End to End testing).**
 
 ## Overview
 This repository stores the **source-of-truth for APIM configuration** for the Address Lookup APIs (operations, versions, policies, products, and named values) and the automation required to deploy to **Dev → Test → Prod** through Azure DevOps.
