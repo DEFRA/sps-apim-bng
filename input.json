@@ -1,14 +1,14 @@
 {
   "API_NAME": "BNGICC",
-  "API_DISPLAY_NAME": "EPR Organisations Contact Details API",
+  "API_DISPLAY_NAME": "BNG Update EXT API",
   "API_VERSION": "v1.0",
-  "BASE_BACKEND_URL": "https://devrwdwebwa4426.azurewebsites.net/api/v1/base",
+  "BASE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/bbase",
   "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
   "FRONTEND_CLIENTID_KEYNAME": "bngicc-frontend-clientid",
-  "TENANT_ID": "#{{ defraTenantId }}",
+  "TENANT_ID": "#{{ b2cTenantId }}",
   "RATE_LIMIT_CALLS": 115,
   "RATE_LIMIT_PERIOD": 75,
-  "DEV_BACKEND_URL": "https://devrwdwebwa4426.azurewebsites.net/api/v1/",
-  "TST_BACKEND_URL": "https://tstrwdwebwa4426.azurewebsites.net/api/v1/",
-  "PRE_BACKEND_URL": "https://prerwdwebwa4426.azurewebsites.net/api/v1/"
+  "DEV_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/ddev",
+  "TST_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/ttst",
+  "PRE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/ppre"
 }
