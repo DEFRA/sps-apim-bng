@@ -1,14 +1,14 @@
 {
   "API_NAME": "BNGICC",
-  "API_DISPLAY_NAME": "BNG Update EXT API",
+  "API_DISPLAY_NAME": "BNG INT API",
   "API_VERSION": "v1.0",
-  "BASE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/bbase",
+  "BASE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/base",
   "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
   "FRONTEND_CLIENTID_KEYNAME": "bngicc-frontend-clientid",
-  "TENANT_ID": "#{{ b2cTenantId }}",
-  "RATE_LIMIT_CALLS": 115,
-  "RATE_LIMIT_PERIOD": 75,
-  "DEV_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/ddev",
-  "TST_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/ttst",
-  "PRE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/ppre"
+  "TENANT_ID": "#{{ defraTenantId }}",
+  "RATE_LIMIT_CALLS": 130,
+  "RATE_LIMIT_PERIOD": 90,
+  "DEV_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation",
+  "TST_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/tst",
+  "PRE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/pre"
 }

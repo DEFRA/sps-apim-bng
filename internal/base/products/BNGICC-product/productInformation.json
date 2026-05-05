@@ -1,6 +1,6 @@
 {
   "properties": {
-    "displayName": "BNG EXT API TEST",
+    "displayName": "BNG INT API",
     "description": "BNGICC Product",
     "state": "published",
     "subscriptionRequired": false
