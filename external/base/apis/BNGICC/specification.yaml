@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: BNG-API V2.0
-  description: ''
+  description: 'Update Test'
   version: v2.0
 servers:
   - url: https://dev-int-api-gateway.azure.defra.cloud/api/bng-api/v2.0
@@ -19,7 +19,7 @@ paths:
             type: String
       responses:
         '200':
-          description: ''
+          description: 'New Update Test'
 components:
   securitySchemes:
     apiKeyHeader:
