@@ -1,1 +1,8 @@
-
+{
+  "properties": {
+    "displayName": "AIRQUALITY_FRONTEND_CLIENTID_V4",
+    "secret": true,
+    "tags": [],
+    "value": "#{{ alClientAppIdIntV21AQ }}"
+  }
+}
