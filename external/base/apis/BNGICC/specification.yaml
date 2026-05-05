@@ -1,35 +1,17 @@
 openapi: 3.0.1
 info:
-  title: BNG-API V2.0
-  description: 'Update Test'
-  version: v2.0
+  title: BNG Update1 EXT API
+  description: Update1 Test
+  version: v1.0
 servers:
-  - url: https://dev-int-api-gateway.azure.defra.cloud/api/bng-api/v2.0
+  - url: https://dev-ext-api-gateway.azure.defra.cloud/BNGICC/v1.0
 paths:
-  '/gainsite/{GainSiteNumber}':
+  /gainsite1:
     get:
-      summary: GainSites
-      description: GainSites
-      operationId: gainsites
-      parameters:
-        - name: GainSiteNumber
-          in: path
-          required: true
-          schema:
-            type: String
+      summary: gainsite1
+      description: Test operation
+      operationId: gainsite1
       responses:
         '200':
-          description: 'New Update Test'
-components:
-  securitySchemes:
-    apiKeyHeader:
-      type: apiKey
-      name: Ocp-Apim-Subscription-Key
-      in: header
-    apiKeyQuery:
-      type: apiKey
-      name: subscription-key
-      in: query
-security:
-  - apiKeyHeader: [ ]
-  - apiKeyQuery: [ ]
+          description: ''
+components: { }
