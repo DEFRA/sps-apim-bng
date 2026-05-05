@@ -1,8 +1,11 @@
 <policies>
 	<inbound>
-		<!-- Policy with updated App Reg names in APIOps. This is updated on 05/May/2026 part1 internal 1-->
+		<!-- Policy with updated App Reg names in APIOps. This is updated on 05/May/2026 part2 internal 2-->
 		<base />
 		<rate-limit calls="130" renewal-period="90" />
+		<set-query-parameter name="code" exists-action="override">
+        <value>{{BNG_BACKEND_APIKEY}}</value>
+        </set-query-parameter>
 		<validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
 			<openid-config url="https://login.microsoftonline.com/#{{ defraTenantId }}/v2.0/.well-known/openid-configuration" />
 			<audiences>
