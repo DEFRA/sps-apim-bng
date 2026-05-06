@@ -28,13 +28,13 @@ env:
     internal/dev/backends/BNGICC-backend=internal/dev/backends/BNGICC-backend
     internal/tst/backends/BNGICC-backend=internal/tst/backends/BNGICC-backend
     internal/pre/backends/BNGICC-backend=internal/pre/backends/BNGICC-backend
-    external/base/apis/BNGICC=external/base/apis/bngicc
-    external/base/products/BNGICC-product=external/base/products/bngicc-product
-    external/base/version sets/BNGICC=external/base/version sets/bngicc
-    external/base/backends/BNGICC-backend=external/base/backends/BNGICC-backend
-    external/dev/backends/BNGICC-backend=external/dev/backends/BNGICC-backend
-    external/tst/backends/BNGICC-backend=external/tst/backends/BNGICC-backend
-    external/pre/backends/BNGICC-backend=external/pre/backends/BNGICC-backend
+    # external/base/apis/BNGICC=external/base/apis/bngicc
+    # external/base/products/BNGICC-product=external/base/products/bngicc-product
+    # external/base/version sets/BNGICC=external/base/version sets/bngicc
+    # external/base/backends/BNGICC-backend=external/base/backends/BNGICC-backend
+    # external/dev/backends/BNGICC-backend=external/dev/backends/BNGICC-backend
+    # external/tst/backends/BNGICC-backend=external/tst/backends/BNGICC-backend
+    # external/pre/backends/BNGICC-backend=external/pre/backends/BNGICC-backend
 
 jobs:
   prepare-branch:
