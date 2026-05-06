@@ -4,7 +4,7 @@ info:
   description: 'Int Update Test'
   version: v2.0
 servers:
-  - url: https://dev-int-api-gateway.azure.defra.cloud/api/bng-api/v2.0/update
+  - url: https://dev-int-api-gateway.azure.defra.cloud/api/bng-api/v2.0/new
 paths:
   '/gainsite/{GainSiteNumber}':
     get:
