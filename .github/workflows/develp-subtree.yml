@@ -21,9 +21,9 @@ env:
   TEAM_WINS_ON_CONFLICT: "true"
 
   FOLDER_MAP: |
-    internal/base/apis/BNGICC=internal/base/apis/bngicc
-    internal/base/products/BNGICC-product=internal/base/products/bngicc-product
-    internal/base/version sets/BNGICC=internal/base/version sets/bngicc
+    internal/base/apis/BNGICC=internal/base/apis/BNGICC
+    internal/base/products/BNGICC-product=internal/base/products/BNGICC-product
+    internal/base/version sets/BNGICC=internal/base/version sets/BNGICC
     internal/base/backends/BNGICC-backend=internal/base/backends/BNGICC-backend
     internal/dev/backends/BNGICC-backend=internal/dev/backends/BNGICC-backend
     internal/tst/backends/BNGICC-backend=internal/tst/backends/BNGICC-backend
