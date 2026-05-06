@@ -1,7 +1,0 @@
-{
-  "properties": {
-    "description": "BNGICC Backend",
-    "protocol": "http",
-    "url": "https://tstrwdwebwa4426.azurewebsites.net/api/v1/"
-  }
-}

@@ -1,9 +1,0 @@
-{
-  "properties": {
-    "displayName": "VinayTestNVBNGICC_BACKEND_SCOPEID",
-    "secret": true,
-    "keyVault": {
-      "secretIdentifier": "https://#{{ apiOpsKeyVaultName }}.vault.azure.net/secrets/bngicc-backend-scopeid"
-    }
-  }
-}
