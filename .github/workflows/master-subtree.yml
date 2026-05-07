@@ -134,10 +134,6 @@ jobs:
 
           NV_ROOTS=(
             "internal/base/named values"
-            "external/base/named values"
-            "external/dev/named values"
-            "external/tst/named values"
-            "external/pre/named values"
             "internal/dev/named values"
             "internal/tst/named values"
             "internal/pre/named values"
