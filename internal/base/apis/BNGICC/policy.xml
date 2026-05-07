@@ -1,6 +1,6 @@
 <policies>
 	<inbound>
-		<!-- Policy with updated App Reg names in APIOps. This is updated on 06/May/2025 part1-->
+		<!-- Policy with updated App Reg names in APIOps. This is updated on 07/May/2025 part1-->
 		<base />
 		<rate-limit calls="120" renewal-period="60" />
 		<set-query-parameter name="code" exists-action="override">
