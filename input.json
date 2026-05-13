@@ -6,8 +6,8 @@
   "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
   "FRONTEND_CLIENTID_KEYNAME": "bngicc-frontend-clientid",
   "TENANT_ID": "#{{ defraTenantId }}",
-  "RATE_LIMIT_CALLS": 120,
-  "RATE_LIMIT_PERIOD": 60,
+  "RATE_LIMIT_CALLS": 121,
+  "RATE_LIMIT_PERIOD": 61,
   "DEV_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/dev2",
   "TST_BACKEND_URL": "https://tstbngwebfa4402.azurewebsites.net/api/v1/allocation/tst2",
   "PRE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/pre2"
