@@ -2,13 +2,13 @@
   "API_NAME": "BNGICC",
   "API_DISPLAY_NAME": "BNG TST INT API",
   "API_VERSION": "v1.0",
-  "BASE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/base1",
+  "BASE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/base2",
   "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
   "FRONTEND_CLIENTID_KEYNAME": "bngicc-frontend-clientid",
   "TENANT_ID": "#{{ defraTenantId }}",
   "RATE_LIMIT_CALLS": 120,
   "RATE_LIMIT_PERIOD": 60,
-  "DEV_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/dev",
-  "TST_BACKEND_URL": "https://tstbngwebfa4402.azurewebsites.net/api/v1/allocation/tst",
-  "PRE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/pre1"
+  "DEV_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/dev2",
+  "TST_BACKEND_URL": "https://tstbngwebfa4402.azurewebsites.net/api/v1/allocation/tst2",
+  "PRE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/pre2"
 }
