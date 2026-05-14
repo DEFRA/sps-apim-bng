@@ -7,12 +7,12 @@
             <value>{{BNG_BACKEND_APIKEY}}</value>
         </set-query-parameter>
 		<validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
-			<openid-config url="https://login.microsoftonline.com/{{ defraTenantId }}/v2.0/.well-known/openid-configuration" />
+			<openid-config url="https://login.microsoftonline.com/{{COMMON_DEFRA_TENANTID}}/v2.0/.well-known/openid-configuration" />
 			<audiences>
 				<audience>api://{{BNGICC_BACKEND_SCOPEID}}</audience>
 			</audiences>
 			<issuers>
-				<issuer>https://sts.windows.net/{{ defraTenantId }}/</issuer>
+				<issuer>https://sts.windows.net/{{COMMON_DEFRA_TENANTID}}/</issuer>
 			</issuers>
 			<required-claims>
 				<claim name="appid" match="any">
