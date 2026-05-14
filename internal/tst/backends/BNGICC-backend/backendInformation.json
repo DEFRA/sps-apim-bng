@@ -2,6 +2,6 @@
   "properties": {
     "description": "BNGICC Backend",
     "protocol": "http",
-    "url": "https://tstbngwebfa4402.azurewebsites.net/api/v1/allocation/tst2"
+    "url": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation"
   }
 }
