@@ -21,6 +21,7 @@
             <value>{{BNG_BACKEND_APIKEY}}</value>
         </set-query-parameter>
         <set-header name="Authorization" exists-action="delete" />
+        <set-backend-service backend-id="BNGICC-backend" />
     </inbound>
     <!-- Control if and how the requests are forwarded to services  -->
     <backend>
