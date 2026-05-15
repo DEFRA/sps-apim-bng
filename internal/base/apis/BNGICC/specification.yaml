@@ -1,17 +1,23 @@
 openapi: 3.0.1
 info:
-  title: BNG Update EXT API
+  title: BNGICC TST INT API
   description: Update Test
   version: v1.0
 servers:
   - url: https://dev-ext-api-gateway.azure.defra.cloud/BNGICC/v1.0
 paths:
-  /gainsite1:
+  '/gainsite/{GainSiteNumber}':
     get:
-      summary: gainsite1
-      description: Test operation
-      operationId: gainsite1
+      summary: GainSites
+      description: GainSites
+      operationId: gainsites
+      parameters:
+        - name: GainSiteNumber
+          in: path
+          required: true
+          schema:
+            type: String
       responses:
         '200':
-          description: ''
+          description: New Update Test
 components: { }
