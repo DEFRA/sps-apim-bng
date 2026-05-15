@@ -1,34 +1,37 @@
+<!-- Policy with updated App Reg names in APIOps update 15 may 26 12:20 PM -->
 <policies>
-	<inbound>
-		<!-- Policy with updated App Reg names in APIOps. This is updated on 14/May/2025 15:31 part2-->
-		<base />
-		<rate-limit calls="113" renewal-period="64" />
-		<set-query-parameter name="code" exists-action="override">
+    <!-- Throttle, authorize, validate, cache, or transform the requests -->
+    <inbound>
+        <base />
+        <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
+            <openid-config url="https://login.microsoftonline.com/{{COMMON_DEFRA_TENANTID}}/v2.0/.well-known/openid-configuration" />
+            <audiences>
+                <audience>api://{{BNG_BACKEND_SCOPEID}}/</audience>
+            </audiences>
+            <issuers>
+                <issuer>https://sts.windows.net/{{COMMON_DEFRA_TENANTID}}/</issuer>
+            </issuers>
+            <required-claims>
+                <claim name="appid" match="any">
+                    <value>{{BNG_FRONTEND_CLIENTID}}</value>
+                </claim>
+            </required-claims>
+        </validate-jwt>
+        <set-query-parameter name="code" exists-action="override">
             <value>{{BNG_BACKEND_APIKEY}}</value>
         </set-query-parameter>
-		<validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="Unauthorized. Access token is missing or invalid.">
-			<openid-config url="https://login.microsoftonline.com/{{COMMON_DEFRA_TENANTID}}/v2.0/.well-known/openid-configuration" />
-			<audiences>
-				<audience>api://{{BNGICC_BACKEND_SCOPEID}}</audience>
-			</audiences>
-			<issuers>
-				<issuer>https://sts.windows.net/{{COMMON_DEFRA_TENANTID}}/</issuer>
-			</issuers>
-			<required-claims>
-				<claim name="appid" match="any">
-					<value>{{BNGICC_FRONTEND_CLIENTID}}</value>
-				</claim>
-			</required-claims>
-		</validate-jwt>
-		<set-backend-service backend-id="BNGICC-backend" />
-	</inbound>
-	<backend>
-		<base />
-	</backend>
-	<outbound>
-		<base />
-	</outbound>
-	<on-error>
-		<base />
-	</on-error>
+        <set-header name="Authorization" exists-action="delete" />
+    </inbound>
+    <!-- Control if and how the requests are forwarded to services  -->
+    <backend>
+        <base />
+    </backend>
+    <!-- Customize the responses -->
+    <outbound>
+        <base />
+    </outbound>
+    <!-- Handle exceptions and customize error responses  -->
+    <on-error>
+        <base />
+    </on-error>
 </policies>
