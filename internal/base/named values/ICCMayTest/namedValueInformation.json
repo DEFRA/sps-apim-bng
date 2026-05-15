@@ -1,9 +1,8 @@
 {
   "properties": {
-    "displayName": "BNGICC_FRONTEND_CLIENTID",
+    "displayName": "AIRQUALITY_FRONTEND_CLIENTID_V5",
     "secret": true,
-    "keyVault": {
-      "secretIdentifier": "https://#{{ apiOpsKeyVaultName }}.vault.azure.net/secrets/bngicc-frontend-clientid"
-    }
+    "tags": [],
+    "value": "#{{ alClientAppIdIntV21AQ }}"
   }
 }
