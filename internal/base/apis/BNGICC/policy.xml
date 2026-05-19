@@ -1,4 +1,4 @@
-<!-- Policy with updated App Reg names in APIOps update 18 may 26 13:10 PM -->
+<!-- Policy with updated App Reg names in APIOps update 19 may 26 16:55 PM -->
 <policies>
     <!-- Throttle, authorize, validate, cache, or transform the requests -->
     <inbound>
