@@ -1,6 +1,6 @@
 {
   "API_NAME": "BNGICC",
-  "API_DISPLAY_NAME": "BNG New INT API",
+  "API_DISPLAY_NAME": "BNG New INT API2",
   "API_VERSION": "v1.0",
   "BASE_BACKEND_URL": "https://tstbngwebfa1402.azurewebsites.net/api/v1/allocation/base",
   "BACKEND_SCOPEID_KEYNAME": "bngicc-backend-scopeid",
