@@ -1,10 +1,10 @@
 openapi: 3.0.1
 info:
-  title: BNG-API V2.0
-  description: 'Int Update2 Test'
-  version: v2.0
+  title: BNGICC TST INT API
+  description: Update Test
+  version: v1.0
 servers:
-  - url: https://dev-int-api-gateway.azure.defra.cloud/api/bng-api/v2.0/new
+  - url: https://dev-ext-api-gateway.azure.defra.cloud/BNGICC/v1.0
 paths:
   '/gainsite/{GainSiteNumber}':
     get:
@@ -19,17 +19,5 @@ paths:
             type: String
       responses:
         '200':
-          description: 'New Update Test'
-components:
-  securitySchemes:
-    apiKeyHeader:
-      type: apiKey
-      name: Ocp-Apim-Subscription-Key
-      in: header
-    apiKeyQuery:
-      type: apiKey
-      name: subscription-key
-      in: query
-security:
-  - apiKeyHeader: [ ]
-  - apiKeyQuery: [ ]
+          description: New Update Test
+components: { }
