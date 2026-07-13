@@ -1,0 +1,23 @@
+name: AI PR Reviewer
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR Agent Review
+        uses: Codium-ai/pr-agent@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # You can paste any standard OpenAI or Claude API key in your Repo Secrets
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} 
+          PR_REVIEW.EXTRA_INSTRUCTIONS: |
+            You are the automated Cloud Center of Excellence (CCoE) reviewer.
+            Review files strictly against secure deployment best practices.
+            You must structure your PR review summary using these exact headers:
+            1. **PR Summary**
+            2. **Resolved since last review**
+            3. **Findings by file** (Use tags: [BLOCKER], [ADVISORY], [SUGGESTION])
