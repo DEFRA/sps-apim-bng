@@ -4,10 +4,11 @@ on:
   schedule:
     # Runs every Monday at 00:00 UTC
     - cron: '0 0 * * 1'
-  workflow_dispatch: # Allows manual manual execution for testing
+  workflow_dispatch: # Allows manual execution for testing
 
 permissions:
   contents: write
+  pull-requests: read  # Required for the GitHub CLI to scan for open PRs
 
 jobs:
   cleanup-stale-branches:
@@ -21,14 +22,21 @@ jobs:
       - name: Configure Git Identity
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@://github.com"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Identify and Archive Stale Branches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to authenticate 'gh' CLI queries
         run: |
+          # --- Configuration Flags ---
+          DRY_RUN=true            # Set to 'false' to execute changes. Set to 'true' for a log-only dry run.
+          IGNORE_OPEN_PRS=true    # Set to 'true' to protect branches that have active open Pull Requests.
           STALE_DAYS=60
-          CUTOFF_DATE=$(date -d "$STALE_DAYS days ago" +%s)
           
+          CUTOFF_DATE=$(date -d "$STALE_DAYS days ago" +%s)
           echo "Looking for branches with no activity since: $(date -d "@$CUTOFF_DATE" '+%Y-%m-%d')"
+          echo "Dry Run mode is: $DRY_RUN"
+          echo "Ignore branches with open PRs is: $IGNORE_OPEN_PRS"
 
           # Sync remote tracking references
           git fetch --prune --all
@@ -43,26 +51,40 @@ jobs:
               continue
             fi
 
+            # Check for active open Pull Requests using GitHub CLI if the flag is enabled
+            if [ "$IGNORE_OPEN_PRS" = true ]; then
+              # Queries GitHub for open PRs matching this specific branch name as the source (head) branch
+              pr_check=$(gh pr list --head "$branch_name" --state open --json number -q '.[].number')
+              if [ ! -z "$pr_check" ]; then
+                echo "Skipping branch '$branch_name' because it has an active open PR (#$pr_check)."
+                continue
+              fi
+            fi
+
             # Extract the exact epoch timestamp of the last commit
             last_commit_timestamp=$(git log -1 --format="%at" "$remote_branch")
 
             if [ "$last_commit_timestamp" -lt "$CUTOFF_DATE" ]; then
               new_branch_name="stale/$branch_name"
-              echo "Archiving stale branch: $branch_name"
-
-              # Checkout the branch locally
-              git checkout -b "$branch_name" "$remote_branch"
-
-              # Push branch up to the stale namespace
-              if git push origin "$branch_name":"refs/heads/$new_branch_name"; then
-                # Delete the original branch only after a successful push
-                git push origin --delete "$branch_name"
-              else
-                echo "Warning: Failed to move branch $branch_name"
-              fi
               
-              # Return to detached HEAD state and clean up the local reference
-              git checkout --detach
-              git branch -D "$branch_name"
+              if [ "$DRY_RUN" = true ]; then
+                echo "[DRY RUN]: Would archive stale branch '$branch_name' to 'refs/heads/$new_branch_name' and delete original remote reference."
+              else
+                echo "Archiving stale branch: $branch_name"
+                # Checkout the branch locally
+                git checkout -b "$branch_name" "$remote_branch"
+
+                # Push branch up to the stale namespace
+                if git push origin "$branch_name":"refs/heads/$new_branch_name"; then
+                  # Delete the original branch only after a successful push
+                  git push origin --delete "$branch_name"
+                else
+                  echo "Warning: Failed to move branch $branch_name"
+                fi
+                
+                # Return to detached HEAD state and clean up the local reference
+                git checkout --detach
+                git branch -D "$branch_name"
+              fi
             fi
           done
