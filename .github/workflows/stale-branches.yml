@@ -1,0 +1,68 @@
+name: Automated Branch Cleanup
+
+on:
+  schedule:
+    # Runs every Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch: # Allows manual manual execution for testing
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup-stale-branches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches all history and remote references
+
+      - name: Configure Git Identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@://github.com"
+
+      - name: Identify and Archive Stale Branches
+        run: |
+          STALE_DAYS=60
+          CUTOFF_DATE=$(date -d "$STALE_DAYS days ago" +%s)
+          
+          echo "Looking for branches with no activity since: $(date -d "@$CUTOFF_DATE" '+%Y-%m-%d')"
+
+          # Sync remote tracking references
+          git fetch --prune --all
+
+          # Process all remote branches
+          git branch -r | grep -v '\->' | while read -r remote_branch; do
+            # Extract the raw branch name without 'origin/'
+            branch_name=$(echo "$remote_branch" | sed 's|origin/||' | xargs)
+
+            # Skip Source of Truth (SOT) and already archived branches
+            if [[ "$branch_name" == "master" || "$branch_name" == "develop" || "$branch_name" == stale/* ]]; then
+              continue
+            fi
+
+            # Extract the exact epoch timestamp of the last commit
+            last_commit_timestamp=$(git log -1 --format="%at" "$remote_branch")
+
+            if [ "$last_commit_timestamp" -lt "$CUTOFF_DATE" ]; then
+              new_branch_name="stale/$branch_name"
+              echo "Archiving stale branch: $branch_name"
+
+              # Checkout the branch locally
+              git checkout -b "$branch_name" "$remote_branch"
+
+              # Push branch up to the stale namespace
+              if git push origin "$branch_name":"refs/heads/$new_branch_name"; then
+                # Delete the original branch only after a successful push
+                git push origin --delete "$branch_name"
+              else
+                echo "Warning: Failed to move branch $branch_name"
+              fi
+              
+              # Return to detached HEAD state and clean up the local reference
+              git checkout --detach
+              git branch -D "$branch_name"
+            fi
+          done
