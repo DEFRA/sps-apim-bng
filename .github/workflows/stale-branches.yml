@@ -42,7 +42,7 @@ jobs:
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
           subject: "🧹 Repo Hygiene Report: Inactive Branches Processed Summary"
-          to: "api-platform-alerts@yourcompany.com" 
-          from: "GitHub Actions Platform <devops-alerts@yourcompany.com>"
+          to: "prathap.mathiyalagan@defra.gov.uk" 
+          from: "GitHub Actions Platform <prathap.mathiyalagan@defra.gov.uk>"
           secure: true
           html_body: file://${{ env.RUNNER_TEMP }}\email_payload.html
