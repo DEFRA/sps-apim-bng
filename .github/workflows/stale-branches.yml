@@ -32,16 +32,17 @@ jobs:
       - name: Identify and Archive Stale Branches
         id: branch_processor
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Authenticates the 'gh' CLI queries
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
         run: |
           # --- Configuration Flags ---
-          $DryRun = $true            # Set to $false to execute changes. $true keeps it in safe log-only mode.
-          $IgnoreOpenPrs = $true     # Set to $true to protect branches that have active open Pull Requests.
+          $DryRun = $true            
+          $IgnoreOpenPrs = $true     
           $StaleDays = 60
           
           $CutoffDate = (Get-Date).AddDays(-$StaleDays)
-          $CutoffTimestamp = [DateTimeOffset]($CutoffDate).ToUnixTimeSeconds()
+          # Fix: Wrap the type cast in parentheses so the method is invoked on the correct object type
+          $CutoffTimestamp = ([DateTimeOffset]$CutoffDate).ToUnixTimeSeconds()
           
           Write-Host "Looking for branches with no activity since: $($CutoffDate.ToString('yyyy-MM-dd'))"
           Write-Host "Dry Run mode is: $DryRun"
@@ -59,12 +60,10 @@ jobs:
           foreach ($rb in $remoteBranches) {
               $branchName = $rb.Replace("origin/", "").Trim()
 
-              # Skip Source of Truth (SOT) and already archived branches
               if ($branchName -eq "master" -or $branchName -eq "develop" -or $branchName -like "stale/*") {
                   continue
               }
 
-              # Check for active open Pull Requests using GitHub CLI
               if ($IgnoreOpenPrs -eq $true) {
                   $prCheck = gh pr list --head $branchName --state open --json number -q '.[].number'
                   if (-not [string]::IsNullOrEmpty($prCheck)) {
@@ -73,7 +72,6 @@ jobs:
                   }
               }
 
-              # Extract the exact epoch timestamp of the last commit
               $lastCommitTimestampStr = git log -1 --format="%at" "origin/$branchName"
               $lastCommitTimestamp = [long]$lastCommitTimestampStr
               $lastCommitDate = [DateTimeOffset]::FromUnixTimeSeconds($lastCommitTimestamp).DateTime.ToString("yyyy-MM-dd")
@@ -82,7 +80,6 @@ jobs:
                   $newBranchName = "stale/$branchName"
                   $processedCount++
                   
-                  # Save object for the metrics/reporting data table
                   $staleBranchesFound += [PSCustomObject]@{
                       OriginalBranch = $branchName
                       NewLocation    = $newBranchName
@@ -93,7 +90,6 @@ jobs:
                       Write-Host "[DRY RUN]: Would archive stale branch '$branchName' to '$newBranchName' and delete original remote reference."
                   } else {
                       Write-Host "Archiving stale branch: $branchName"
-                      # Checkout locally, push to stale, delete original remote
                       git checkout -b $branchName "origin/$branchName" *>&1
                       git push origin "${branchName}:refs/heads/${newBranchName}" *>&1
                       git push origin --delete $branchName *>&1
@@ -103,10 +99,8 @@ jobs:
               }
           }
 
-          # Export array data to JSON string to preserve arrays across steps safely
           $jsonPayload = $staleBranchesFound | ConvertTo-Json -Compress
           
-          # Handle multiline string output pattern for downstream consumers
           echo "branches_data<<BRANCH_EOF" >> $env:GITHUB_OUTPUT
           echo "$jsonPayload"              >> $env:GITHUB_OUTPUT
           echo "BRANCH_EOF"                >> $env:GITHUB_OUTPUT
