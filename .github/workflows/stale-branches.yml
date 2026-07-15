@@ -104,7 +104,7 @@ jobs:
           $executionMode = if ($DryRun -eq $true) { "⚠️ DRY RUN (Simulated Report)" } else { "🚀 LIVE CLEANUP (Executed)" }
           
           $summaryHeader = @"
-          # 🧹 Branch Lifecycle Execution Report
+          # Branch Lifecycle Execution Report
 
           ### Governance Metadata
           * **Execution Profile:** **$executionMode**
