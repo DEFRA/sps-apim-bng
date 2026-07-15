@@ -33,16 +33,3 @@ jobs:
         run: |
           # Executes the external script safely
           . "${{ github.workspace }}/scripts/cleanup-stale-branches.ps1"
-
-      - name: Send Summary Email
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: ${{ secrets.SMTP_SERVER }}
-          server_port: ${{ secrets.SMTP_PORT }}
-          username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "🧹 Repo Hygiene Report: Inactive Branches Processed Summary"
-          to: "prathap.mathiyalagan@defra.gov.uk" 
-          from: "GitHub Actions Platform <prathap.mathiyalagan@defra.gov.uk>"
-          secure: true
-          html_body: file://${{ env.RUNNER_TEMP }}\email_payload.html
