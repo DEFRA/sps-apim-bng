@@ -1,4 +1,4 @@
-# SPS-APIM-BNG
+# SPS-APIM-BNG-test
 
 > ⚠️ **This repository contains under-development code and is used for APIM self-service development purposes (Using for End to End testing).**
 
