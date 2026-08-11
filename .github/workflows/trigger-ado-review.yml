@@ -1,0 +1,24 @@
+name: Trigger CCoE ADO Review
+
+on:
+  pull_request:
+    types: [opened, synchronized, reopened]
+
+jobs:
+  trigger-azure-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call ADO AI Pipeline REST API
+        env:
+          AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }} # Store your ADO token in Github Secrets
+        run: |
+          curl -X POST \
+            -u :$AZURE_DEVOPS_PAT \
+            -H "Content-Type: application/json" \
+            -d '{
+                  "templateParameters": {
+                    "github_pr_id": "${{ github.event.pull_request.number }}",
+                    "github_repo": "${{ github.repository }}"
+                  }
+                }' \
+            "https://azure.com"
