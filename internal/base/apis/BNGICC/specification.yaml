@@ -16,7 +16,7 @@ paths:
           in: path
           required: true
           schema:
-            type: String
+            type: string
       responses:
         '200':
           description: New Update Test
